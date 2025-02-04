@@ -21,7 +21,7 @@
     "session"
   ],
   "author": "Dominic Daniel Kraemer",
-  "license": "ISC",
+  "license": "GPL-3.0-or-later",
   "depedencies": {
 
   },
