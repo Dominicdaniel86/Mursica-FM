@@ -1,0 +1,8 @@
+services:
+  node-server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: spotify-session-server
+    ports:
+      - "3000:3000"

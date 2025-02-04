@@ -24,7 +24,8 @@
   "author": "Dominic Daniel Kraemer",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-
+    "@types/express": "^5.0.0",
+    "express": "^4.21.2"
   },
   "devDependencies": {
     "@types/node": "^22.13.1",
