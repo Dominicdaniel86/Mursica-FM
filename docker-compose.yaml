@@ -6,3 +6,9 @@ services:
     container_name: spotify-session-server
     ports:
       - "3000:3000"
+    networks:
+      - spotify-session-network
+
+networks:
+  spotify-session-network:
+    driver: bridge
