@@ -14,6 +14,6 @@ FROM nginx:1.23.1-alpine as server
 # Copy compiled JS, config, static files
 COPY --from=builder /app/dist/*.js /var/www/spotify-session-app/assets/javascript/
 COPY ./server/nginx.conf /etc/nginx/conf.d/default.conf
-COPY ./frontend/public /var/www/spotify-session-app/assets/
+# COPY ./frontend/public /var/www/spotify-session-app/assets/ #! Deprecated. Done through volumes now.
 
 EXPOSE 80

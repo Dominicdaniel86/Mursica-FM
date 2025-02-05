@@ -8,6 +8,8 @@ services:
       - "3000:3000"
     networks:
       - spotify-session-network
+    volumes:
+      - ./backend/logs:/usr/src/app/logs
   
   nginx:
     build:
@@ -20,6 +22,9 @@ services:
       - spotify-session-network
     depends_on:
       - node-server
+    volumes:
+      - ./frontend/public:/var/www/spotify-session-app/assets
+      - ./server/logs:/var/log/nginx
 
 networks:
   spotify-session-network:
