@@ -137,3 +137,6 @@ dist
 
 # Compiled JavaScript files
 *.js
+
+# PostgreSQL
+/database/data
