@@ -8,6 +8,18 @@ services:
       - "3000:3000"
     networks:
       - spotify-session-network
+  
+  nginx:
+    build:
+      context: ./
+      dockerfile: ./server/Dockerfile
+    container_name: nginx-container
+    ports:
+      - "80:80"
+    networks:
+      - spotify-session-network
+    depends_on:
+      - node-server
 
 networks:
   spotify-session-network:
