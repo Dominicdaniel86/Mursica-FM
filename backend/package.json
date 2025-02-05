@@ -1,0 +1,38 @@
+{
+  "name": "spotify-session-app-nodejs-backend",
+  "version": "0.1.0",
+  "description": "A Node.js backend for hosting a third-party Spotify session app.",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist/server.js",
+    "clean": "rm -rf dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Dominicdaniel86/Spotify-Session-App"
+  },
+  "keywords": [
+    "typescript",
+    "backend",
+    "spotify",
+    "session",
+    "nodejs"
+  ],
+  "author": "Dominic Daniel Kraemer",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "@types/express": "^5.0.0",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
