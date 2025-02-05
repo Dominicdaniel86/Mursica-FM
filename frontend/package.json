@@ -1,0 +1,31 @@
+{
+  "name": "spotify-session-app-frontend",
+  "version": "0.1.0",
+  "description": "A compiler for a TypeScript-based frontend for a third-party Spotify session app.",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "npx tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Dominicdaniel86/Spotify-Session-App"
+  },
+  "keywords": [
+    "typescript",
+    "frontend",
+    "spotify",
+    "session"
+  ],
+  "author": "Dominic Daniel Kraemer",
+  "license": "GPL-3.0-or-later",
+  "depedencies": {
+
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
