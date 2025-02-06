@@ -4,6 +4,13 @@ Short description.
 
 ## Overview
 
+Topics to cover:
+
+- More detailed description.
+- How to use it.
+- Architecture & components.
+- User roles.
+
 ## Getting started
 
 This application is currently in early development, and there is no simple way to install or use it without technical knowledge. If you're a developer or have experience with development tools, please follow the [Setup for Developers](#setup-for-developers) section to try it out.
