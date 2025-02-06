@@ -140,3 +140,6 @@ dist
 
 # PostgreSQL
 /database/data
+
+# Custom note list
+notes.md
