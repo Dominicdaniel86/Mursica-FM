@@ -70,7 +70,7 @@ docker compose down
 
 ### Project Initialization
 
-***Start Date: 04.02.2025, End Date: 05.02.2025***
+***Start Date: 04.02.2025, End Date: 05.02.2025***  
 **Development Setup:**
 
 - Establish project structure and core components
@@ -80,7 +80,7 @@ docker compose down
 
 ### Minimum Viable Product
 
-***Start Date: 05.02.2025***
+***Start Date: 05.02.2025***  
 **Technical Aspects:**
 
 - Integrate backend logging system
@@ -97,7 +97,7 @@ docker compose down
 
 ### Operational Local Prototype
 
-***Start Date: Open***
+***Start Date: Open***  
 **Technical Aspects:**
 
 - Serve static HTML files for non-existing routes
@@ -115,7 +115,7 @@ docker compose down
 
 ### Product Cloud Deployment
 
-***Start Date: Open***
+***Start Date: Open***  
 **Technical Aspects:**
 
 - Deploy application to the cloud
@@ -130,7 +130,7 @@ docker compose down
 
 ### Platform Growth
 
-***Start Date: Open***
+***Start Date: Open***  
 **Technical Aspects:**
 
 - Implement Search Engine Optimization
