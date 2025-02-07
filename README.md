@@ -68,7 +68,10 @@ docker compose down
 
 ## Project Roadmap
 
-![Project Roadmap Picture](/media/roadmap.svg)
+<picture>
+  <source srcset="/media/roadmap-dark.svg" media="(prefers-color-scheme: dark)">
+  <img src="/media/roadmap-light.svg" alt="Project Roadmap Image">
+</picture>
 
 ### Project Initialization
 
