@@ -1,6 +1,23 @@
 import { pino } from 'pino';
+import fs from 'fs';
 
+const logFile = './logs/app.log';
 const isProduction = process.env.ENVIRONMENT === 'production';
+
+// Check if the log file exists
+if(!fs.existsSync(logFile)) {
+
+    const date = new Date();
+
+    // If not - write some custom lines
+    const initialMessage =
+        'Application Log - Service: Spotify Session Backend\n' +
+        'Generated on: ' + date + '\n' +
+        '===========================================================================================================================================================\n' +
+        '\n';
+
+    fs.writeFileSync(logFile, initialMessage);
+}
 
 const logger = pino({
     level: isProduction ? 'info' : 'debug', // default setting
@@ -9,7 +26,7 @@ const logger = pino({
         ? [ // production
             {
                 target: 'pino/file',
-                options: { destination: './logs/app.log'},
+                options: { destination: logFile},
                 level: 'info'
             }
         ]
@@ -21,7 +38,7 @@ const logger = pino({
             },
             {
                 target: 'pino/file',
-                options: { destination: './logs/app.log'},
+                options: { destination: logFile},
                 level: 'info'
             }
         ]
