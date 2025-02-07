@@ -5,7 +5,7 @@
 Please note that this app is currently it its conceptual phase. Your feedback is more than welcomed. You can reach out at my email address [Dominicdaniel3107@gmail.com](mailto:Dominicdaniel3107@gmail.com).
 If you are a developer, feel encouraged to provide feedback or fork the project, adhering to the [GPL3.0 license](https://github.com/Dominicdaniel86/Spotify-Session-App?tab=GPL-3.0-1-ov-file).
 
-## Overview
+## Overview (To-Do!)
 
 Topics to cover:
 
