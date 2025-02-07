@@ -68,6 +68,8 @@ docker compose down
 
 ## Project Roadmap
 
+![Project Roadmap Picture](/media/roadmap.svg)
+
 ### Project Initialization
 
 ***Start Date: 04.02.2025, End Date: 05.02.2025***  
