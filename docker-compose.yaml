@@ -4,6 +4,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: spotify-session-server
+    env_file:
+    - ./backend/.env
     ports:
       - "3000:3000"
     networks:
