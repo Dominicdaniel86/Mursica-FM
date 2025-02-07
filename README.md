@@ -73,6 +73,10 @@ docker compose down
   <img src="/media/roadmap-light.svg" alt="Project Roadmap Image">
 </picture>
 
+## UI Design Concept
+
+[![Figma Design](/media/images/figma-logo.png)](https://www.figma.com/design/Vnn1y0fCs0i6Gv67nVtnGQ/Spotify-Session-App?node-id=0-1&t=x7rMBCipKQkkgSHH-1)
+
 ---
 
 For more details, check the [issues page](https://github.com/Dominicdaniel86/Spotify-Session-App/issues) of this repository.
