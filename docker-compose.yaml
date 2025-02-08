@@ -29,7 +29,7 @@ services:
     volumes:
       - ./frontend/public/html:/var/www/spotify-session-app/assets/html
       - ./frontend/public/css:/var/www/spotify-session-app/assets/css
-      - ./frontend/public/icons:/var/www/spotify-session-app/assets/icon
+      - ./frontend/public/icons:/var/www/spotify-session-app/assets/icons
       - ./server/logs:/var/log/nginx
 
   database:
