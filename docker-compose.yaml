@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     image: dominic86/spotify-session-backend:0.1
     container_name: spotify-session-backend
+    env_file:
+    - ./backend/.env
     ports:
       - "3000:3000"
     networks:
