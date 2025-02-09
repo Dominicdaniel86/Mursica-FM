@@ -13,21 +13,32 @@
 
     <!-- CSS Files -->
     <link rel="stylesheet" href="/static/css/main-page.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
 </head>
 <body>
-    <p id="logout">Exit Button</p>
-    <p id="admin">Admin Button</p>
+    <div id="logout">
+        <a href="/static/html/index.html"><img src="/static/icons/exit.png" height="60px"></a>
+    </div>
+    <div id="admin">
+        <img src="/static/icons/admin.png" onclick="switchToAdmin()" height="60px">
+    </div>
+    <br>
+    <div id="session-id-div">
+        <p>Current Session ID:<br><span id="id">#144-FAO</span></p>
+    </div>
 
-    <p>Current Session ID:</p>
-    <p>#144-FAO</p>
+    <div id="spotify-account">
+        <p>Not connected with a<br>Spotify Account</p>
+        <button onclick="spotifyLogin()">Connect</button>
+    </div>
 
-    <p>Not connected with a Spotify Account</p>
-    <button onclick="spotifyLogin()">Connect</button>
 
-    <p>Volume</p>
-    <p>Pause</p>
-    <p>Play</p>
-    <p>Skip</p>
+    <div id="song-control">
+        <img src="/static/icons/volume.svg" id="control-volume">
+        <img src="/static/icons/pause.svg" id="control-pause">
+        <img src="/static/icons/play.svg" id="control-play">
+        <img src="/static/icons/skip.svg" id="control-skip">
+    </div>
 
     <!-- JavaScript files -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
