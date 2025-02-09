@@ -1,6 +1,7 @@
 import express from 'express';
 import logger from './logger.js';
 import { clientCredentialsFlow } from './spotify-auth.js';
+import { writeToEnvFile } from './helper.js';
 
 const app = express();
 const port = 3000;
@@ -8,7 +9,13 @@ const port = 3000;
 const client_id = process.env.CLIENT_ID || '';
 const client_secret = process.env.CLIENT_SECRET || '';
 
-clientCredentialsFlow(client_id, client_secret);
+let clientToken: Promise<string> = clientCredentialsFlow(client_id, client_secret);
+
+clientToken.then(resolvedToken => {
+    writeToEnvFile('CLIENT_CREDENTIAL_TOKEN', resolvedToken);
+}).catch(error => {
+    logger.fatal('Could not resolve Client Token');
+});
 
 app.get('/api', (req, res) => {
     res.send("Hello from the backend!");
