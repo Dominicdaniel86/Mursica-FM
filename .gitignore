@@ -140,3 +140,10 @@ dist
 
 # PostgreSQL
 /database/data
+
+# Custom note list
+notes.md
+
+# Drawio Files
+*.drawio
+*.bkp

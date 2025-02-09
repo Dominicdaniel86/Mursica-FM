@@ -22,10 +22,9 @@
   ],
   "author": "Dominic Daniel Kraemer",
   "license": "GPL-3.0-or-later",
-  "depedencies": {
-
-  },
+  "depedencies": {},
   "devDependencies": {
+    "@types/axios": "^0.9.36",
     "typescript": "^5.7.3"
   }
 }

@@ -8,6 +8,10 @@ app.get('/api', (req, res) => {
     res.send("Hello from the backend!");
 });
 
+app.post('/api/auth/login', (req, res) => {
+    res.send('Clever, you are trying to login?');
+});
+
 app.listen(port, () => {
     logger.info(`Server is running on port ${port}`);
 });
