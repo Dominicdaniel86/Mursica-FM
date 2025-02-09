@@ -1,0 +1,39 @@
+body {
+    font-family: "Sora", serif;
+    font-optical-sizing: auto; 
+    font-weight: 400; /* 100-800 */
+    font-style: normal; /* normal, italic */
+    text-align: center;
+    font-size: 12px;
+    left: 0;
+    top: 0;
+}
+
+#logout {
+    float: left;
+}
+
+#admin {
+    float: right;
+}
+
+#search-song-div {
+    margin-top: 200px;
+    width: 70%;
+    position: absolute;
+    left: 0;
+    margin-left: 20px;
+}
+
+#search-song {
+    float: left;
+}
+
+#heart-icon {
+    float: right;
+}
+
+#current-song {
+    position: absolute;
+    bottom: 0;
+}
