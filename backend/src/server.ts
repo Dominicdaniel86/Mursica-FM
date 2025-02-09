@@ -9,10 +9,11 @@ const port = 3000;
 const client_id = process.env.CLIENT_ID || '';
 const client_secret = process.env.CLIENT_SECRET || '';
 
-let clientToken: Promise<string> = clientCredentialsFlow(client_id, client_secret);
+let clientTokenResult: Promise<[string, number]> = clientCredentialsFlow(client_id, client_secret);
 
-clientToken.then(resolvedToken => {
-    writeToEnvFile('CLIENT_CREDENTIAL_TOKEN', resolvedToken);
+clientTokenResult.then(resolvedClientToken => {
+    writeToEnvFile('CLIENT_CREDENTIAL_TOKEN', resolvedClientToken[0]);
+    writeToEnvFile('CLIENT_TOKEN_EXPERIATION', resolvedClientToken[1].toString());
 }).catch(error => {
     logger.fatal('Could not resolve Client Token');
 });

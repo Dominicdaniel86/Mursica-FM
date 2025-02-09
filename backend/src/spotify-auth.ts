@@ -7,7 +7,7 @@ interface SpotifyTokenResponse {
     expires_in: number;
 }
 
-export async function clientCredentialsFlow(client_id: string, client_secret: string): Promise<string> {
+export async function clientCredentialsFlow(client_id: string, client_secret: string): Promise<[string, number]> {
 
     const data = new URLSearchParams({
         grant_type: 'client_credentials'
@@ -18,7 +18,8 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
         }
     };
 
-    let clientToken = '';
+    let clientToken: string = '';
+    let validUntil: number = Date.now();
 
     await axios.post<SpotifyTokenResponse>('https://accounts.spotify.com/api/token', data, config)
         .then(response => {
@@ -28,10 +29,12 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
             logger.info(`Expires In: ${response.data.expires_in}`);
 
             let access_token = response.data.access_token;
+            let expires_in = response.data.expires_in;
 
             process.env.CLIENT_CREDENTIAL_TOKEN = access_token;
 
             clientToken = access_token;
+            validUntil += (expires_in * 1000);
         })
         .catch(error => {
             if(error.response) {
@@ -43,5 +46,5 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
             }
         });
 
-    return clientToken;
+    return [clientToken, validUntil];
 }
