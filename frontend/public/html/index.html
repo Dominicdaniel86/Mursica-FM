@@ -4,12 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spotify Session App</title>
-    <link rel="icon" href="static/icons/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="static/css/index.css">
+    <link rel="icon" href="/static/icons/favicon.ico" type="image/x-icon">
+
+    <!-- Google Sora Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/index.css">
 </head>
+
 <body>
-    <h1>Welcome to the Spotify Session App!</h1>
-    <script src="static/javascript/index.js"></script>
-    <a href="static/html/login.html">Login</a>
+    <h1 id="header">Welcome to the Spotify Session App!</h1>
+    <div id="app-icon">
+        <img src="/static/icons/favicon.ico"><br>
+    </div>
+    
+    <div id="login">
+        <a href="/static/html/login.html"><button id="host-session">Host a Session</button></a><br>
+        <input type="text" placeholder="Session-ID" id="session-id-input"><br>
+        <button id="join-session" onclick="joinSession()">Join a Session</button>
+    </div>
+
+    <!-- JavaScript files -->
+    <script src="/static/javascript/index.js"></script>
 </body>
 </html>

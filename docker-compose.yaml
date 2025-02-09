@@ -1,9 +1,12 @@
 services:
-  node-server:
+  node-backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: spotify-session-server
+    image: dominic86/spotify-session-backend:0.1
+    container_name: spotify-session-backend
+    env_file:
+    - ./backend/.env
     ports:
       - "3000:3000"
     networks:
@@ -13,21 +16,22 @@ services:
     volumes:
       - ./backend/logs:/usr/src/app/logs
   
-  nginx:
+  nginx-proxy:
     build:
       context: ./
       dockerfile: ./server/Dockerfile
-    container_name: nginx-container
+    image: dominic86/spotify-session-proxy:0.1
+    container_name: spotify-session-proxy
     ports:
       - "80:80"
     networks:
       - spotify-session-network
     depends_on:
-      - node-server
+      - node-backend
     volumes:
       - ./frontend/public/html:/var/www/spotify-session-app/assets/html
       - ./frontend/public/css:/var/www/spotify-session-app/assets/css
-      - ./frontend/public/icons:/var/www/spotify-session-app/assets/icon
+      - ./frontend/public/icons:/var/www/spotify-session-app/assets/icons
       - ./server/logs:/var/log/nginx
 
   database:
