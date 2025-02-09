@@ -80,6 +80,6 @@ function joinSession() {
     if(sessionID.length !== 6) {
         alert('Session-ID invalid!')
     } else {
-        window.location.href = 'static/html/add-song.html';
+        window.location.href = '/static/html/add-song.html';
     }
 }
