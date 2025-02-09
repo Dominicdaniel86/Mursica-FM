@@ -25,10 +25,12 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "@types/express": "^5.0.0",
+    "axios": "^1.7.9",
     "express": "^4.21.2",
     "pino": "^9.6.0"
   },
   "devDependencies": {
+    "@types/axios": "^0.9.36",
     "@types/node": "^22.13.1",
     "pino-pretty": "^13.0.0",
     "ts-node": "^10.9.2",
