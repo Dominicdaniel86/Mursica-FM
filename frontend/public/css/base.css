@@ -5,6 +5,8 @@ body {
     font-style: normal; /* normal, italic */
     text-align: center;
     font-size: 12px;
+    left: 0;
+    top: 0;
 }
 
 button {
