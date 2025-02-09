@@ -2,7 +2,7 @@ window.addEventListener('load', () => {
     console.log('DOM has loaded');
 
     // Reset session-id value
-    let sessionIDInputElement: HTMLInputElement = document.getElementById('login-input') as HTMLInputElement;
+    let sessionIDInputElement: HTMLInputElement = document.getElementById('session-id-input') as HTMLInputElement;
     sessionIDInputElement.value = '';
 
     // Custom behaviour of the session-id-input Element
@@ -71,4 +71,15 @@ function sessionIDInputValidation(sessionIDInputElement: HTMLInputElement) {
     previousChars = rawValue.length;
     sessionIDInputElement.value = resultingValue.toUpperCase();
     sessionIDInputElement.setSelectionRange(newCursorPos, newCursorPos);
+}
+
+function joinSession() {
+    let sessionIDInputElement: HTMLInputElement = document.getElementById('session-id-input') as HTMLInputElement;
+    let sessionID: string = sessionIDInputElement.value.replace(/[^a-zA-Z0-9]/g, '');
+
+    if(sessionID.length !== 6) {
+        alert('Session-ID invalid!')
+    } else {
+        window.location.href = 'static/html/add-song.html';
+    }
 }
