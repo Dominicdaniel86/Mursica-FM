@@ -32,6 +32,16 @@ input {
     width: 60%;
 }
 
+a {
+    text-decoration: none;
+    color: green;
+}
+
+a:visited {
+    text-decoration: none;
+    color: green;
+}
+
 #header {
     color: green;
     margin-top: 60px;
