@@ -11,20 +11,23 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
 
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/login.css">
 </head>
 <body>
-    <a href="/static/html/index.html"><p>Back to index</p></a>
-    <h1>Login to start your Session!</h1>
+    <a href="/static/html/index.html"><p id="back-icon">Back to index</p></a><br><br>
+    <h1 id="header">Login to start your Session!</h1>
     <div id="app-icon">
         <img src="/static/icons/favicon.ico"><br>
     </div>
 
     <div id="">
-        <input>
-        <input>
-        <button>Sign In</button>
+        <input type="text" placeholder="Username" id="username-input">
+        <input type="password" placeholder="Password">
+        <button onclick="login()">Sign In</button>
         <p>Listening music with your friends has never been easier!</p>
-        <p>Dont have an account?</p><p>Register</p>
+        <p>Dont have an account?<a href="/static/html/registration.html"><span id="register">Register</span></a></p>
     </div>
 
      <!-- JavaScript files -->

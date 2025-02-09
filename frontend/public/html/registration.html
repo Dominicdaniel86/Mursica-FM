@@ -11,14 +11,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
 
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/registration.css">
 </head>
 <body>
     <h1>Let's get started!</h1>
-    <input>
-    <input>
-    <input>
-    <button>Register</button>
-    <p>Already have an account?</p>
+    <input type="email" placeholder="Email" id="email-input">
+    <input type="text" placeholder="Username" id="username-input">
+    <input type="password" placeholder="Password">
+    <button onclick="registration()">Register</button>
+    <a href="/static/html/login.html"><p>Already have an account?</p></a>
 
     <!-- JavaScript files -->
     <script src="/static/javascript/registration.js"></script>
