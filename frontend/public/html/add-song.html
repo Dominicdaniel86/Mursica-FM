@@ -15,12 +15,16 @@
     <link rel="stylesheet" href="/static/css/main-page.css">
 </head>
 <body>
-    <p id="logout">Exit Button</p>
-    <p id="admin" onclick="switchToAdmin()">Admin Button</p>
+    <div id="logout">
+        <a href="/static/html/index.html"><img src="/static/icons/exit.png" height="60px"></a>
+    </div>
+    <div id="admin">
+        <img src="/static/icons/admin.png" onclick="switchToAdmin()" height="60px">
+    </div>
 
     <div id="search-song-div">
         <input type="text" placeholder="Search Song" id="search-song">
-        <p id="heart-icon">Heart Icon</p>
+        <img src="/static/icons/hearth-icon.svg" id="heart-icon">
     </div>
 
     
