@@ -1,7 +1,7 @@
 import express from 'express';
 import logger from './logger.js';
-import { clientCredentialsFlow } from './spotify-auth.js';
-import { writeToEnvFile } from './helper.js';
+import { writeToEnvFile } from './utility/index.js';
+import { clientCredentialsFlow, searchSong } from './api/index.js';
 
 const app = express();
 const port = 3000;
@@ -15,7 +15,7 @@ clientTokenResult.then(resolvedClientToken => {
     writeToEnvFile('CLIENT_CREDENTIAL_TOKEN', resolvedClientToken[0]);
     writeToEnvFile('CLIENT_TOKEN_EXPERIATION', resolvedClientToken[1].toString());
 }).catch(error => {
-    logger.fatal('Could not resolve Client Token');
+    logger.fatal('Could not resolve Client Token: ', error);
 });
 
 app.get('/api', (req, res) => {
@@ -23,6 +23,9 @@ app.get('/api', (req, res) => {
 });
 
 app.get('/api/tracks/search', (req, res) => {
+
+    searchSong('');
+
     res.send('Searched song result: Master of Puppets (best song!)');
 });
 

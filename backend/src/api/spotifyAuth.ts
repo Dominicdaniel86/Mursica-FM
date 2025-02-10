@@ -1,11 +1,6 @@
 import axios from 'axios';
-import logger from './logger.js';
-
-interface SpotifyTokenResponse {
-    access_token: string;
-    token_type: string;
-    expires_in: number;
-}
+import { SpotifyTokenResponse } from '../interfaces/index.js';
+import logger from '../logger.js';
 
 export async function clientCredentialsFlow(client_id: string, client_secret: string): Promise<[string, number]> {
 
