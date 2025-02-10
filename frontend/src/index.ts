@@ -38,7 +38,7 @@ function sessionIDInputValidation(sessionIDInputElement: HTMLInputElement) {
             resultingValue += rawValue.slice(0, 3) + '-' + rawValue.slice(3, 6);
             if(selectionStart === 1) // Deals with writes before the #
                 newCursorPos++;
-            if(selectionStart === 5 && previousChars < 5) // Deals with writes before the -
+            if(selectionStart === 5 && previousChars < 6) // Deals with writes before the -
                 newCursorPos++;
             break;
         case 7:
