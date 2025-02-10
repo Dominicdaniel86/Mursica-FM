@@ -1,13 +1,24 @@
-interface SpotifyTrackResponse {
-    next: string;
+export interface SpotifyTrackResponse {
     tracks: {
+        href: string;
+        limit: number;
+        next: string | null;
+        offset: number;
+        previous: string | null;
+        total: number;
         items: Array<Track>;
     };
+};
+
+export interface TrackSummary {
+    id: string;
+    title: string;
+    albumImage: string;
 }
 
 interface Track {
-    album: object;
-    artists: object;
+    album: Album;
+    artists: Array<Artists>;
     available_markets: Array<string>;
     disc_number: number;
     duration_ms: number;
@@ -24,4 +35,36 @@ interface Track {
     track_number: number;
     type: string;
     uri: string;
-}
+};
+
+interface Album {
+    album_type: string;
+    artists: Array<Artists>;
+    available_markets: Array<string>;
+    external_urls: object;
+    href: string;
+    id: string;
+    images: Array<Image>;
+    is_playable: boolean;
+    name: string;
+    release_date: string;
+    release_date_precision: string;
+    total_tracks: number;
+    type: string;
+    uri: string;
+};
+
+interface Artists {
+    external_urls: object;
+    href: string;
+    id: string;
+    name: string;
+    type: string;
+    uri: string;
+};
+
+interface Image {
+    height: number;
+    width: number;
+    url: string;
+};

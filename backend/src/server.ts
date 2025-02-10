@@ -24,7 +24,13 @@ app.get('/api', (req, res) => {
 
 app.get('/api/tracks/search', (req, res) => {
 
-    searchSong('');
+    let tracks = searchSong('');
+
+    tracks.then(resTracks => {
+        resTracks.forEach(element => {
+            console.log(element);
+        });
+    });
 
     res.send('Searched song result: Master of Puppets (best song!)');
 });
