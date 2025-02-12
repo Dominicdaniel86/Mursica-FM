@@ -1,10 +1,12 @@
 import express from 'express';
-import logger from './logger/logger.js';
+import logger, { initializeLogger } from './logger/logger.js';
 import { writeToEnvFile } from './utility/index.js';
 import { clientCredentialsFlow, searchSong } from './api/index.js';
 
 const app = express();
 const port = 3000;
+
+initializeLogger();
 
 const client_id = process.env.CLIENT_ID || '';
 const client_secret = process.env.CLIENT_SECRET || '';

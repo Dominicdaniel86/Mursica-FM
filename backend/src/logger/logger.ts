@@ -4,19 +4,23 @@ import fs from 'fs';
 const logFile = './logs/app.log';
 const isProduction = process.env.ENVIRONMENT === 'production';
 
-// Check if the log file exists
-if(!fs.existsSync(logFile)) {
+export function initializeLogger() {
+    // Check if the log file exists
+    if(!fs.existsSync(logFile)) {
 
-    const date = new Date();
+        const date = new Date();
 
-    // If not - write some custom lines
-    const initialMessage =
-        'Application Log - Service: Spotify Session Backend\n' +
-        'Generated on: ' + date + '\n' +
-        '===========================================================================================================================================================\n' +
-        '\n';
+        // If not - write some custom lines
+        const initialMessage =
+            'Application Log - Service: Spotify Session Backend\n' +
+            'Generated on: ' + date + '\n' +
+            '===========================================================================================================================================================\n' +
+            '\n';
 
-    fs.writeFileSync(logFile, initialMessage);
+        fs.writeFileSync(logFile, initialMessage);
+    } else {
+        fs.appendFileSync(logFile, '\n');
+    }
 }
 
 const logger = pino({
