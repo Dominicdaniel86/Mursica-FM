@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { SpotifyTrackResponse, TrackSummary } from '../interfaces/index.js';
-import logger from '../logger.js';
+import logger from '../logger/logger.js';
 
 export async function searchSong(track: string): Promise<Array<TrackSummary>> {
 

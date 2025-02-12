@@ -1,5 +1,5 @@
 import express from 'express';
-import logger from './logger.js';
+import logger from './logger/logger.js';
 import { writeToEnvFile } from './utility/index.js';
 import { clientCredentialsFlow, searchSong } from './api/index.js';
 

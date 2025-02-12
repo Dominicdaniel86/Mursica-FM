@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import logger from '../logger.js';
+import logger from '../logger/logger.js';
 
 export function writeToEnvFile(key: string, value: string) {
 
