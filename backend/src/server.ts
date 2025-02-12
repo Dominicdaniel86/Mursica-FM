@@ -14,18 +14,20 @@ const client_secret = process.env.CLIENT_SECRET || '';
 // Initialize log file
 try {
     initializeLoggingFile();  
-} catch(err: unknown) {
-    const errorMessage = err instanceof Error ? `Failed to initialize the logging file: ${err.message}` : 'Failed to initialize the logging file due to an unknown reason';
+} catch(error: unknown) {
+    const errorMessage = error instanceof Error ? `Failed to initialize the logging file: ${error.message}` : 'Failed to initialize the logging file due to an unknown reason';
     logger.fatal(errorMessage);
     process.exit(1);
 }
-let clientTokenResult: Promise<[string, number]> = clientCredentialsFlow(client_id, client_secret);
 
+// Retrieve client credential token
+let clientTokenResult: Promise<[string, string]> = clientCredentialsFlow(client_id, client_secret);
+// Write retrieved token into env file //? Temporary Solution
 clientTokenResult.then(resolvedClientToken => {
     writeToEnvFile('CLIENT_CREDENTIAL_TOKEN', resolvedClientToken[0]);
-    writeToEnvFile('CLIENT_TOKEN_EXPERIATION', resolvedClientToken[1].toString());
+    writeToEnvFile('CLIENT_TOKEN_EXPERIATION', resolvedClientToken[1]);
 }).catch(error => {
-    logger.fatal('Could not resolve Client Token: ', error);
+    logger.error(error, 'Could not resolve client token');
 });
 
 app.get('/api', (req, res) => {

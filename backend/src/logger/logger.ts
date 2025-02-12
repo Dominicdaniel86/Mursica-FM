@@ -49,7 +49,8 @@ const logger = pino({
                 level: 'info'
             }
         ]
-    }
+    },
+    redact: ['access_token']
 });
 
 export default logger;
