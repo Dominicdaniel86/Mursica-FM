@@ -4,6 +4,11 @@ import logger from '../logger/logger.js';
 export function writeToEnvFile(key: string, value: string) {
 
     try {
+        // Add "" to strings
+        let isANumber = !isNaN(Number(value)) && value.trim() !== '';
+        if(!isANumber)
+            value = `"${value}"`
+
         let data = fs.readFileSync('./.env', 'utf8');
 
         let envValues: Array<string> = data.split('\n').filter(line => line.trim());
