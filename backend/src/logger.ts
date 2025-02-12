@@ -21,6 +21,9 @@ if(!fs.existsSync(logFile)) {
 
 const logger = pino({
     level: isProduction ? 'info' : 'debug', // default setting
+    timestamp: isProduction
+    ? () => (`,"time":"${new Date().toISOString()}"`)
+    : () => `,"time":"${new Date().toLocaleString()}"`,
     transport: {
         targets: isProduction
         ? [ // production
