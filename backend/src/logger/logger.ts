@@ -1,14 +1,14 @@
-import { pino } from 'pino';
 import fs from 'fs';
+import { pino } from 'pino';
 
-const logFile = './logs/app.log';
-const isProduction = process.env.ENVIRONMENT === 'production';
+const logFile: string = './logs/app.log';
+const isProduction: boolean = process.env.ENVIRONMENT === 'production';
 
-export function initializeLogger() {
+export function initializeLoggingFile() {
     // Check if the log file exists
     if(!fs.existsSync(logFile)) {
 
-        const date = new Date();
+        const date = new Date().toLocaleString;
 
         // If not - write some custom lines
         const initialMessage =

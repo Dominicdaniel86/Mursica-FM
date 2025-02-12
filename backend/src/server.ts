@@ -1,16 +1,24 @@
 import express from 'express';
-import logger, { initializeLogger } from './logger/logger.js';
-import { writeToEnvFile } from './utility/index.js';
 import { clientCredentialsFlow, searchSong } from './api/index.js';
+import logger, { initializeLoggingFile } from './logger/logger.js';
+import { writeToEnvFile } from './utility/fileUtils.js';
 
+// Initialize app
 const app = express();
-const port = 3000;
 
-initializeLogger();
-
+// Read env variables
+const port = process.env.PORT || 3000;
 const client_id = process.env.CLIENT_ID || '';
 const client_secret = process.env.CLIENT_SECRET || '';
 
+// Initialize log file
+try {
+    initializeLoggingFile();  
+} catch(err: unknown) {
+    const errorMessage = err instanceof Error ? `Failed to initialize the logging file: ${err.message}` : 'Failed to initialize the logging file due to an unknown reason';
+    logger.fatal(errorMessage);
+    process.exit(1);
+}
 let clientTokenResult: Promise<[string, number]> = clientCredentialsFlow(client_id, client_secret);
 
 clientTokenResult.then(resolvedClientToken => {
