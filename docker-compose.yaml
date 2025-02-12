@@ -16,6 +16,7 @@ services:
     volumes:
       - ./backend/logs:/usr/src/app/logs
       - ./backend/.env:/usr/src/app/.env
+      - ./backend/src:/usr/src/app/src
   
   nginx-proxy:
     build:
