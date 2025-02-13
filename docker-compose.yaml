@@ -34,6 +34,7 @@ services:
       - ./frontend/public/html:/var/www/spotify-session-app/assets/html
       - ./frontend/public/css:/var/www/spotify-session-app/assets/css
       - ./frontend/public/icons:/var/www/spotify-session-app/assets/icons
+      - ./frontend/dist:/var/www/spotify-session-app/assets/javascript
       - ./server/logs:/var/log/nginx
 
   database:
