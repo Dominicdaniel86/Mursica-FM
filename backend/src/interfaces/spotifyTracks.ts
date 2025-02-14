@@ -1,3 +1,4 @@
+// Full response from the Spotify track search API
 export interface SpotifyTrackResponse {
     tracks: {
         href: string;
@@ -10,12 +11,14 @@ export interface SpotifyTrackResponse {
     };
 };
 
+// Filtered track search response
 export interface TrackSummary {
     id: string;
     title: string;
     albumImage: string;
 }
 
+//* Following interfaces are all sub-parts of the SpotifyTrackResponse interface
 interface Track {
     album: Album;
     artists: Array<Artists>;

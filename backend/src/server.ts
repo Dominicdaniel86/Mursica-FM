@@ -36,15 +36,24 @@ app.get('/api', (req, res) => {
 
 app.get('/api/tracks/search', (req, res) => {
 
-    let tracks = searchSong('');
+    let trackTitle = req.query.trackTitle as string;
+
+    if(trackTitle === undefined || trackTitle === '') {
+        res.status(400).send('Invalid track title');
+    }
+
+    let tracks = searchSong(trackTitle);
 
     tracks.then(resTracks => {
         resTracks.forEach(element => {
-            console.log(element);
+            logger.info(element);
         });
-    });
 
-    res.send('Searched song result: Master of Puppets (best song!)');
+        res.send(resTracks);
+    })
+    .catch((err) => {
+        logger.error(err, 'No tracks found through API');
+    });
 });
 
 app.post('/api/auth/spotify/login', (req, res) => {
