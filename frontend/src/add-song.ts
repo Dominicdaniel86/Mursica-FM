@@ -1,4 +1,4 @@
-import { TrackSummary } from "./interfaces/search-song";
+import { TrackResp } from "./interfaces/search-song";
 
 declare global {
     interface Window {
@@ -19,12 +19,31 @@ export function switchToAdmin() {
 }
 
 async function searchSong(input: string) {
-
     const url: string = '/api/tracks/search/?trackTitle=Master of Puppets';
 
-    let response = await axios.get<TrackSummary>(url);
+    let response = await axios.get<TrackResp>(url);
 
-    console.log(response.data);
+
+    const targetDiv = document.getElementById("song-results");
+
+    response.data.tracks.forEach(element => {
+        const newDiv = document.createElement("div");
+        newDiv.className = 'song-result';
+
+        const albumElement = document.createElement("img");
+        const titleElement = document.createElement("p");
+        const artistElement = document.createElement("p");
+
+        titleElement.textContent = element.title;
+        artistElement.textContent = `- ${element.artist}`;
+        albumElement.src = element.albumImage;
+
+        newDiv.appendChild(albumElement);
+        newDiv.appendChild(titleElement);
+        newDiv.appendChild(artistElement);
+
+        targetDiv?.appendChild(newDiv);
+    });
 }
 
 let searchSongElement: HTMLInputElement = document.getElementById('search-song') as HTMLInputElement;

@@ -1,0 +1,14 @@
+#song-results {
+    margin-top: 200px;
+    align-content: center;
+}
+
+.song-result {
+    width: 75%;
+    margin-left: 15%;
+}
+
+.song-result img {
+    width: 50px;
+    float: left;
+}
