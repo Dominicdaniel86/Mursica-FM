@@ -19,12 +19,19 @@ export function switchToAdmin() {
 }
 
 async function searchSong(input: string) {
+
+    const targetDiv: HTMLDivElement = document.getElementById("song-results") as HTMLDivElement;
+
+    while(targetDiv.firstChild) {
+        targetDiv.removeChild(targetDiv.lastChild as ChildNode);
+    }
+
+    if(!input)
+        return;
+
     const url: string = '/api/tracks/search/?trackTitle=Master of Puppets';
 
     let response = await axios.get<TrackResp>(url);
-
-
-    const targetDiv = document.getElementById("song-results");
 
     response.data.tracks.forEach(element => {
         const newDiv = document.createElement("div");
