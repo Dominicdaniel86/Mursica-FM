@@ -1,6 +1,6 @@
 {
   "name": "spotify-session-app-frontend",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A compiler for a TypeScript-based frontend for a third-party Spotify session app.",
   "type": "module",
   "main": "dist/index.js",
