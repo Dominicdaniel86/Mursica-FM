@@ -21,39 +21,43 @@ try {
 }
 
 // Retrieve client credential token
-let clientTokenResult: Promise<[string, string]> = clientCredentialsFlow(client_id, client_secret);
-// Write retrieved token into env file //? Temporary Solution
-clientTokenResult.then(resolvedClientToken => {
-    writeToEnvFile('CLIENT_CREDENTIAL_TOKEN', resolvedClientToken[0]);
-    writeToEnvFile('CLIENT_TOKEN_EXPERIATION', resolvedClientToken[1]);
-}).catch(error => {
-    logger.error(error, 'Could not resolve client token');
-});
+try {
+    let clientTokenResult: [string, string] = await clientCredentialsFlow(client_id, client_secret);
+    // Write retrieved token into env file //? Temporary Solution
+    writeToEnvFile('CLIENT_CREDENTIAL_TOKEN', clientTokenResult[0]);
+    writeToEnvFile('CLIENT_TOKEN_EXPERIATION', clientTokenResult[1]);
+} catch(error) {
+    logger.fatal(error, 'Could not resolve client token');
+    process.exit(1);
+}
 
 app.get('/api', (req, res) => {
     res.send("Hello from the backend!");
 });
 
-app.get('/api/tracks/search', (req, res) => {
+app.get('/api/tracks/search', async (req, res) => {
 
-    let trackTitle = req.query.trackTitle as string;
+    try {
+        let trackTitle = req.query.trackTitle as string;
 
-    if(trackTitle === undefined || trackTitle === '') {
-        res.status(400).send('Invalid track title');
-    }
+        if(!trackTitle) {
+            res.status(400).json({error: 'Invalid track title'});
+            return
+        }
 
-    let tracks = searchSong(trackTitle);
+        let tracks = await searchSong(trackTitle);
 
-    tracks.then(resTracks => {
-        resTracks.forEach(element => {
-            logger.info(element);
-        });
+        if(tracks.length === 0) {
+            res.status(404).json({error: 'No tracks found'});
+            return
+        }
 
-        res.send(resTracks);
-    })
-    .catch((err) => {
+        res.status(200).json({tracks: tracks});
+        logger.info('/api/tracks/search API call succeeded');
+    } catch(err) {
         logger.error(err, 'No tracks found through API');
-    });
+        res.status(500).json({error: 'Internal server error'});
+    }
 });
 
 app.post('/api/auth/spotify/login', (req, res) => {

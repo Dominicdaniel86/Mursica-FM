@@ -1,7 +1,17 @@
 import * as fs from 'fs';
 import logger from '../logger/logger.js';
 
+/**
+ * This function writes a key-value pair into the designated .env file.
+ * @param {string} key The key as a string.
+ * @param {string} value The corresponding key as a string. Quotes are added to non-numbers.
+ */
 export function writeToEnvFile(key: string, value: string) {
+
+    if(!key || !value) {
+        logger.warn('Received empty key or value in function "writeToEnvFile"');
+        return;
+    }
 
     try {
         // Add "" to strings
