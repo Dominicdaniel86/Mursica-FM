@@ -16,4 +16,4 @@ COPY . .
 RUN npm run build
 
 EXPOSE 3000
-CMD ["./wait-for-it.sh", "postgresql-container", "5432", "npm", "run", "start"]
+CMD ["./wait-for-it.sh", "postgresql-container", "5432", "npm", "run", "dev"]

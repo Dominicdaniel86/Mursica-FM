@@ -46,7 +46,21 @@ Navigate to the cloned directory and checkout the correct branch if needed:
 git checkout <branch-name>
 ```
 
-**3. Start the application**
+**3. Create an official Spotify app**
+
+Log into the [dashboard](https://developer.spotify.com/) using your Spotify account and create an app. You can find more information on [Spotifys Documentation](https://developer.spotify.com/documentation/web-api).
+
+**4. Configure env variable file**
+
+Configure the values "ENVIRONMENT", "CLIENT_ID" and "CLIENT_SECRET" in the /backend/.env file:
+
+| Env Variable | Valid Values |
+| --- | --- |
+| ENVIRONMENT | 'production' or 'testing' |
+| CLIENT_ID | Can be found on your created [Spotify app](https://developer.spotify.com/) |
+| CLIENT_SECRET | Can be found on your created [Spotify app](https://developer.spotify.com/) |
+
+**5. Start the application**
 
 Run the following command to build and start the application:
 
@@ -54,7 +68,7 @@ Run the following command to build and start the application:
 docker compose up -d --build
 ```
 
-**4. Access the application**
+**6. Access the application**
 
 Once running, you can open the application in your browser at [http://127.0.0.1:80](http://127.0.0.1:80).
 

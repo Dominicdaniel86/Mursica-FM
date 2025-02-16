@@ -147,3 +147,6 @@ notes.md
 # Drawio Files
 *.drawio
 *.bkp
+
+# VS Code Settings
+.vscode

@@ -7,6 +7,7 @@
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/server.js",
+    "dev": "nodemon --legacy-watch --watch ./src --ext ts --exec 'node --inspect=0.0.0.0:9229 --nolazy --loader ts-node/esm' ./src/server.ts",
     "clean": "rm -rf dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -24,14 +25,15 @@
   "author": "Dominic Daniel Kraemer",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "@types/express": "^5.0.0",
     "axios": "^1.7.9",
     "express": "^4.21.2",
     "pino": "^9.6.0"
   },
   "devDependencies": {
-    "@types/axios": "^0.9.36",
+    "@types/express": "^5.0.0",
     "@types/node": "^22.13.1",
+    "esm": "^3.2.25",
+    "nodemon": "^3.1.9",
     "pino-pretty": "^13.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
