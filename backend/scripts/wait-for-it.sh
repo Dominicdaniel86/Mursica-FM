@@ -2,15 +2,15 @@
 
 set -e
 
-HOST="$1"
-PORT="$2"
+DB_HOST="$1"
+DB_PORT="$2"
 shift 2
-CMD="$@"
+DB_CMD="$@"
 
-until nc -z "$HOST" "$PORT"; do
-  >&2 echo "Waiting for $HOST:$PORT to be available..."
+until nc -z "$DB_HOST" "$DB_PORT"; do
+  >&2 echo "Waiting for $DB_HOST:$DB_PORT to be available..."
   sleep 1
 done
 
->&2 echo "$HOST:$PORT is available - Executing command: $CMD"
-exec $CMD
+>&2 echo "$DB_HOST:$DB_PORT is available - Executing command: $DB_CMD"
+exec $DB_CMD

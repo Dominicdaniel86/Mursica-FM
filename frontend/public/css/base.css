@@ -7,6 +7,8 @@ body {
     font-size: 12px;
     left: 0;
     top: 0;
+    margin: 0 0 0 0;
+    background-color: white;
 }
 
 button {
@@ -18,7 +20,7 @@ button {
     border-radius: 30px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4); /* Subtle shadow */
     font-weight: bold;
-    width: 70%;
+    width: 65%;
 }
 
 input {
@@ -27,11 +29,27 @@ input {
     border-radius: 30px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.6); /* Subtle shadow */
     font-weight: bold;
-    width: 65%;
+    width: 60%;
+}
+
+a {
+    text-decoration: none;
+    color: green;
+}
+
+a:visited {
+    text-decoration: none;
+    color: green;
 }
 
 #header {
     color: green;
-    margin-top: 80px;
+    margin-top: 60px;
     font-weight: bold;
+    font-size: 32px;
+    margin-bottom: 35px;
+}
+
+#app-icon {
+    scale: 0.85;
 }
