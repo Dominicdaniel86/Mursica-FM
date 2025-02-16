@@ -60,6 +60,10 @@ app.get('/api/tracks/search', async (req, res) => {
     }
 });
 
+app.post('/api/tracks/select', (req, res) => {
+    res.send("You selected the song!");
+});
+
 app.post('/api/auth/spotify/login', (req, res) => {
     res.send('Clever, you are trying to login?');
 });

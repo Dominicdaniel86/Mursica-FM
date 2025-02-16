@@ -3,6 +3,7 @@ import { TrackResp } from "./interfaces/search-song";
 declare global {
     interface Window {
         switchToAdmin: () => void;
+        sendResponse: (input: string) => void;
     }
 }
 
@@ -36,6 +37,10 @@ async function searchSong(input: string) {
     response.data.tracks.forEach(element => {
         const newDiv = document.createElement("div");
         newDiv.className = 'song-result';
+        newDiv.setAttribute('track-id', element.id);
+        newDiv.onclick = () => {
+            logResponse(newDiv.getAttribute('track-id') as string);
+        };
 
         const albumElement = document.createElement("img");
         const titleElement = document.createElement("p");
@@ -63,4 +68,13 @@ searchSongElement.addEventListener('input', () => {
     }, 1750);
 });
 
+export async function logResponse(input: string) {
+
+    const url: string = `/api/tracks/select`;
+    let response = await axios.post<TrackResp>(url);
+
+    console.log(response.data);
+}
+
 window.switchToAdmin = switchToAdmin;
+window.sendResponse = logResponse;
