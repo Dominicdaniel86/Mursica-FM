@@ -29,7 +29,7 @@ async function searchSong(input: string) {
     if(!input)
         return;
 
-    const url: string = '/api/tracks/search/?trackTitle=Master of Puppets';
+    const url: string = `/api/tracks/search/?trackTitle=${input}`;
 
     let response = await axios.get<TrackResp>(url);
 
