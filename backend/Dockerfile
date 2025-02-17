@@ -6,6 +6,7 @@ RUN apt-get install -y dos2unix \
 WORKDIR /usr/src/app
 
 COPY package*.json ./
+COPY prisma prisma
 RUN npm install
 
 COPY scripts/wait-for-it.sh /usr/src/app/wait-for-it.sh

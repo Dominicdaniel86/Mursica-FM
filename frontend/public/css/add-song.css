@@ -1,0 +1,24 @@
+#song-results {
+    margin-top: 200px;
+    align-content: center;
+}
+
+#song-results div {
+    background-color: darkgreen;
+}
+
+#song-results div:nth-child(odd) {
+    background-color: green;
+}
+
+.song-result {
+    width: 90%;
+    margin-left: 5%;
+    float: left;
+    margin-bottom: 5px;
+}
+
+.song-result img {
+    width: 20%;
+    float: left;
+}
