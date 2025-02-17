@@ -27,6 +27,8 @@ app.get('/api', (req, res) => {
 
 app.get('/api/tracks/search', async (req, res) => {
 
+    validateClientToken();
+
     try {
         let trackTitle = req.query.trackTitle as string;
 
@@ -52,7 +54,6 @@ app.get('/api/tracks/search', async (req, res) => {
 
 app.post('/api/auth/spotify/login', (req, res) => {
     res.send('Clever, you are trying to login?');
-    validateClientToken();
 });
 
 app.post('/api/auth/spotify/logout', (req, res) => {
