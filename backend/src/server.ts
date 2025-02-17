@@ -63,10 +63,3 @@ app.post('/api/auth/spotify/logout', (req, res) => {
 app.listen(port, () => {
     logger.info(`Server is running on port ${port}`);
 });
-
-//* Initialize and setup cron jobs
-
-// Validate client token once a minute
-setInterval(() => {
-    validateClientToken();
-}, 60000);
