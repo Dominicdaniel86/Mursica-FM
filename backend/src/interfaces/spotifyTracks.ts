@@ -15,6 +15,7 @@ export interface SpotifyTrackResponse {
 export interface TrackSummary {
     id: string;
     title: string;
+    artist: string;
     albumImage: string;
 }
 

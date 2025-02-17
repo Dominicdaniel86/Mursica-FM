@@ -18,7 +18,7 @@ export async function searchSong(track: string): Promise<TrackSummary[]> {
     const token = await prisma.clientToken.findFirst();
     const tokenValue = token?.token;
 
-    const url: string = `https://api.spotify.com/v1/search?q=${track}&type=track&limit=10&include_external=audio`;
+    const url: string = `https://api.spotify.com/v1/search?q=${track}&type=track&limit=6&include_external=audio`;
     const config: object = {
         headers: {
             'Authorization': `Bearer ${tokenValue}`
@@ -31,6 +31,7 @@ export async function searchSong(track: string): Promise<TrackSummary[]> {
         const trackSummaries: TrackSummary[] = response.data.tracks.items.map(track => {
             return {
                 id: track.id,
+                artist: track.artists[0].name,
                 title: track.name,
                 albumImage: track.album.images[0].url
             };

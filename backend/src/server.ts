@@ -53,6 +53,10 @@ app.get('/api/tracks/search', async (req, res) => {
     }
 });
 
+app.post('/api/tracks/select', (req, res) => {
+    res.send("You selected the song!");
+});
+
 app.get('/api/auth/spotify/login', (req, res) => {
 
     logger.info('A user is trying to log in');

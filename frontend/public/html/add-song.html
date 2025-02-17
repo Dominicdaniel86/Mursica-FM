@@ -13,6 +13,7 @@
 
     <!-- CSS Files -->
     <link rel="stylesheet" href="/static/css/main-page.css">
+    <link rel="stylesheet" href="/static/css/add-song.css">
 </head>
 <body>
     <div id="logout">
@@ -27,7 +28,11 @@
         <img src="/static/icons/hearth-icon.svg" id="heart-icon">
     </div>
 
-    
+    <br>
+
+    <div id="song-results">
+
+    </div>
 
     <div id="current-song">
         <div id="album cover">
@@ -37,6 +42,8 @@
     </div>
 
      <!-- JavaScript files -->
-     <script src="/static/javascript/add-song.js"></script>
+     <script type="module" src="/static/javascript/interfaces/search-song.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+     <script type="module" src="/static/javascript/add-song.js"></script>
 </body>
 </html>
