@@ -1,16 +1,18 @@
 import axios from 'axios';
+import { PrismaClient } from '@prisma/client';
 import * as querystring from 'querystring';
 import { SpotifyAuthTokenResponse, SpotifyClientTokenResponse } from '../interfaces/index.js';
 import logger from '../logger/logger.js';
 import { generateRandomString } from '../utility/fileUtils.js';
+import { clientID, clientSecret} from '../config.js';
 
-// Read env variables
-const client_id = process.env.CLIENT_ID || '';
-const client_secret = process.env.CLIENT_SECRET || '';
+// TODO: Refactor code into 2 seperate files (OAuth.ts & clientCredentials.ts)
 
-export async function clientCredentialsFlow(client_id: string, client_secret: string): Promise<[string, string]> {
+const prisma = new PrismaClient();
 
-    if(!client_id || !client_secret) {
+export async function clientCredentialsFlow(): Promise<[string, string]> {
+
+    if(!clientID || !clientSecret) {
         logger.warn('Received empty client parameters in function "clientCredentialsFlow"');
         throw new Error('Client-Credentials-Flow failed.');
     }
@@ -21,7 +23,7 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
     });
     const config = {
         headers: {
-            'Authorization': `Basic ${Buffer.from(`${client_id}:${client_secret}`).toString('base64')}`
+            'Authorization': `Basic ${Buffer.from(`${clientID}:${clientSecret}`).toString('base64')}`
         }
     };
 
@@ -31,14 +33,9 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
         let access_token = response.data.access_token;
         let expires_in = response.data.expires_in;
 
-        let validUntil: number = Date.now() + (expires_in * 1000);
+        logger.info({'accessToken': access_token, 'validUntil': expires_in}, `Client-Credentials-Flow authorization succeeded.`);
 
-        process.env.CLIENT_CREDENTIAL_TOKEN = access_token;
-        process.env.CLIENT_CREDENTIAL_TOKEN_EXPIRATION = String(validUntil);
-
-        logger.info({'accessToken': access_token, 'validUntil': validUntil}, `Client-Credentials-Flow authorization succeeded.`);
-
-        return [access_token, String(validUntil)];
+        return [access_token, String(expires_in)];
 
     } catch(error) {
         if(axios.isAxiosError(error)) {
@@ -63,7 +60,7 @@ export function generateOAuthQuerystring(): string {
 
     return querystring.stringify({
         response_type: 'code',
-        client_id: client_id,
+        client_id: clientID,
         scope: scope,
         redirect_uri: redirectURI,
         state: state
@@ -80,40 +77,50 @@ export async function oAuthAuthorization(code: string): Promise<string[]> {
     const config = {
         headers: {
             'content-type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
+            'Authorization': 'Basic ' + (Buffer.from(clientID + ':' + clientSecret).toString('base64'))
         }
     };
 
     const response = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
 
-    let access_token = response.data.access_token;
-    let expires_in = response.data.expires_in;
-    let refresh_token = response.data.refresh_token;
+    const access_token = response.data.access_token;
+    const expires_in = response.data.expires_in;
+    const refresh_token = response.data.refresh_token;
 
-    let validUntil: number = Date.now() + (expires_in * 1000);
+    const validUntilDate: Date = new Date(Date.now() + (expires_in * 1000));
 
-    process.env.AUTH_CREDENTIAL_TOKEN = access_token;
-    process.env.AUTH_CREDENTIAL_TOKEN_EXPIRATION = String(validUntil);
-    process.env.AUTH_REFRESH_TOKEN = refresh_token;
+    const token = await prisma.oAuthToken.findFirst();
+
+    if(token) {
+        await prisma.oAuthToken.update({
+            where: {id: token.id },
+            data: { token: access_token, validUntil: validUntilDate, refreshToken: refresh_token}
+        });
+    } else {
+        await prisma.oAuthToken.create({
+            data: { token: access_token, validUntil: validUntilDate, refreshToken: refresh_token}
+        });
+    }
 
     return [access_token, String(expires_in), refresh_token];
-
 }
 
 export async function refreshAuthToken() {
-    const refreshToken = process.env.AUTH_REFRESH_TOKEN as string;
-    const client_id = process.env.CLIENT_ID as string;
-    const client_secret = process.env.CLIENT_SECRET as string;
+
+    const token = await prisma.oAuthToken.findFirst();
+
+    if(!token)
+        return;
 
     const url = 'https://accounts.spotify.com/api/token';
     const data = new URLSearchParams({
        grant_type: 'refresh_token',
-       refresh_token: refreshToken,
+       refresh_token: token.refreshToken,
     });
     const config = {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
+            'Authorization': 'Basic ' + (Buffer.from(clientID + ':' + clientSecret).toString('base64'))
         }
     };
 

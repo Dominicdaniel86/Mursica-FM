@@ -1,6 +1,9 @@
 import axios from 'axios';
+import { PrismaClient } from '@prisma/client';
 import { SpotifyTrackResponse, TrackSummary } from '../interfaces/index.js';
 import logger from '../logger/logger.js';
+
+const prisma = new PrismaClient();
 
 export async function searchSong(track: string): Promise<TrackSummary[]> {
 
@@ -12,10 +15,13 @@ export async function searchSong(track: string): Promise<TrackSummary[]> {
 
     track = track.replace(' ', '%2520');
 
+    const token = await prisma.clientToken.findFirst();
+    const tokenValue = token?.token;
+
     const url: string = `https://api.spotify.com/v1/search?q=${track}&type=track&limit=10&include_external=audio`;
     const config: object = {
         headers: {
-            'Authorization': `Bearer ${process.env.CLIENT_CREDENTIAL_TOKEN}`
+            'Authorization': `Bearer ${tokenValue}`
         }
     };
 

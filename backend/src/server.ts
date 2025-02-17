@@ -2,17 +2,13 @@ import express from 'express';
 import * as querystring from 'querystring';
 import { generateOAuthQuerystring, oAuthAuthorization, searchSong } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
-import { validateClientToken, writeToEnvFile } from './utility/fileUtils.js';
+import { validateClientToken } from './utility/fileUtils.js';
+import { port } from './config.js';
 import axios from 'axios';
 import { SpotifyAuthTokenResponse } from './interfaces/spotifyTokens.js';
 
 // Initialize app
 const app = express();
-
-// Read env variables
-const port = process.env.PORT || 3000;
-const client_id = process.env.CLIENT_ID || '';
-const client_secret = process.env.CLIENT_SECRET || '';
 
 // Initialize log file
 try {
@@ -78,9 +74,10 @@ app.get('/callback', async (req, res) => {
     else {
         const response = await oAuthAuthorization(code);
 
-        writeToEnvFile('AUTH_CREDENTIAL_TOKEN', response[0]);
-        writeToEnvFile('AUTH_CREDENTIAL_TOKEN_EXPIRATION', response[1]);
-        writeToEnvFile('AUTH_REFRESH_TOKEN', response[2]);
+        //! Deprecated
+        // writeToEnvFile('AUTH_CREDENTIAL_TOKEN', response[0]);
+        // writeToEnvFile('AUTH_CREDENTIAL_TOKEN_EXPIRATION', response[1]);
+        // writeToEnvFile('AUTH_REFRESH_TOKEN', response[2]);
 
         logger.info(response);
 
