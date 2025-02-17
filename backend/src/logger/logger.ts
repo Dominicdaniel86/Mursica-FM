@@ -43,7 +43,7 @@ export function initializeLoggingFile() {
  * 
  * 'fatal' [60] - logger.fatal(err, 'message');
  * 
- * Redacted fields: ['access_token']
+ * Redacted fields: ['access_token', 'accessToken']
  */
 const logger = pino({
     level: isProduction ? 'info' : 'debug', // default setting
@@ -72,7 +72,7 @@ const logger = pino({
             }
         ]
     },
-    redact: ['access_token']
+    redact: ['access_token', 'accessToken']
 });
 
 export default logger;

@@ -1,7 +1,10 @@
 import express from 'express';
-import { clientCredentialsFlow, searchSong } from './api/index.js';
+import * as querystring from 'querystring';
+import { generateOAuthQuerystring, oAuthAuthorization, searchSong } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
-import { writeToEnvFile } from './utility/fileUtils.js';
+import { validateClientToken, writeToEnvFile } from './utility/fileUtils.js';
+import axios from 'axios';
+import { SpotifyAuthTokenResponse } from './interfaces/spotifyTokens.js';
 
 // Initialize app
 const app = express();
@@ -21,21 +24,15 @@ try {
 }
 
 // Retrieve client credential token
-try {
-    let clientTokenResult: [string, string] = await clientCredentialsFlow(client_id, client_secret);
-    // Write retrieved token into env file //? Temporary Solution
-    writeToEnvFile('CLIENT_CREDENTIAL_TOKEN', clientTokenResult[0]);
-    writeToEnvFile('CLIENT_TOKEN_EXPERIATION', clientTokenResult[1]);
-} catch(error) {
-    logger.fatal(error, 'Could not resolve client token');
-    process.exit(1);
-}
+validateClientToken();
 
 app.get('/api', (req, res) => {
     res.send("Hello from the backend!");
 });
 
 app.get('/api/tracks/search', async (req, res) => {
+
+    validateClientToken();
 
     try {
         let trackTitle = req.query.trackTitle as string;
@@ -60,8 +57,35 @@ app.get('/api/tracks/search', async (req, res) => {
     }
 });
 
-app.post('/api/auth/spotify/login', (req, res) => {
-    res.send('Clever, you are trying to login?');
+app.get('/api/auth/spotify/login', (req, res) => {
+
+    logger.info('A user is trying to log in');
+
+    const url = 'https://accounts.spotify.com/authorize?';
+    const querystring = generateOAuthQuerystring();
+
+    res.redirect(url + querystring);
+});
+
+app.get('/callback', async (req, res) => {
+    logger.debug('User login callback');
+    var code = req.query.code as string;
+    var state = req.query.state as string;
+
+    if (!state) {
+        return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
+    }
+    else {
+        const response = await oAuthAuthorization(code);
+
+        writeToEnvFile('AUTH_CREDENTIAL_TOKEN', response[0]);
+        writeToEnvFile('AUTH_CREDENTIAL_TOKEN_EXPIRATION', response[1]);
+        writeToEnvFile('AUTH_REFRESH_TOKEN', response[2]);
+
+        logger.info(response);
+
+        res.redirect('http://localhost/static/html/admin.html');
+    }
 });
 
 app.post('/api/auth/spotify/logout', (req, res) => {
