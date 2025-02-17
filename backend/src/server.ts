@@ -1,8 +1,8 @@
 import express from 'express';
 import * as querystring from 'querystring';
-import { searchSong } from './api/index.js';
+import { refreshAuthToken, searchSong } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
-import { generateRandomString, validateClientToken } from './utility/fileUtils.js';
+import { generateRandomString, validateClientToken, writeToEnvFile } from './utility/fileUtils.js';
 import axios from 'axios';
 import { SpotifyAuthTokenResponse } from './interfaces/spotifyTokens.js';
 
@@ -68,7 +68,7 @@ app.get('/api/auth/spotify/login', (req, res) => {
         querystring.stringify({
             response_type: 'code',
             client_id: client_id,
-            // scope: scope,
+            scope: 'user-modify-playback-state user-read-playback-state',
             redirect_uri: 'http://127.0.0.1:3000/callback',
             state: state
     }));
@@ -96,12 +96,32 @@ app.get('/callback', async (req, res) => {
             }
         };
 
-        const resp = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
+        const response = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
 
-        logger.info(resp.data);
+        let access_token = response.data.access_token;
+        let expires_in = response.data.expires_in;
+        let refresh_token = response.data.refresh_token;
+
+        let validUntil: number = Date.now() + (expires_in * 1000);
+
+        process.env.AUTH_CREDENTIAL_TOKEN = access_token;
+        process.env.AUTH_CREDENTIAL_TOKEN_EXPIRATION = String(validUntil);
+        process.env.AUTH_REFRESH_TOKEN = refresh_token;
+
+        writeToEnvFile('AUTH_CREDENTIAL_TOKEN', access_token);
+        writeToEnvFile('AUTH_CREDENTIAL_TOKEN_EXPIRATION', String(validUntil));
+        writeToEnvFile('AUTH_REFRESH_TOKEN', refresh_token);
+
+        logger.info(response.data);
 
         res.redirect('http://localhost/static/html/admin.html');
     }
+});
+
+app.get('/api/auth/refresh', async (req, res) => {
+    refreshAuthToken();
+
+    res.send('success');
 });
 
 app.post('/api/auth/spotify/logout', (req, res) => {

@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { SpotifyClientTokenResponse } from '../interfaces/index.js';
+import { SpotifyAuthTokenResponse, SpotifyClientTokenResponse } from '../interfaces/index.js';
 import logger from '../logger/logger.js';
+import { writeToEnvFile } from 'src/utility/fileUtils.js';
 
 export async function clientCredentialsFlow(client_id: string, client_secret: string): Promise<[string, string]> {
 
@@ -48,4 +49,25 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
 
         throw new Error('Client-Credentials-Flow failed.');
     }
+}
+
+export async function refreshAuthToken() {
+    const refreshToken = process.env.AUTH_REFRESH_TOKEN as string;
+    const client_id = process.env.CLIENT_ID as string;
+    const client_secret = process.env.CLIENT_SECRET as string;
+
+    const url = 'https://accounts.spotify.com/api/token';
+    const data = new URLSearchParams({
+       grant_type: 'refresh_token',
+       refresh_token: refreshToken,
+    });
+    const config = {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
+        }
+    };
+
+    const response = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
+    console.log(response.data);
 }
