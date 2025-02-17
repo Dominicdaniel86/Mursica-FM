@@ -2,7 +2,7 @@ import express from 'express';
 import * as querystring from 'querystring';
 import { generateOAuthQuerystring, oAuthAuthorization, searchSong } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
-import { validateClientToken, writeToEnvFile } from './utility/fileUtils.js';
+import { validateClientToken } from './utility/fileUtils.js';
 import axios from 'axios';
 import { SpotifyAuthTokenResponse } from './interfaces/spotifyTokens.js';
 
@@ -76,9 +76,10 @@ app.get('/callback', async (req, res) => {
     else {
         const response = await oAuthAuthorization(code);
 
-        writeToEnvFile('AUTH_CREDENTIAL_TOKEN', response[0]);
-        writeToEnvFile('AUTH_CREDENTIAL_TOKEN_EXPIRATION', response[1]);
-        writeToEnvFile('AUTH_REFRESH_TOKEN', response[2]);
+        //! Deprecated
+        // writeToEnvFile('AUTH_CREDENTIAL_TOKEN', response[0]);
+        // writeToEnvFile('AUTH_CREDENTIAL_TOKEN_EXPIRATION', response[1]);
+        // writeToEnvFile('AUTH_REFRESH_TOKEN', response[2]);
 
         logger.info(response);
 
