@@ -1,15 +1,13 @@
 import express from 'express';
-import { clientCredentialsFlow, searchSong } from './api/index.js';
+import { searchSong } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
-import { validateClientToken, writeToEnvFile } from './utility/fileUtils.js';
+import { validateClientToken } from './utility/fileUtils.js';
 
 // Initialize app
 const app = express();
 
 // Read env variables
 const port = process.env.PORT || 3000;
-const client_id = process.env.CLIENT_ID || '';
-const client_secret = process.env.CLIENT_SECRET || '';
 
 // Initialize log file
 try {
@@ -21,15 +19,7 @@ try {
 }
 
 // Retrieve client credential token
-try {
-    let clientTokenResult: [string, string] = await clientCredentialsFlow(client_id, client_secret);
-    // Write retrieved token into env file //? Temporary Solution
-    writeToEnvFile('CLIENT_CREDENTIAL_TOKEN', clientTokenResult[0]);
-    writeToEnvFile('CLIENT_TOKEN_EXPERIATION', clientTokenResult[1]);
-} catch(error) {
-    logger.fatal(error, 'Could not resolve client token');
-    process.exit(1);
-}
+validateClientToken();
 
 app.get('/api', (req, res) => {
     res.send("Hello from the backend!");

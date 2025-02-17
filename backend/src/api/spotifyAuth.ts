@@ -19,23 +19,20 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
         }
     };
 
-    let clientToken: string = '';
-    let validUntil: number = Date.now();
-
     try {
         const response = await axios.post<SpotifyTokenResponse>(url, data, config);
 
         let access_token = response.data.access_token;
         let expires_in = response.data.expires_in;
 
-        validUntil += (expires_in * 1000);
+        let validUntil: number = Date.now() + (expires_in * 1000);
 
         process.env.CLIENT_CREDENTIAL_TOKEN = access_token;
         process.env.CLIENT_CREDENTIAL_TOKEN_EXPIRATION = String(validUntil);
 
         logger.info({'accessToken': access_token, 'validUntil': validUntil}, `Client-Credentials-Flow authorization succeeded.`);
 
-        return [clientToken, String(validUntil)];
+        return [access_token, String(validUntil)];
 
     } catch(error) {
         if(axios.isAxiosError(error)) {

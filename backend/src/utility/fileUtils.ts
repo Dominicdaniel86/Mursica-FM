@@ -53,8 +53,8 @@ export function writeToEnvFile(key: string, value: string) {
 }
 
 export async function validateClientToken() {
-    const validUntil = Number(process.env.CLIENT_TOKEN_EXPERIATION);
-    const currentTimestamp = Date.now();
+    const validUntil = BigInt(process.env.CLIENT_CREDENTIAL_TOKEN_EXPIRATION || '0');
+    const currentTimestamp = BigInt(Date.now());
     const difference = validUntil - currentTimestamp;
 
     // If difference is less than 10 sec
@@ -66,13 +66,14 @@ export async function validateClientToken() {
             let clientTokenResult: [string, string] = await clientCredentialsFlow(client_id, client_secret);
             // Write retrieved token into env file //? Temporary Solution
             writeToEnvFile('CLIENT_CREDENTIAL_TOKEN', clientTokenResult[0]);
-            writeToEnvFile('CLIENT_TOKEN_EXPERIATION', clientTokenResult[1]);
+            writeToEnvFile('CLIENT_CREDENTIAL_TOKEN_EXPIRATION', clientTokenResult[1]);
 
             logger.info('Successfully updated client token.');
         } catch(error) {
-            logger.error(error, 'Failed to update the client token');
+            logger.fatal(error, 'Failed to update the client token');
+            process.exit(1);
         }
     } else {
-        logger.info(`Checked token validity: still valid for ${difference/1000} seconds`);
+        logger.info(`Checked token validity: still valid for ${Number(difference)/ 1000} seconds`);
     }
 }
