@@ -1,7 +1,11 @@
 import axios from 'axios';
+import * as querystring from 'querystring';
 import { SpotifyAuthTokenResponse, SpotifyClientTokenResponse } from '../interfaces/index.js';
 import logger from '../logger/logger.js';
-import { writeToEnvFile } from 'src/utility/fileUtils.js';
+import { generateRandomString } from '../utility/fileUtils.js';
+
+// Read env variables
+const client_id = process.env.CLIENT_ID || '';
 
 export async function clientCredentialsFlow(client_id: string, client_secret: string): Promise<[string, string]> {
 
@@ -49,6 +53,20 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
 
         throw new Error('Client-Credentials-Flow failed.');
     }
+}
+
+export function generateOAuthQuerystring(): string {
+    const state = generateRandomString(16); // TODO: Use this state to prevent CSRF attacks
+    const scope = 'user-modify-playback-state user-read-playback-state';
+    const redirectURI = 'http://127.0.0.1:3000/callback';
+
+    return querystring.stringify({
+        response_type: 'code',
+        client_id: client_id,
+        scope: scope,
+        redirect_uri: redirectURI,
+        state: state
+    });
 }
 
 export async function refreshAuthToken() {

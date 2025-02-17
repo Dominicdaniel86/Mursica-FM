@@ -1,8 +1,8 @@
 import express from 'express';
 import * as querystring from 'querystring';
-import { refreshAuthToken, searchSong } from './api/index.js';
+import { generateOAuthQuerystring, searchSong } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
-import { generateRandomString, validateClientToken, writeToEnvFile } from './utility/fileUtils.js';
+import { validateClientToken, writeToEnvFile } from './utility/fileUtils.js';
 import axios from 'axios';
 import { SpotifyAuthTokenResponse } from './interfaces/spotifyTokens.js';
 
@@ -59,19 +59,12 @@ app.get('/api/tracks/search', async (req, res) => {
 
 app.get('/api/auth/spotify/login', (req, res) => {
 
-    logger.info('User is trying to log in');
+    logger.info('A user is trying to log in');
 
-    var state = generateRandomString(16);
-    // var scope = 'user-read-private user-read-email';
+    const url = 'https://accounts.spotify.com/authorize?';
+    const querystring = generateOAuthQuerystring();
 
-    res.redirect('https://accounts.spotify.com/authorize?' +
-        querystring.stringify({
-            response_type: 'code',
-            client_id: client_id,
-            scope: 'user-modify-playback-state user-read-playback-state',
-            redirect_uri: 'http://127.0.0.1:3000/callback',
-            state: state
-    }));
+    res.redirect(url + querystring);
 });
 
 app.get('/callback', async (req, res) => {
@@ -116,12 +109,6 @@ app.get('/callback', async (req, res) => {
 
         res.redirect('http://localhost/static/html/admin.html');
     }
-});
-
-app.get('/api/auth/refresh', async (req, res) => {
-    refreshAuthToken();
-
-    res.send('success');
 });
 
 app.post('/api/auth/spotify/logout', (req, res) => {
