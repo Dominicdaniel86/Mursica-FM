@@ -5,13 +5,16 @@ import { SpotifyAuthTokenResponse, SpotifyClientTokenResponse } from '../interfa
 import logger from '../logger/logger.js';
 import { generateRandomString } from '../utility/fileUtils.js';
 
+// TODO: Refactor code into 2 seperate files (OAuth.ts & clientCredentials.ts)
+
 // Read env variables
+// TODO: Replace them with global config.ts file
 const client_id = process.env.CLIENT_ID || '';
 const client_secret = process.env.CLIENT_SECRET || '';
 
 const prisma = new PrismaClient();
 
-export async function clientCredentialsFlow(client_id: string, client_secret: string): Promise<[string, string]> {
+export async function clientCredentialsFlow(): Promise<[string, string]> {
 
     if(!client_id || !client_secret) {
         logger.warn('Received empty client parameters in function "clientCredentialsFlow"');

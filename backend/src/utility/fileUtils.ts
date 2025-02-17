@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 import logger from '../logger/logger.js';
 import { clientCredentialsFlow } from '../api/spotifyAuth.js';
@@ -25,10 +24,7 @@ export async function validateClientToken() {
     // If difference is less than 10 sec
     if(!valid) {
         try {
-            const client_id = process.env.CLIENT_ID || '';
-            const client_secret = process.env.CLIENT_SECRET || '';
-
-            let clientTokenResult: [string, string] = await clientCredentialsFlow(client_id, client_secret);
+            let clientTokenResult: [string, string] = await clientCredentialsFlow();
 
             let access_token = clientTokenResult[0];
             let expires_in = Number(clientTokenResult[1]);
