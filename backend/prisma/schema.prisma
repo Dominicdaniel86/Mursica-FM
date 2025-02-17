@@ -21,6 +21,14 @@ model ClientToken {
   createdAt   DateTime @default(now())
 }
 
+model OAuthToken {
+  id            String @id @default(uuid())
+  token         String @unique
+  validUntil    DateTime
+  refreshToken  String @unique
+  createdAt      DateTime @default(now())
+}
+
 model User {
   id        Int @id @default(autoincrement())
   name      String
