@@ -1,10 +1,18 @@
 import axios from 'axios';
-import { SpotifyTokenResponse } from '../interfaces/index.js';
+import { PrismaClient } from '@prisma/client';
+import * as querystring from 'querystring';
+import { SpotifyAuthTokenResponse, SpotifyClientTokenResponse } from '../interfaces/index.js';
 import logger from '../logger/logger.js';
+import { generateRandomString } from '../utility/fileUtils.js';
+import { clientID, clientSecret} from '../config.js';
 
-export async function clientCredentialsFlow(client_id: string, client_secret: string): Promise<[string, string]> {
+// TODO: Refactor code into 2 seperate files (OAuth.ts & clientCredentials.ts)
 
-    if(!client_id || !client_secret) {
+const prisma = new PrismaClient();
+
+export async function clientCredentialsFlow(): Promise<[string, string]> {
+
+    if(!clientID || !clientSecret) {
         logger.warn('Received empty client parameters in function "clientCredentialsFlow"');
         throw new Error('Client-Credentials-Flow failed.');
     }
@@ -15,27 +23,19 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
     });
     const config = {
         headers: {
-            'Authorization': `Basic ${Buffer.from(`${client_id}:${client_secret}`).toString('base64')}`
+            'Authorization': `Basic ${Buffer.from(`${clientID}:${clientSecret}`).toString('base64')}`
         }
     };
 
-    let clientToken: string = '';
-    let validUntil: number = Date.now();
-
     try {
-        const response = await axios.post<SpotifyTokenResponse>(url, data, config);
+        const response = await axios.post<SpotifyClientTokenResponse>(url, data, config);
 
         let access_token = response.data.access_token;
         let expires_in = response.data.expires_in;
 
-        validUntil += (expires_in * 1000);
+        logger.info({'accessToken': access_token, 'validUntil': expires_in}, `Client-Credentials-Flow authorization succeeded.`);
 
-        process.env.CLIENT_CREDENTIAL_TOKEN = access_token;
-        process.env.CLIENT_CREDENTIAL_TOKEN_EXPIRATION = String(validUntil);
-
-        logger.info({'accessToken': access_token, 'validUntil': validUntil}, `Client-Credentials-Flow authorization succeeded.`);
-
-        return [clientToken, String(validUntil)];
+        return [access_token, String(expires_in)];
 
     } catch(error) {
         if(axios.isAxiosError(error)) {
@@ -51,4 +51,79 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
 
         throw new Error('Client-Credentials-Flow failed.');
     }
+}
+
+export function generateOAuthQuerystring(): string {
+    const state = generateRandomString(16); // TODO: Use this state to prevent CSRF attacks
+    const scope = 'user-modify-playback-state user-read-playback-state';
+    const redirectURI = 'http://127.0.0.1:3000/callback';
+
+    return querystring.stringify({
+        response_type: 'code',
+        client_id: clientID,
+        scope: scope,
+        redirect_uri: redirectURI,
+        state: state
+    });
+}
+
+export async function oAuthAuthorization(code: string): Promise<string[]> {
+    const url = 'https://accounts.spotify.com/api/token';
+    const data = {
+        code: code,
+        redirect_uri: 'http://127.0.0.1:3000/callback',
+        grant_type: 'authorization_code'
+    };
+    const config = {
+        headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Basic ' + (Buffer.from(clientID + ':' + clientSecret).toString('base64'))
+        }
+    };
+
+    const response = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
+
+    const access_token = response.data.access_token;
+    const expires_in = response.data.expires_in;
+    const refresh_token = response.data.refresh_token;
+
+    const validUntilDate: Date = new Date(Date.now() + (expires_in * 1000));
+
+    const token = await prisma.oAuthToken.findFirst();
+
+    if(token) {
+        await prisma.oAuthToken.update({
+            where: {id: token.id },
+            data: { token: access_token, validUntil: validUntilDate, refreshToken: refresh_token}
+        });
+    } else {
+        await prisma.oAuthToken.create({
+            data: { token: access_token, validUntil: validUntilDate, refreshToken: refresh_token}
+        });
+    }
+
+    return [access_token, String(expires_in), refresh_token];
+}
+
+export async function refreshAuthToken() {
+
+    const token = await prisma.oAuthToken.findFirst();
+
+    if(!token)
+        return;
+
+    const url = 'https://accounts.spotify.com/api/token';
+    const data = new URLSearchParams({
+       grant_type: 'refresh_token',
+       refresh_token: token.refreshToken,
+    });
+    const config = {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Basic ' + (Buffer.from(clientID + ':' + clientSecret).toString('base64'))
+        }
+    };
+
+    const response = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
+    console.log(response.data);
 }

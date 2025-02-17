@@ -1,8 +1,8 @@
 import fs from 'fs';
 import { pino } from 'pino';
+import { isProduction } from '../config.js';
 
 const logFile: string = './logs/app.log';
-const isProduction: boolean = process.env.ENVIRONMENT === 'production';
 
 /**
  * Initializes the app.log file. If the file already exists, it created the file and writes some metadata on top of it.
@@ -43,7 +43,7 @@ export function initializeLoggingFile() {
  * 
  * 'fatal' [60] - logger.fatal(err, 'message');
  * 
- * Redacted fields: ['access_token']
+ * Redacted fields: ['access_token', 'accessToken']
  */
 const logger = pino({
     level: isProduction ? 'info' : 'debug', // default setting
@@ -72,7 +72,7 @@ const logger = pino({
             }
         ]
     },
-    redact: ['access_token']
+    redact: ['access_token', 'accessToken']
 });
 
 export default logger;
