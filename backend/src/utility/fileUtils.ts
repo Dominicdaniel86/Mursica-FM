@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import logger from '../logger/logger.js';
+import { clientCredentialsFlow } from '../api/spotifyAuth.js';
 
 /**
  * This function writes a key-value pair into the designated .env file.
@@ -44,9 +45,34 @@ export function writeToEnvFile(key: string, value: string) {
         if (filtered_keys.includes(key))
             value = '[REDACTED]';
 
-        logger.info({ key, value, message: 'Successfully updated .env'});
+        logger.info({ key, value}, 'Successfully updated .env');
     } catch (error) {
         const errorMessage = error instanceof Error ? `Failed to update .env file: ${error.message}` : 'Failed to update .env file due to an unknown reason';
         logger.error(errorMessage, error);
+    }
+}
+
+export async function validateClientToken() {
+    const validUntil = Number(process.env.CLIENT_TOKEN_EXPERIATION);
+    const currentTimestamp = Date.now();
+    const difference = validUntil - currentTimestamp;
+
+    // If difference is less than 10 sec
+    if(difference < 10000) {
+        try {
+            const client_id = process.env.CLIENT_ID || '';
+            const client_secret = process.env.CLIENT_SECRET || '';
+
+            let clientTokenResult: [string, string] = await clientCredentialsFlow(client_id, client_secret);
+            // Write retrieved token into env file //? Temporary Solution
+            writeToEnvFile('CLIENT_CREDENTIAL_TOKEN', clientTokenResult[0]);
+            writeToEnvFile('CLIENT_TOKEN_EXPERIATION', clientTokenResult[1]);
+
+            logger.info('Successfully updated client token.');
+        } catch(error) {
+            logger.error(error, 'Failed to update the client token');
+        }
+    } else {
+        logger.info(`Checked token validity: still valid for ${difference/1000} seconds`);
     }
 }

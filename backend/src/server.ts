@@ -1,7 +1,7 @@
 import express from 'express';
 import { clientCredentialsFlow, searchSong } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
-import { writeToEnvFile } from './utility/fileUtils.js';
+import { validateClientToken, writeToEnvFile } from './utility/fileUtils.js';
 
 // Initialize app
 const app = express();
@@ -62,6 +62,7 @@ app.get('/api/tracks/search', async (req, res) => {
 
 app.post('/api/auth/spotify/login', (req, res) => {
     res.send('Clever, you are trying to login?');
+    validateClientToken();
 });
 
 app.post('/api/auth/spotify/logout', (req, res) => {
@@ -71,3 +72,10 @@ app.post('/api/auth/spotify/logout', (req, res) => {
 app.listen(port, () => {
     logger.info(`Server is running on port ${port}`);
 });
+
+//* Initialize and setup cron jobs
+
+// Validate client token once a minute
+setInterval(() => {
+    validateClientToken();
+}, 60000);
