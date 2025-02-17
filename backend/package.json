@@ -1,6 +1,6 @@
 {
   "name": "spotify-session-app-nodejs-backend",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A Node.js backend for hosting a third-party Spotify session app.",
   "type": "module",
   "main": "dist/server.js",
