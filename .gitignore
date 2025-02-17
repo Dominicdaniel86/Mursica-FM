@@ -150,3 +150,6 @@ notes.md
 
 # VS Code Settings
 .vscode
+
+# Prisma Files
+*.toml
