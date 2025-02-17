@@ -1,6 +1,9 @@
 import * as fs from 'fs';
+import { PrismaClient } from '@prisma/client';
 import logger from '../logger/logger.js';
 import { clientCredentialsFlow } from '../api/spotifyAuth.js';
+
+const prisma = new PrismaClient();
 
 /**
  * This function writes a key-value pair into the designated .env file.
@@ -53,20 +56,47 @@ export function writeToEnvFile(key: string, value: string) {
 }
 
 export async function validateClientToken() {
-    const validUntil = BigInt(process.env.CLIENT_CREDENTIAL_TOKEN_EXPIRATION || '0');
-    const currentTimestamp = BigInt(Date.now());
-    const difference = validUntil - currentTimestamp;
+
+    const token = await prisma.clientToken.findFirst();
+    const currentDate: Date = new Date(Date.now());
+    let valid: boolean = false;
+    let difference: number = 0;
+
+    if(token) {
+        let validUntil: number = token.validUntil.getTime();
+        let currentTime: number = currentDate.getTime();
+
+        difference = validUntil - currentTime;
+
+        if(difference > 10000)
+            valid = true;
+    }
 
     // If difference is less than 10 sec
-    if(difference < 10000) {
+    if(!valid) {
         try {
             const client_id = process.env.CLIENT_ID || '';
             const client_secret = process.env.CLIENT_SECRET || '';
 
             let clientTokenResult: [string, string] = await clientCredentialsFlow(client_id, client_secret);
-            // Write retrieved token into env file //? Temporary Solution
-            writeToEnvFile('CLIENT_CREDENTIAL_TOKEN', clientTokenResult[0]);
-            writeToEnvFile('CLIENT_CREDENTIAL_TOKEN_EXPIRATION', clientTokenResult[1]);
+
+            let access_token = clientTokenResult[0];
+            let expires_in = Number(clientTokenResult[1]);
+
+            let validUntilDate: Date = new Date(Date.now() + expires_in * 1000);
+
+            const token = await prisma.clientToken.findFirst();
+    
+            if(token) {
+                await prisma.clientToken.update({
+                    where: { id: token.id },
+                    data: { token: access_token, validUntil: validUntilDate }
+                });
+            } else {
+                await prisma.clientToken.create({
+                    data: { token: access_token, validUntil: validUntilDate},
+                });
+            }
 
             logger.info('Successfully updated client token.');
         } catch(error) {

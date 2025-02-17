@@ -11,8 +11,6 @@ const app = express();
 
 // Read env variables
 const port = process.env.PORT || 3000;
-const client_id = process.env.CLIENT_ID || '';
-const client_secret = process.env.CLIENT_SECRET || '';
 
 // Initialize log file
 try {

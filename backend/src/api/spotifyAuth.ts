@@ -34,31 +34,10 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
         let access_token = response.data.access_token;
         let expires_in = response.data.expires_in;
 
-        let validUntil: number = Date.now() + (expires_in * 1000);
-
         logger.debug(process.env.DATABASE_URL);
+        logger.info({'accessToken': access_token, 'validUntil': expires_in}, `Client-Credentials-Flow authorization succeeded.`);
 
-        let validUntilDate: Date = new Date(Date.now() + expires_in * 1000);
-
-        const token = await prisma.clientToken.findFirst();
-
-        if(token) {
-            await prisma.clientToken.update({
-                where: { id: token.id },
-                data: { token: access_token, validUntil: validUntilDate }
-            });
-        } else {
-            await prisma.clientToken.create({
-                data: { token: access_token, validUntil: validUntilDate},
-            });
-        }
-
-        process.env.CLIENT_CREDENTIAL_TOKEN = access_token;
-        process.env.CLIENT_CREDENTIAL_TOKEN_EXPIRATION = String(validUntil);
-
-        logger.info({'accessToken': access_token, 'validUntil': validUntil}, `Client-Credentials-Flow authorization succeeded.`);
-
-        return [access_token, String(validUntil)];
+        return [access_token, String(expires_in)];
 
     } catch(error) {
         if(axios.isAxiosError(error)) {
