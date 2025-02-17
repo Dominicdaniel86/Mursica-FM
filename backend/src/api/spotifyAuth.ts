@@ -4,19 +4,15 @@ import * as querystring from 'querystring';
 import { SpotifyAuthTokenResponse, SpotifyClientTokenResponse } from '../interfaces/index.js';
 import logger from '../logger/logger.js';
 import { generateRandomString } from '../utility/fileUtils.js';
+import { clientID, clientSecret} from '../config.js';
 
 // TODO: Refactor code into 2 seperate files (OAuth.ts & clientCredentials.ts)
-
-// Read env variables
-// TODO: Replace them with global config.ts file
-const client_id = process.env.CLIENT_ID || '';
-const client_secret = process.env.CLIENT_SECRET || '';
 
 const prisma = new PrismaClient();
 
 export async function clientCredentialsFlow(): Promise<[string, string]> {
 
-    if(!client_id || !client_secret) {
+    if(!clientID || !clientSecret) {
         logger.warn('Received empty client parameters in function "clientCredentialsFlow"');
         throw new Error('Client-Credentials-Flow failed.');
     }
@@ -27,7 +23,7 @@ export async function clientCredentialsFlow(): Promise<[string, string]> {
     });
     const config = {
         headers: {
-            'Authorization': `Basic ${Buffer.from(`${client_id}:${client_secret}`).toString('base64')}`
+            'Authorization': `Basic ${Buffer.from(`${clientID}:${clientSecret}`).toString('base64')}`
         }
     };
 
@@ -37,7 +33,6 @@ export async function clientCredentialsFlow(): Promise<[string, string]> {
         let access_token = response.data.access_token;
         let expires_in = response.data.expires_in;
 
-        logger.debug(process.env.DATABASE_URL);
         logger.info({'accessToken': access_token, 'validUntil': expires_in}, `Client-Credentials-Flow authorization succeeded.`);
 
         return [access_token, String(expires_in)];
@@ -65,7 +60,7 @@ export function generateOAuthQuerystring(): string {
 
     return querystring.stringify({
         response_type: 'code',
-        client_id: client_id,
+        client_id: clientID,
         scope: scope,
         redirect_uri: redirectURI,
         state: state
@@ -82,7 +77,7 @@ export async function oAuthAuthorization(code: string): Promise<string[]> {
     const config = {
         headers: {
             'content-type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
+            'Authorization': 'Basic ' + (Buffer.from(clientID + ':' + clientSecret).toString('base64'))
         }
     };
 

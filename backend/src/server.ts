@@ -3,14 +3,12 @@ import * as querystring from 'querystring';
 import { generateOAuthQuerystring, oAuthAuthorization, searchSong } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { validateClientToken } from './utility/fileUtils.js';
+import { port } from './config.js';
 import axios from 'axios';
 import { SpotifyAuthTokenResponse } from './interfaces/spotifyTokens.js';
 
 // Initialize app
 const app = express();
-
-// Read env variables
-const port = process.env.PORT || 3000;
 
 // Initialize log file
 try {
@@ -93,5 +91,4 @@ app.post('/api/auth/spotify/logout', (req, res) => {
 
 app.listen(port, () => {
     logger.info(`Server is running on port ${port}`);
-    process.env.DATABASE_URL = process.env.DATABASE_URL?.replace('localhost', 'database');
 });

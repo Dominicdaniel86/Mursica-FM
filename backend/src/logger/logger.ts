@@ -1,8 +1,8 @@
 import fs from 'fs';
 import { pino } from 'pino';
+import { isProduction } from '../config.js';
 
 const logFile: string = './logs/app.log';
-const isProduction: boolean = process.env.ENVIRONMENT === 'production';
 
 /**
  * Initializes the app.log file. If the file already exists, it created the file and writes some metadata on top of it.
