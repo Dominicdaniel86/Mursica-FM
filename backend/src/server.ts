@@ -94,4 +94,5 @@ app.post('/api/auth/spotify/logout', (req, res) => {
 
 app.listen(port, () => {
     logger.info(`Server is running on port ${port}`);
+    process.env.DATABASE_URL = process.env.DATABASE_URL?.replace('localhost', 'database');
 });

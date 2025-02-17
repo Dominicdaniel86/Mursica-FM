@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { PrismaClient } from '@prisma/client';
 import * as querystring from 'querystring';
 import { SpotifyAuthTokenResponse, SpotifyClientTokenResponse } from '../interfaces/index.js';
 import logger from '../logger/logger.js';
@@ -7,6 +8,8 @@ import { generateRandomString } from '../utility/fileUtils.js';
 // Read env variables
 const client_id = process.env.CLIENT_ID || '';
 const client_secret = process.env.CLIENT_SECRET || '';
+
+const prisma = new PrismaClient();
 
 export async function clientCredentialsFlow(client_id: string, client_secret: string): Promise<[string, string]> {
 
@@ -32,6 +35,23 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
         let expires_in = response.data.expires_in;
 
         let validUntil: number = Date.now() + (expires_in * 1000);
+
+        logger.debug(process.env.DATABASE_URL);
+
+        let validUntilDate: Date = new Date(Date.now() + expires_in * 1000);
+
+        const token = await prisma.clientToken.findFirst();
+
+        if(token) {
+            await prisma.clientToken.update({
+                where: { id: token.id },
+                data: { token: access_token, validUntil: validUntilDate }
+            });
+        } else {
+            await prisma.clientToken.create({
+                data: { token: access_token, validUntil: validUntilDate},
+            });
+        }
 
         process.env.CLIENT_CREDENTIAL_TOKEN = access_token;
         process.env.CLIENT_CREDENTIAL_TOKEN_EXPIRATION = String(validUntil);
