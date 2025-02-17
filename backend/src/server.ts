@@ -1,13 +1,18 @@
 import express from 'express';
+import * as querystring from 'querystring';
 import { searchSong } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
-import { validateClientToken } from './utility/fileUtils.js';
+import { generateRandomString, validateClientToken } from './utility/fileUtils.js';
+import axios from 'axios';
+import { SpotifyAuthTokenResponse } from './interfaces/spotifyTokens.js';
 
 // Initialize app
 const app = express();
 
 // Read env variables
 const port = process.env.PORT || 3000;
+const client_id = process.env.CLIENT_ID || '';
+const client_secret = process.env.CLIENT_SECRET || '';
 
 // Initialize log file
 try {
@@ -52,8 +57,51 @@ app.get('/api/tracks/search', async (req, res) => {
     }
 });
 
-app.post('/api/auth/spotify/login', (req, res) => {
-    res.send('Clever, you are trying to login?');
+app.get('/api/auth/spotify/login', (req, res) => {
+
+    logger.info('User is trying to log in');
+
+    var state = generateRandomString(16);
+    // var scope = 'user-read-private user-read-email';
+
+    res.redirect('https://accounts.spotify.com/authorize?' +
+        querystring.stringify({
+            response_type: 'code',
+            client_id: client_id,
+            // scope: scope,
+            redirect_uri: 'http://127.0.0.1:3000/callback',
+            state: state
+    }));
+});
+
+app.get('/callback', async (req, res) => {
+    logger.debug('User login callback');
+    var code = req.query.code || null;
+    var state = req.query.state || null;
+
+    if (!state) {
+        return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
+    }
+    else {
+        const url = 'https://accounts.spotify.com/api/token';
+        const data = {
+            code: code,
+            redirect_uri: 'http://127.0.0.1:3000/callback',
+            grant_type: 'authorization_code'
+        };
+        const config = {
+            headers: {
+                'content-type': 'application/x-www-form-urlencoded',
+                'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
+            }
+        };
+
+        const resp = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
+
+        logger.info(resp.data);
+
+        res.redirect('http://localhost/static/html/admin.html');
+    }
 });
 
 app.post('/api/auth/spotify/logout', (req, res) => {

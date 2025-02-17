@@ -77,3 +77,12 @@ export async function validateClientToken() {
         logger.info(`Checked token validity: still valid for ${Number(difference)/ 1000} seconds`);
     }
 }
+
+export function generateRandomString(length: number) {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+}

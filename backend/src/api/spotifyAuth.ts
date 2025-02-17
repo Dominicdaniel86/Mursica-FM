@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { SpotifyTokenResponse } from '../interfaces/index.js';
+import { SpotifyClientTokenResponse } from '../interfaces/index.js';
 import logger from '../logger/logger.js';
 
 export async function clientCredentialsFlow(client_id: string, client_secret: string): Promise<[string, string]> {
@@ -20,7 +20,7 @@ export async function clientCredentialsFlow(client_id: string, client_secret: st
     };
 
     try {
-        const response = await axios.post<SpotifyTokenResponse>(url, data, config);
+        const response = await axios.post<SpotifyClientTokenResponse>(url, data, config);
 
         let access_token = response.data.access_token;
         let expires_in = response.data.expires_in;
