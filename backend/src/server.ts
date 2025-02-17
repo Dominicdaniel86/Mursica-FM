@@ -1,6 +1,6 @@
 import express from 'express';
 import * as querystring from 'querystring';
-import { generateOAuthQuerystring, searchSong } from './api/index.js';
+import { generateOAuthQuerystring, oAuthAuthorization, searchSong } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { validateClientToken, writeToEnvFile } from './utility/fileUtils.js';
 import axios from 'axios';
@@ -69,43 +69,20 @@ app.get('/api/auth/spotify/login', (req, res) => {
 
 app.get('/callback', async (req, res) => {
     logger.debug('User login callback');
-    var code = req.query.code || null;
-    var state = req.query.state || null;
+    var code = req.query.code as string;
+    var state = req.query.state as string;
 
     if (!state) {
         return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
     }
     else {
-        const url = 'https://accounts.spotify.com/api/token';
-        const data = {
-            code: code,
-            redirect_uri: 'http://127.0.0.1:3000/callback',
-            grant_type: 'authorization_code'
-        };
-        const config = {
-            headers: {
-                'content-type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Basic ' + (Buffer.from(client_id + ':' + client_secret).toString('base64'))
-            }
-        };
+        const response = await oAuthAuthorization(code);
 
-        const response = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
+        writeToEnvFile('AUTH_CREDENTIAL_TOKEN', response[0]);
+        writeToEnvFile('AUTH_CREDENTIAL_TOKEN_EXPIRATION', response[1]);
+        writeToEnvFile('AUTH_REFRESH_TOKEN', response[2]);
 
-        let access_token = response.data.access_token;
-        let expires_in = response.data.expires_in;
-        let refresh_token = response.data.refresh_token;
-
-        let validUntil: number = Date.now() + (expires_in * 1000);
-
-        process.env.AUTH_CREDENTIAL_TOKEN = access_token;
-        process.env.AUTH_CREDENTIAL_TOKEN_EXPIRATION = String(validUntil);
-        process.env.AUTH_REFRESH_TOKEN = refresh_token;
-
-        writeToEnvFile('AUTH_CREDENTIAL_TOKEN', access_token);
-        writeToEnvFile('AUTH_CREDENTIAL_TOKEN_EXPIRATION', String(validUntil));
-        writeToEnvFile('AUTH_REFRESH_TOKEN', refresh_token);
-
-        logger.info(response.data);
+        logger.info(response);
 
         res.redirect('http://localhost/static/html/admin.html');
     }
