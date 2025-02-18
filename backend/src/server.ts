@@ -109,7 +109,7 @@ app.put('/api/admin/control/stop', (req, res) => {
     res.send('Stop Song');
 });
 
-app.put('/api/admin/control/skip', (req, res) => {
+app.post('/api/admin/control/skip', (req, res) => {
     skipTrack();
 
 
