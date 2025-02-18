@@ -7,6 +7,10 @@ import { port } from './config.js';
 // Initialize app
 const app = express();
 
+// Add body parser middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Initialize log file
 try {
     initializeLoggingFile();  
@@ -51,7 +55,13 @@ app.get('/api/tracks/search', async (req, res) => {
 });
 
 app.post('/api/tracks/select', (req, res) => {
-    res.send("You selected the song!");
+    if(req.body.trackID) {
+        logger.info('Song got selected: ' + req.body.trackID);
+        res.send("You selected the song!");
+    } else {
+        logger.warn('Empty song received');
+        res.status(400).send('Empty song send');
+    }
 });
 
 app.get('/api/auth/spotify/login', (req, res) => {
