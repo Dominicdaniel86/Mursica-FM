@@ -1,57 +1,12 @@
 import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
 import * as querystring from 'querystring';
-import { SpotifyAuthTokenResponse, SpotifyClientTokenResponse } from '../interfaces/index.js';
+import { SpotifyAuthTokenResponse } from '../interfaces/index.js';
 import logger from '../logger/logger.js';
 import { generateRandomString } from '../utility/fileUtils.js';
 import { clientID, clientSecret} from '../config.js';
 
-// TODO: Refactor code into 2 seperate files (OAuth.ts & clientCredentials.ts)
-
 const prisma = new PrismaClient();
-
-export async function clientCredentialsFlow(): Promise<[string, string]> {
-
-    if(!clientID || !clientSecret) {
-        logger.warn('Received empty client parameters in function "clientCredentialsFlow"');
-        throw new Error('Client-Credentials-Flow failed.');
-    }
-
-    const url: string = 'https://accounts.spotify.com/api/token';
-    const data = new URLSearchParams({
-        grant_type: 'client_credentials'
-    });
-    const config = {
-        headers: {
-            'Authorization': `Basic ${Buffer.from(`${clientID}:${clientSecret}`).toString('base64')}`
-        }
-    };
-
-    try {
-        const response = await axios.post<SpotifyClientTokenResponse>(url, data, config);
-
-        let access_token = response.data.access_token;
-        let expires_in = response.data.expires_in;
-
-        logger.info({'accessToken': access_token, 'validUntil': expires_in}, `Client-Credentials-Flow authorization succeeded.`);
-
-        return [access_token, String(expires_in)];
-
-    } catch(error) {
-        if(axios.isAxiosError(error)) {
-            if(error.response)
-                logger.error(`Client-Credentials-Flow authorization failed with status ${error.status}: ${error.message}`);
-            else if(error.request)
-                logger.error(`Client-Credentials-Flow authorization failed: No response received`);
-            else
-                logger.error(`Client-Credentials-Flow authorization failed: ${error.message}`);
-        } else {
-            logger.error(error, `Axios request to Spotify API failed: Unexpected error.`);
-        }
-
-        throw new Error('Client-Credentials-Flow failed.');
-    }
-}
 
 export function generateOAuthQuerystring(): string {
     const state = generateRandomString(16); // TODO: Use this state to prevent CSRF attacks
