@@ -1,6 +1,6 @@
 import express from 'express';
 import * as querystring from 'querystring';
-import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong } from './api/index.js';
+import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { port } from './config.js';
 
@@ -74,6 +74,7 @@ app.get('/api/auth/spotify/login', (req, res) => {
     res.redirect(url + querystring);
 });
 
+// TODO: Rename callback to match projects API syntax
 app.get('/callback', async (req, res) => {
     logger.debug('User login callback');
     var code = req.query.code as string;
@@ -93,6 +94,26 @@ app.get('/callback', async (req, res) => {
 
 app.post('/api/auth/spotify/logout', (req, res) => {
     res.send('Logged out now!');
+});
+
+app.put('/api/admin/control/play', (req, res) => {
+    playTrack();
+
+    res.send('Play Song');
+});
+
+app.put('/api/admin/control/stop', (req, res) => {
+    pauseTrack();
+
+
+    res.send('Stop Song');
+});
+
+app.put('/api/admin/control/skip', (req, res) => {
+    skipTrack();
+
+
+    res.send('Skip Song');
 });
 
 app.listen(port, () => {

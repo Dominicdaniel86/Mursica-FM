@@ -56,3 +56,54 @@ export async function searchSong(track: string): Promise<TrackSummary[]> {
         throw new Error('Failed to fetch tracks from Spotify API.');
     }
 }
+
+export async function playTrack() {
+
+    const token = await prisma.oAuthToken.findFirst();
+
+    if(token) {
+        logger.debug(token.token);
+        const url = 'https://api.spotify.com/v1/me/player/play';
+        const config: object = {
+            headers: {
+                'Authorization': `Bearer ${token.token}`
+            }
+        };
+        const response = await axios.put(url, {}, config);
+        // logger.info(response.data);
+    }
+}
+
+export async function pauseTrack() {
+
+    const token = await prisma.oAuthToken.findFirst();
+
+    if(token) {
+        logger.debug(token.token);
+        const url = 'https://api.spotify.com/v1/me/player/pause';
+        const config: object = {
+            headers: {
+                'Authorization': `Bearer ${token.token}`
+            }
+        };
+        const response = await axios.put(url, {}, config);
+        // logger.info(response.data);
+    }
+}
+
+export async function skipTrack() {
+
+    const token = await prisma.oAuthToken.findFirst();
+
+    if(token) {
+        logger.debug(token.token);
+        const url = 'https://api.spotify.com/v1/me/player/next';
+        const config: object = {
+            headers: {
+                'Authorization': `Bearer ${token.token}`
+            }
+        };
+        const response = await axios.post(url, {}, config);
+        // logger.info(response.data);
+    }
+}
