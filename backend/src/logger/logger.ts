@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { pino } from 'pino';
-import { isProduction } from '../config.js';
+import { IS_PRODUCTION } from '../config.js';
 
 const logFile: string = './logs/app.log';
 
@@ -46,12 +46,12 @@ export function initializeLoggingFile() {
  * Redacted fields: ['access_token', 'accessToken']
  */
 const logger = pino({
-    level: isProduction ? 'info' : 'debug', // default setting
-    timestamp: isProduction
+    level: IS_PRODUCTION ? 'info' : 'debug', // default setting
+    timestamp: IS_PRODUCTION
     ? () => (`,"time":"${new Date().toISOString()}"`)
     : () => `,"time":"${new Date().toLocaleString()}"`,
     transport: {
-        targets: isProduction
+        targets: IS_PRODUCTION
         ? [ // production
             {
                 target: 'pino/file',

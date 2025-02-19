@@ -16,7 +16,6 @@ window.addEventListener('load', () => {
     console.log('DOM has loaded');
 
     // Reset searched song value
-    let searchSongElement: HTMLInputElement = document.getElementById('search-song') as HTMLInputElement;
     searchSongElement.value = '';
 
     searchSongElement.addEventListener('input', () => {
@@ -87,10 +86,22 @@ async function searchSong(input: string) {
  */
 export async function sendResponse(ID: string) {
 
+    console.log(`ID: ${ID}`);
+
     const url: string = `/api/tracks/select`;
-    let response = await axios.post<TrackResp>(url);
+    const data = new URLSearchParams({
+        trackID: ID
+    });
+    let response = await axios.post<TrackResp>(url, data);
 
     console.log(response.data);
+
+    // Clear track input and result
+    searchSongElement.value = '';
+    const targetDiv: HTMLDivElement = document.getElementById("song-results") as HTMLDivElement;
+    while(targetDiv.firstChild) {
+        targetDiv.removeChild(targetDiv.lastChild as ChildNode);
+    }
 }
 
 window.switchToAdmin = switchToAdmin;
