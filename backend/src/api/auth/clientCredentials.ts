@@ -1,10 +1,7 @@
 import axios from 'axios';
-import { PrismaClient } from '@prisma/client';
 import { SpotifyClientTokenResponse } from '../../interfaces/index.js';
 import logger from '../../logger/logger.js';
-import { clientID, clientSecret} from '../../config.js';
-
-const prisma = new PrismaClient();
+import { clientID, clientSecret, prisma} from '../../config.js';
 
 /**
  * Validates the Spotify client token. It is only retrieved for once and is used for

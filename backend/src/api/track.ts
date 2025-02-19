@@ -1,9 +1,7 @@
 import axios from 'axios';
-import { PrismaClient } from '@prisma/client';
 import { SpotifyTrackResponse, TrackSummary } from '../interfaces/index.js';
 import logger from '../logger/logger.js';
-
-const prisma = new PrismaClient();
+import { prisma } from 'src/config.js';
 
 export async function searchSong(track: string): Promise<TrackSummary[]> {
 
