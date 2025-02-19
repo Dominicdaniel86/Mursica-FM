@@ -96,24 +96,37 @@ app.post('/api/auth/spotify/logout', (req, res) => {
     res.send('Logged out now!');
 });
 
-app.put('/api/admin/control/play', (req, res) => {
-    playTrack();
-
-    res.send('Play Song');
+app.put('/api/admin/control/play', async (req, res) => {
+    try {
+        await playTrack();
+        logger.info('Admin plays/ continues the song');
+        res.status(200).send('Play Song');
+    } catch(error) {
+        logger.error(error, 'Failed to play/ continue the song');
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.put('/api/admin/control/stop', (req, res) => {
-    pauseTrack();
-
-
-    res.send('Stop Song');
+app.put('/api/admin/control/stop', async (req, res) => {
+    try {
+        await pauseTrack();
+        logger.info('Admin stopped the song');
+        res.status(200).send('Stop Song');
+    } catch (err) {
+        logger.error(err, 'Failed to stop the song');
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.post('/api/admin/control/skip', (req, res) => {
-    skipTrack();
-
-
-    res.send('Skip Song');
+app.post('/api/admin/control/skip', async (req, res) => {
+    try {
+        await skipTrack();
+        logger.info('Admin skipped the song');
+        res.status(200).send('Skip Song');
+    } catch (err) {
+        logger.error(err, 'Failed to skip the song');
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.listen(port, () => {
