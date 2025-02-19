@@ -3,6 +3,8 @@ import * as querystring from 'querystring';
 import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack, refreshAuthToken } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { PORT, prisma } from './config.js';
+import { logout } from './api/auth/logout.js';
+import { NotFoundError } from './errors/index.js';
 
 // Initialize app
 const app = express();
@@ -103,8 +105,21 @@ app.get('/api/auth/callback', async (req, res) => {
     logger.info('Redirected user back to admin.html');
 });
 
-app.post('/api/auth/spotify/logout', (req, res) => {
-    res.send('Logged out now!');
+app.post('/api/auth/spotify/logout', async (req, res) => {
+    logger.info('A user is trying to logout.');
+
+    try {
+        await logout();
+        res.send('Logged out now!');
+    } catch(error) {
+        if(error instanceof NotFoundError) {
+            logger.error(error, 'Failed to log out')
+            res.status(400).json({ error: 'No OAuth token found' });
+        } else {
+            logger.error(error, 'Failed to log out')
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
 });
 
 app.put('/api/admin/control/play', async (req, res) => {
