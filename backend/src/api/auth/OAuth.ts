@@ -14,10 +14,28 @@ import { CLIENT_ID, CLIENT_SECRET, prisma} from '../../config.js';
  * 
  * @returns {string} - A URL-encoded query string containing the necessary OAuth parameters.
  */
-export function generateOAuthQuerystring(): string {
+export async function generateOAuthQuerystring(): Promise<string> {
     const state = generateRandomString(16); // TODO: Use this state to prevent CSRF attacks
     const scope = 'user-modify-playback-state user-read-playback-state';
     const redirectURI = 'http://127.0.0.1/api/auth/callback';
+
+    try {
+        const previousState = await prisma.state.findFirst();
+
+        if(previousState) {
+            await prisma.state.update({
+                where: {id: previousState.id},
+                data: { state: state}
+            })
+        } else {
+            await prisma.state.create({
+                data: { state: state}
+            })
+        }
+    } catch (error) {
+        console.error(error, 'Failed to update the state in the database');
+        throw new Error('Failed to update the state in the database');
+    }
 
     return querystring.stringify({
         response_type: 'code',
@@ -115,6 +133,8 @@ export async function refreshAuthToken() {
             where: {id: currentToken.id },
             data: { token: accessToken, validUntil: validUntilDate, refreshToken: refreshToken}
         });
+
+        logger.info('Successfully refreshed the OAuth token');
 
     } catch(error) {
         logger.error(error, 'OAuth token refresh failed');

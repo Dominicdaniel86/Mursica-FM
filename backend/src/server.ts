@@ -2,7 +2,7 @@ import express from 'express';
 import * as querystring from 'querystring';
 import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack, refreshAuthToken } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
-import { PORT } from './config.js';
+import { PORT, prisma } from './config.js';
 
 // Initialize app
 const app = express();
@@ -21,7 +21,7 @@ try {
 }
 
 // Retrieve client credential token
-validateClientToken();
+await validateClientToken();
 
 app.get('/api', (req, res) => {
     res.send("Hello from the backend!");
@@ -30,7 +30,7 @@ app.get('/api', (req, res) => {
 app.get('/api/tracks/search', async (req, res) => {
 
     try {
-        validateClientToken();
+        await validateClientToken();
 
         const trackTitle = req.query.trackTitle as string;
 
@@ -64,13 +64,13 @@ app.post('/api/tracks/select', (req, res) => {
     }
 });
 
-app.get('/api/auth/spotify/login', (req, res) => {
+app.get('/api/auth/spotify/login', async (req, res) => {
 
     try {
         logger.info('A user is trying to log in.');
 
         const url = 'https://accounts.spotify.com/authorize?';
-        const querystring = generateOAuthQuerystring();
+        const querystring = await generateOAuthQuerystring();
     
         res.redirect(url + querystring);
         logger.info('Redirected user to the Spotify login page.');
@@ -81,20 +81,26 @@ app.get('/api/auth/spotify/login', (req, res) => {
 });
 
 app.get('/api/auth/callback', async (req, res) => {
-    logger.debug('User login callback');
-    var code = req.query.code as string;
-    var state = req.query.state as string;
+    logger.info('User login callback');
+    const code = req.query.code as string;
+    const state = req.query.state as string;
 
-    // TODO: Check state for correctness
-    if (!state) {
-        logger.warn('OAuth authentication failed: Received invalid state');
+    try {
+        const currentState = await prisma.state.findFirst();
+
+        if(!state || state !== currentState?.state) {
+            logger.warn('OAuth authentication failed: Received invalid state');
+            return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
+        }
+
+    } catch(error) {
+        logger.error('Failed to read state from the database');
         return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
     }
-    else {
-        await oAuthAuthorization(code);
-        res.redirect('http://localhost/static/html/admin.html');
-        logger.info('Redirected user back to admin.html');
-    }
+
+    await oAuthAuthorization(code);
+    res.redirect('http://localhost/static/html/admin.html');
+    logger.info('Redirected user back to admin.html');
 });
 
 app.post('/api/auth/spotify/logout', (req, res) => {
