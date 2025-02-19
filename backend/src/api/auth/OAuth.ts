@@ -3,7 +3,7 @@ import * as querystring from 'querystring';
 import { SpotifyAuthTokenResponse } from '../../interfaces/index.js';
 import logger from '../../logger/logger.js';
 import { generateRandomString } from '../../utility/fileUtils.js';
-import { clientID, clientSecret, prisma} from '../../config.js';
+import { CLIENT_ID, CLIENT_SECRET, prisma} from '../../config.js';
 
 export function generateOAuthQuerystring(): string {
     const state = generateRandomString(16); // TODO: Use this state to prevent CSRF attacks
@@ -12,7 +12,7 @@ export function generateOAuthQuerystring(): string {
 
     return querystring.stringify({
         response_type: 'code',
-        client_id: clientID,
+        client_id: CLIENT_ID,
         scope: scope,
         redirect_uri: redirectURI,
         state: state
@@ -29,7 +29,7 @@ export async function oAuthAuthorization(code: string): Promise<string[]> {
     const config = {
         headers: {
             'content-type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + (Buffer.from(clientID + ':' + clientSecret).toString('base64'))
+            'Authorization': 'Basic ' + (Buffer.from(CLIENT_ID + ':' + CLIENT_SECRET).toString('base64'))
         }
     };
 
@@ -72,7 +72,7 @@ export async function refreshAuthToken() {
     const config = {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + (Buffer.from(clientID + ':' + clientSecret).toString('base64'))
+            'Authorization': 'Basic ' + (Buffer.from(CLIENT_ID + ':' + CLIENT_SECRET).toString('base64'))
         }
     };
 

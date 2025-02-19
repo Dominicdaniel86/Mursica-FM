@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { SpotifyClientTokenResponse } from '../../interfaces/index.js';
 import logger from '../../logger/logger.js';
-import { clientID, clientSecret, prisma} from '../../config.js';
+import { CLIENT_ID, CLIENT_SECRET, prisma} from '../../config.js';
 
 /**
  * Validates the Spotify client token. It is only retrieved for once and is used for
@@ -58,7 +58,7 @@ export async function validateClientToken() {
 
 async function requestClientCredentialToken(): Promise<[string, number]> {
 
-    if(!clientID || !clientSecret) {
+    if(!CLIENT_ID || !CLIENT_SECRET) {
         logger.warn('Client ID or Client Secret not set."');
         throw new Error('Client-Credentials-Flow failed: Cliend ID or Client Secret not set');
     }
@@ -69,7 +69,7 @@ async function requestClientCredentialToken(): Promise<[string, number]> {
     });
     const config = {
         headers: {
-            'Authorization': `Basic ${Buffer.from(`${clientID}:${clientSecret}`).toString('base64')}`
+            'Authorization': `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')}`
         }
     };
 

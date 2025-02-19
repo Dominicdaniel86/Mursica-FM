@@ -2,7 +2,7 @@ import express from 'express';
 import * as querystring from 'querystring';
 import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
-import { port } from './config.js';
+import { PORT } from './config.js';
 
 // Initialize app
 const app = express();
@@ -129,6 +129,6 @@ app.post('/api/admin/control/skip', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-    logger.info(`Server is running on port ${port}`);
+app.listen(PORT, () => {
+    logger.info(`Server is running on port ${PORT}`);
 });
