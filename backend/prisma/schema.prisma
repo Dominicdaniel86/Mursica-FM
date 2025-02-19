@@ -26,11 +26,16 @@ model OAuthToken {
   token         String @unique
   validUntil    DateTime
   refreshToken  String @unique
-  createdAt      DateTime @default(now())
+  createdAt     DateTime @default(now())
+}
+
+model State {
+  id    String @id @default(uuid())
+  state String @unique
 }
 
 model User {
-  id        Int @id @default(autoincrement())
+  id        String @id @default(uuid())
   name      String
   email     String @unique
   password  String
