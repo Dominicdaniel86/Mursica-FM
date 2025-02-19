@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
 import * as querystring from 'querystring';
-import { SpotifyAuthTokenResponse } from '../interfaces/index.js';
-import logger from '../logger/logger.js';
-import { generateRandomString } from '../utility/fileUtils.js';
-import { clientID, clientSecret} from '../config.js';
+import { SpotifyAuthTokenResponse } from '../../interfaces/index.js';
+import logger from '../../logger/logger.js';
+import { generateRandomString } from '../../utility/fileUtils.js';
+import { clientID, clientSecret} from '../../config.js';
 
 const prisma = new PrismaClient();
 
