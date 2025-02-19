@@ -29,13 +29,13 @@ app.get('/api', (req, res) => {
 
 app.get('/api/tracks/search', async (req, res) => {
 
-    validateClientToken();
-
     try {
-        let trackTitle = req.query.trackTitle as string;
+        validateClientToken();
+
+        const trackTitle = req.query.trackTitle as string;
 
         if(!trackTitle) {
-            res.status(400).json({error: 'Invalid track title'});
+            res.status(400).json({error: 'Empty track title'});
             return
         }
 
@@ -46,10 +46,10 @@ app.get('/api/tracks/search', async (req, res) => {
             return
         }
 
+        logger.info(`Sucessfully send ${tracks.length} track results to the user.`);
         res.status(200).json({tracks: tracks});
-        logger.info('/api/tracks/search API call succeeded');
-    } catch(err) {
-        logger.error(err, 'No tracks found through API');
+    } catch(error) {
+        logger.error(error, 'Failed to find tracks through the Spotify API.');
         res.status(500).json({error: 'Internal server error'});
     }
 });

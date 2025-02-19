@@ -9,7 +9,7 @@ export async function searchSong(track: string): Promise<TrackSummary[]> {
 
     // Validate input
     if(!track) {
-        logger.warn('Received empty track input in function "searchSong"');
+        logger.warn('Received empty track input in function "searchSong".');
         return [];
     }
 
