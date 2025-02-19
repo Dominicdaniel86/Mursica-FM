@@ -1,6 +1,6 @@
 import express from 'express';
 import * as querystring from 'querystring';
-import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack } from './api/index.js';
+import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack, refreshAuthToken } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { PORT } from './config.js';
 
@@ -59,36 +59,41 @@ app.post('/api/tracks/select', (req, res) => {
         logger.info('Song got selected: ' + req.body.trackID);
         res.send("You selected the song!");
     } else {
-        logger.warn('Empty song received');
+        logger.warn('Empty song selection received');
         res.status(400).send('Empty song send');
     }
 });
 
 app.get('/api/auth/spotify/login', (req, res) => {
 
-    logger.info('A user is trying to log in');
+    try {
+        logger.info('A user is trying to log in.');
 
-    const url = 'https://accounts.spotify.com/authorize?';
-    const querystring = generateOAuthQuerystring();
-
-    res.redirect(url + querystring);
+        const url = 'https://accounts.spotify.com/authorize?';
+        const querystring = generateOAuthQuerystring();
+    
+        res.redirect(url + querystring);
+        logger.info('Redirected user to the Spotify login page.');
+    } catch(error) {
+        logger.error(error, 'Could not redirect user to Spotify login page.');
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-// TODO: Rename callback to match projects API syntax
-app.get('/callback', async (req, res) => {
+app.get('/api/auth/callback', async (req, res) => {
     logger.debug('User login callback');
     var code = req.query.code as string;
     var state = req.query.state as string;
 
+    // TODO: Check state for correctness
     if (!state) {
+        logger.warn('OAuth authentication failed: Received invalid state');
         return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
     }
     else {
-        const response = await oAuthAuthorization(code);
-
-        logger.info(response);
-
+        await oAuthAuthorization(code);
         res.redirect('http://localhost/static/html/admin.html');
+        logger.info('Redirected user back to admin.html');
     }
 });
 
@@ -98,6 +103,7 @@ app.post('/api/auth/spotify/logout', (req, res) => {
 
 app.put('/api/admin/control/play', async (req, res) => {
     try {
+        await refreshAuthToken();
         await playTrack();
         logger.info('Admin plays/ continues the song');
         res.status(200).send('Play Song');
@@ -109,6 +115,7 @@ app.put('/api/admin/control/play', async (req, res) => {
 
 app.put('/api/admin/control/stop', async (req, res) => {
     try {
+        await refreshAuthToken();
         await pauseTrack();
         logger.info('Admin stopped the song');
         res.status(200).send('Stop Song');
@@ -120,6 +127,7 @@ app.put('/api/admin/control/stop', async (req, res) => {
 
 app.post('/api/admin/control/skip', async (req, res) => {
     try {
+        await refreshAuthToken();
         await skipTrack();
         logger.info('Admin skipped the song');
         res.status(200).send('Skip Song');

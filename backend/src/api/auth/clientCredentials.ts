@@ -4,8 +4,11 @@ import logger from '../../logger/logger.js';
 import { CLIENT_ID, CLIENT_SECRET, prisma} from '../../config.js';
 
 /**
- * Validates the Spotify client token. It is only retrieved for once and is used for
- * requests that are independent from a certain user.
+ * Validates and refreshes the Spotify client token if necessary.
+ * 
+ * This function ensures that a valid client token is always avialable by checking its
+ * expiration and refreshing it when needed. This token can be used for requests
+ * that are independent of a specific user.
  */
 export async function validateClientToken() {
 
@@ -56,6 +59,16 @@ export async function validateClientToken() {
     }
 }
 
+/**
+ * Requests an access token from the Spotify API using the Client Credentials flow.
+ * 
+ * This function authenticates with the Spotify API using the provided Client ID and
+ * Client Secret and retrieved an access token, which can be used for further API requests.
+ *
+ * @returns {Promise<[string, number]>} A tuple containing:
+ *   - The access token (string) required for authentication.
+ *   - The duration (in seconds) for which the token remains valid.
+ */
 async function requestClientCredentialToken(): Promise<[string, number]> {
 
     if(!CLIENT_ID || !CLIENT_SECRET) {
@@ -76,12 +89,12 @@ async function requestClientCredentialToken(): Promise<[string, number]> {
     try {
         const response = await axios.post<SpotifyClientTokenResponse>(url, data, config);
 
-        const access_token = response.data.access_token;
+        const accessToken = response.data.access_token;
         const expresIn = response.data.expires_in;
 
-        logger.info({'accessToken': access_token, 'validUntil': expresIn}, `Client-Credentials-Flow request succeeded.`);
+        logger.info({'accessToken': accessToken, 'expresIn': expresIn}, `Client-Credentials-Flow request succeeded.`);
 
-        return [access_token, expresIn];
+        return [accessToken, expresIn];
 
     } catch(error) {
         if(axios.isAxiosError(error)) {
