@@ -3,9 +3,11 @@ export {};
 declare global {
     interface Window {
         spotifyLogin: () => void;
+        switchVolumeVisbility: () => void;
         playSong: () => void;
         stopSong: () => void;
         skipSong: () => void;
+        changeVolume: () => void;
     }
 }
 
@@ -40,7 +42,25 @@ export async function skipSong() {
     axios.post(url);
 }
 
+export async function switchVolumeVisbility() {
+    const volumeSliderElement = document.getElementById('volume-slider') as HTMLInputElement;
+    const visiblity = volumeSliderElement.style.display;
+
+    if(visiblity === 'none')
+        volumeSliderElement.style.display = 'block';
+    else
+        volumeSliderElement.style.display = 'none';
+}
+
+export async function changeVolume() {
+    const element = document.getElementById('volume-slider') as HTMLInputElement;
+    console.log(element.value);
+    console.log('Volume changed');
+}
+
 window.spotifyLogin = spotifyLogin;
+window.switchVolumeVisbility = switchVolumeVisbility;
 window.playSong = playSong;
 window.stopSong = stopSong;
 window.skipSong = skipSong;
+window.changeVolume = changeVolume;

@@ -56,3 +56,11 @@ button {
     width: 10%;
     float: left;
 }
+
+#volume-slider {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin-bottom: 100px;
+    display: none;
+}
