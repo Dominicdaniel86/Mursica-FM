@@ -27,9 +27,14 @@
         <p>Current Session ID:<br><span id="id">#144-FAO</span></p>
     </div>
 
-    <div id="spotify-account">
+    <div id="spotify-account-logged-out">
         <p>Not connected with a<br>Spotify Account</p>
         <button onclick="spotifyLogin()">Connect</button>
+    </div>
+
+    <div id="spotify-account-logged-in">
+        <p>Connected with account<br><span id="account-name">"ACCOUNT NAME"</span></p>
+        <button onclick="spotifyLogout()">Disconnect</button>
     </div>
 
     <input type="range" id="volume-slider" min="0" max="100" value="100" onchange="changeVolume()">

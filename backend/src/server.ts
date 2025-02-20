@@ -170,6 +170,19 @@ app.get('/api/admin/control/volume', async (req, res) => {
     
 });
 
+app.get('/api/admin', async (req, res) => {
+    try {
+        const token = await prisma.oAuthToken.findFirst();
+        if(token)
+            res.status(200).send(true);
+        else
+            res.status(200).send(false);
+    } catch(error) {
+        logger.error(error, 'Could not check if an admin is logged in.');
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.listen(PORT, () => {
     logger.info(`Server is running on port ${PORT}`);
 });

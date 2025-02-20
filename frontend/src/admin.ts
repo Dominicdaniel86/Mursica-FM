@@ -3,6 +3,7 @@ export {};
 declare global {
     interface Window {
         spotifyLogin: () => void;
+        spotifyLogout: () => void;
         switchVolumeVisbility: () => void;
         playSong: () => void;
         stopSong: () => void;
@@ -12,6 +13,32 @@ declare global {
 }
 
 window.addEventListener('load', async () => {
+    
+    // check if user is logged in
+    const firstUrl: string = '/api/admin';
+    const firstConfig: object = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    try {
+        const loggedIn = await axios.get<boolean>(firstUrl, firstConfig);
+        const loggedINData = loggedIn.data;
+
+        if(loggedINData) {
+            let accountField = document.getElementById('spotify-account-logged-in') as HTMLDivElement;
+            accountField.style.display = 'block';
+            console.info("LOGGED IN");
+        } else {
+            let accountField = document.getElementById('spotify-account-logged-out') as HTMLDivElement;
+            accountField.style.display = 'block';
+            console.info("LOGGED IN");
+        }
+    } catch(error) {
+        console.error('Error retrieving loggin status');
+    }
+    
     // load current volume
     const url: string = '/api/admin/control/volume';
     const config: object = {
@@ -49,6 +76,17 @@ export async function spotifyLogin() {
     }
 }
 
+export async function spotifyLogout() {
+    const url: string = '/api/auth/spotify/logout';
+    const config: object = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    axios.post(url, config);
+}
+
 export async function playSong() {
     const url: string = '/api/admin/control/play';
     axios.put(url);
@@ -81,6 +119,7 @@ export async function changeVolume() {
 }
 
 window.spotifyLogin = spotifyLogin;
+window.spotifyLogout = spotifyLogout;
 window.switchVolumeVisbility = switchVolumeVisbility;
 window.playSong = playSong;
 window.stopSong = stopSong;
