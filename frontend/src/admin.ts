@@ -11,6 +11,28 @@ declare global {
     }
 }
 
+window.addEventListener('load', async () => {
+    // load current volume
+    const url: string = '/api/admin/control/volume';
+    const config: object = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    try {
+        const volume = await axios.get<string>(url, config);
+        console.log(volume.data);
+
+        const element = document.getElementById('volume-slider') as HTMLInputElement;
+        element.value = volume.data;
+    } catch(error) {
+        console.error('Error retrieving the current volume');
+    }
+
+
+});
+
 export async function spotifyLogin() {
 
     const url: string = '/api/auth/spotify/login';

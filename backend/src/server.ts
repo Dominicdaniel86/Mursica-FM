@@ -162,7 +162,7 @@ app.get('/api/admin/control/volume', async (req, res) => {
     try {
         await refreshAuthToken();
         const currentVolume = await getCurrentVolume();
-        res.status(200).json({ currentVolume: currentVolume});
+        res.status(200).send(`${currentVolume}`);
     } catch(error) {
         logger.error(error, 'Could not retrieve current volume.');
         res.status(500).json({ error: 'Internal server error' });
