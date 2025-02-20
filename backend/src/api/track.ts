@@ -2,6 +2,7 @@ import axios from 'axios';
 import { SpotifyTrackResponse, TrackSummary } from '../interfaces/index.js';
 import logger from '../logger/logger.js';
 import { prisma } from '../config.js';
+import { SpotifyPlayer } from '../interfaces/index.js';
 
 /**
  * Searches for a song on Spotify based on the given track name.
@@ -135,5 +136,41 @@ export async function skipTrack() {
         await axios.post(url, {}, config);
     } else {
         throw new Error('No OAuth token found for this user');
+    }
+}
+
+export async function getCurrentVolume() {
+
+    const token = await prisma.oAuthToken.findFirst();
+
+    if(token) {
+        const url = 'https://api.spotify.com/v1/me/player';
+        const config: object = {
+            headers: {
+                'Authorization': `Bearer ${token.token}`
+            }
+        };
+        const player = await axios.get<SpotifyPlayer>(url, config);
+
+        return player.data.device.volume_percent;
+    } else {
+        throw new Error('No OAuth token found for this user');
+    }
+}
+
+export async function changeCurrentVolume(desiredVolume: string) {
+
+    const token = await prisma.oAuthToken.findFirst();
+
+    if(token) {
+        const url = `https://api.spotify.com/v1/me/player/volume?volume_percent=${desiredVolume}`;
+        const config: object = {
+            headers: {
+                'Authorization': `Bearer ${token.token}`
+            }
+        };
+        await axios.put(url, {}, config);
+    } else {
+        throw new Error('Could not change volume');
     }
 }
