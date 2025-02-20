@@ -1,6 +1,6 @@
 import express from 'express';
 import * as querystring from 'querystring';
-import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack, refreshAuthToken, getCurrentVolume } from './api/index.js';
+import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack, refreshAuthToken, getCurrentVolume, changeCurrentVolume } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { PORT, prisma } from './config.js';
 import { logout } from './api/auth/logout.js';
@@ -169,6 +169,21 @@ app.get('/api/admin/control/volume', async (req, res) => {
     }
     
 });
+
+app.put('/api/admin/control/volume', async (req, res) => {
+    try {
+        const volume = req.query.volume as string;
+
+        logger.debug(volume);
+        await refreshAuthToken();
+        await changeCurrentVolume(volume);
+        res.status(200).send('Volume successfully changed!');
+    } catch(error) {
+        logger.error(error, 'Could not change current volume.');
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 app.get('/api/admin', async (req, res) => {
     try {

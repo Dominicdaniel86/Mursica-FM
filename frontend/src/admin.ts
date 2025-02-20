@@ -116,6 +116,15 @@ export async function changeVolume() {
     const element = document.getElementById('volume-slider') as HTMLInputElement;
     console.log(element.value);
     console.log('Volume changed');
+
+    const url: string = `/api/admin/control/volume?volume=${element.value}`;
+    const config: object = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    await axios.put<string>(url, config);
 }
 
 window.spotifyLogin = spotifyLogin;

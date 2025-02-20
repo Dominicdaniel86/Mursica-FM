@@ -157,3 +157,20 @@ export async function getCurrentVolume() {
         throw new Error('No OAuth token found for this user');
     }
 }
+
+export async function changeCurrentVolume(desiredVolume: string) {
+
+    const token = await prisma.oAuthToken.findFirst();
+
+    if(token) {
+        const url = `https://api.spotify.com/v1/me/player/volume?volume_percent=${desiredVolume}`;
+        const config: object = {
+            headers: {
+                'Authorization': `Bearer ${token.token}`
+            }
+        };
+        await axios.put(url, {}, config);
+    } else {
+        throw new Error('Could not change volume');
+    }
+}
