@@ -1,6 +1,6 @@
 import express from 'express';
 import * as querystring from 'querystring';
-import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack, refreshAuthToken } from './api/index.js';
+import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack, refreshAuthToken, getCurrentVolume } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { PORT, prisma } from './config.js';
 import { logout } from './api/auth/logout.js';
@@ -156,6 +156,18 @@ app.post('/api/admin/control/skip', async (req, res) => {
         logger.error(err, 'Failed to skip the song');
         res.status(500).json({ error: 'Internal server error' });
     }
+});
+
+app.get('/api/admin/control/volume', async (req, res) => {
+    try {
+        await refreshAuthToken();
+        const currentVolume = await getCurrentVolume();
+        res.status(200).json({ currentVolume: currentVolume});
+    } catch(error) {
+        logger.error(error, 'Could not retrieve current volume.');
+        res.status(500).json({ error: 'Internal server error' });
+    }
+    
 });
 
 app.listen(PORT, () => {
