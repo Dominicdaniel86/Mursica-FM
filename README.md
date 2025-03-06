@@ -16,7 +16,7 @@ Topics to cover:
 
 ## Getting started
 
-This application is currently in early development, and there is no simple way to install or use it without technical knowledge. If you're a developer or have experience with development tools, please follow the [Setup for Developers](#setup-for-developers) section to try it out.
+This application is currently in early development, and there is no simple way to install or use it without technical knowledge. If you're a developer or have experience with development tools, please refer to the following [Setup for Developers](#setup-for-developers) section to try it out.
 
 ## Setup for Developers
 
@@ -56,11 +56,13 @@ Configure the values "ENVIRONMENT", "CLIENT_ID" and "CLIENT_SECRET" in the /back
 
 | Env Variable | Valid Values |
 | --- | --- |
-| ENVIRONMENT | 'production' or 'testing' |
+| ENVIRONMENT | 'production' or 'testing' (depending on the deployment) |
 | CLIENT_ID | Can be found on your created [Spotify app](https://developer.spotify.com/) |
 | CLIENT_SECRET | Can be found on your created [Spotify app](https://developer.spotify.com/) |
 
 **5. Start the application**
+
+**For Windows users:** Before starting the application, ensure that all `.sh` files use the LF (Line Feed) file ending. This guarantees compatibility in Linux-based environments, such as Docker containers, and prevents potential script execution issues.
 
 Run the following command to build and start the application:
 
