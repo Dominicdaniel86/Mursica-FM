@@ -82,6 +82,12 @@ To stop and remove the running containers, use:
 docker compose down
 ```
 
+### Additional Step: Install npm packages
+
+Not needed for starting the application, but useful for development and auto-completion.
+
+Navigate to both the `/backend` and `/frontend` folders to execute `npm install`. Tools like *VS Code* can use the created `node_modules` directories to verify the installation of needed dependencies during development.
+
 ## Project Roadmap
 
 <picture>
