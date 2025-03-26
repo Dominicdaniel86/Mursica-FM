@@ -2,7 +2,7 @@
 
 **Revolutionize your party with this third-party Spotify app, which makes listening to music as a group more seamless and interactive.** This app democratizes song selection, allowing participants to contribute their favorite tracks effortlessly. Only the host needs a Spotify account - everyone else can join freely to add some tracks! Its user-friendly interface keeps things simple, so you can focus on what really matters: the music. Best of all, it's free to use and accessible directly through your web browser. No installation required!
 
-Please note that this app is currently it its conceptual phase. Your feedback is more than welcomed. You can reach out at my email address [Dominicdaniel3107@gmail.com](mailto:Dominicdaniel3107@gmail.com).
+Please note that this app is currently in its conceptual phase. Your feedback is more than welcome. You can reach out to me at my email address [Dominicdaniel3107@gmail.com](mailto:Dominicdaniel3107@gmail.com).
 If you are a developer, feel encouraged to provide feedback or fork the project, adhering to the [GPL3.0 license](https://github.com/Dominicdaniel86/Spotify-Session-App?tab=GPL-3.0-1-ov-file).
 
 ## Overview (To-Do!)
@@ -22,11 +22,9 @@ This application is currently in early development, and there is no simple way t
 
 ### Prerequisites
 
-Before you begin, ensure you have the following tool installed on your system:
-
-- [Git](https://youtube.com)
-- [Node.js](https://youtube.com)
-- [Docker](https://youtube.com)
+- [Git](https://git-scm.com/)
+- [Node.js](https://nodejs.org/)
+- [Docker](https://www.docker.com/)
 
 ### Installation Steps
 
