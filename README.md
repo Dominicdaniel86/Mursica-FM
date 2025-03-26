@@ -50,17 +50,27 @@ git checkout <branch-name>
 
 Log into the [dashboard](https://developer.spotify.com/) using your Spotify account and create an app. You can find more information on [Spotifys Documentation](https://developer.spotify.com/documentation/web-api).
 
-**4. Configure env variable file**
+**4. Configure backend env variable file**
 
-Configure the values "ENVIRONMENT", "CLIENT_ID" and "CLIENT_SECRET" in the /backend/.env file:
+You will find an `.example.env` file in the `/backend` directory. You need to create a new `.env` file or rename the `.example.env` file to `.env`. Configure the values "ENVIRONMENT", "CLIENT_ID" and "CLIENT_SECRET" in the `/backend/.env` file:
 
-| Env Variable | Valid Values |
-| --- | --- |
-| ENVIRONMENT | 'production' or 'testing' (depending on the deployment) |
-| CLIENT_ID | Can be found on your created [Spotify app](https://developer.spotify.com/) |
-| CLIENT_SECRET | Can be found on your created [Spotify app](https://developer.spotify.com/) |
+| Env Variable  | Description | Valid Values |
+| ------------- | ----------- | ------------ |
+| ENVIRONMENT   | Environment type | 'production' or 'testing' (depending on the deployment) |
+| CLIENT_ID     | Spotify Client ID | Can be found on your created [Spotify app](https://developer.spotify.com/) |
+| CLIENT_SECRET | Spotify Client Secret | Can be found on your created [Spotify app](https://developer.spotify.com/) |
 
-**5. Start the application**
+**5. Configure database env variable file**
+
+You will find an `.example.env` file in the `/database` directory. You need to create a new `.env` file or rename the `.example.env` file to `.env`. Configure the database environment variables in the `/database/.env` file:
+
+| Env Variable     | Description | Example Value |
+| ---------------- | ----------- | ------------- |
+| POSTGRES_USER    | Database user | spotify_session_user |
+| POSTGRES_PASSWORD| Database password | password |
+| POSTGRES_DB      | Database name | spotify_session_database |
+
+**6. Start the application**
 
 **For Windows users:** Before starting the application, ensure that all `.sh` files use the LF (Line Feed) file ending. This guarantees compatibility in Linux-based environments, such as Docker containers, and prevents potential script execution issues.
 
@@ -70,7 +80,23 @@ Run the following command to build and start the application:
 docker compose up -d --build
 ```
 
-**6. Access the application**
+**7. Migrate the database and compile the frontend**
+
+Before accessing the application, you need to migrate the Prisma data to the database. Run the following commands:
+
+```bash
+cd ./backend
+npm run prisma:migrate
+```
+
+Next, compile the JavaScript code for the frontend:
+
+```bash
+cd ./frontend
+npm run build
+```
+
+**8. Access the application**
 
 Once running, you can open the application in your browser at [http://127.0.0.1:80](http://127.0.0.1:80).
 
@@ -87,6 +113,18 @@ docker compose down
 Not needed for starting the application, but useful for development and auto-completion.
 
 Navigate to both the `/backend` and `/frontend` folders to execute `npm install`. Tools like *VS Code* can use the created `node_modules` directories to verify the installation of needed dependencies during development.
+
+### Setup for Efficient Development
+
+Developing new features can become tedious if you need to restart the container frequently. To enhance the development experience, this project includes several mechanisms:
+
+1. **Auto-restart Backend on Save**: To automatically restart your backend on every save, run `npm run dev` in your `backend` directory. Ensure the backend container has the environment variable `ENVIRONMENT` set to `development`.
+
+2. **Apply Prisma Migrations**: To apply new migrations from the Prisma schema to the database, run `npm run prisma:migrate` in your `backend` directory.
+
+3. **Auto-compile TypeScript**: To automatically compile your TypeScript into JavaScript on every save, run `npm run start` in the `frontend` directory.
+
+Keep in mind that each of these steps requires running containers. Additionally, steps 1 and 3 will need separate terminal instances.
 
 ## Project Roadmap
 
