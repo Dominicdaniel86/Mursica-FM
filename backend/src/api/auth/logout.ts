@@ -2,6 +2,9 @@ import logger from '../../logger/logger.js';
 import { prisma} from '../../config.js';
 import { NotFoundError } from '../../errors/index.js';
 
+/**
+ * Removes the OAuth token from the database, leading to a clean database entry.
+ */
 export async function logout() {
     try {
         const currentToken = await prisma.oAuthToken.findFirst();

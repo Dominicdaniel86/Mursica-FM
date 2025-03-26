@@ -2,7 +2,6 @@ import axios from 'axios';
 import { prisma } from '../config.js';
 import { SpotifyPlayer } from '../interfaces/index.js';
 
-
 /**
  * Plays the currently active track on the Spotify player.
  * 

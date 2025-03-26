@@ -1,3 +1,4 @@
+// Information about the current active Spotify player
 export interface SpotifyPlayer {
     device: Device;
     shuffle_state: boolean;
@@ -12,6 +13,7 @@ export interface SpotifyPlayer {
     is_playing: boolean;
 }
 
+//* Following interfaces are all sub-parts of the SpotifyPlayer interface
 interface Device {
     id: string;
     is_active: boolean;
