@@ -1,9 +1,9 @@
-# Spotify Session App
+# Mursica FM
 
 **Revolutionize your party with this third-party Spotify app, which makes listening to music as a group more seamless and interactive.** This app democratizes song selection, allowing participants to contribute their favorite tracks effortlessly. Only the host needs a Spotify account - everyone else can join freely to add some tracks! Its user-friendly interface keeps things simple, so you can focus on what really matters: the music. Best of all, it's free to use and accessible directly through your web browser. No installation required!
 
 Please note that this app is currently in its conceptual phase. Your feedback is more than welcome. You can reach out to me at my email address [Dominicdaniel3107@gmail.com](mailto:Dominicdaniel3107@gmail.com).
-If you are a developer, feel encouraged to provide feedback or fork the project, adhering to the [GPL3.0 license](https://github.com/Dominicdaniel86/Spotify-Session-App?tab=GPL-3.0-1-ov-file).
+If you are a developer, feel encouraged to provide feedback or fork the project, adhering to the [GPL3.0 license](https://github.com/Dominicdaniel86/Mursica-FM?tab=GPL-3.0-1-ov-file).
 
 ## Overview (To-Do!)
 
@@ -33,7 +33,7 @@ This application is currently in early development, and there is no simple way t
 Open a command shell and run:
 
 ```bash
-git clone https://github.com/Dominicdaniel86/Spotify-Session-App.git
+git clone https://github.com/Dominicdaniel86/Mursica-FM.git
 ```
 
 **2. Switch to the appropriate branch**
@@ -133,8 +133,8 @@ Keep in mind that each of these steps requires running containers. Additionally,
 
 ## UI Design Concept
 
-[![Figma Design](/media/images/figma-logo.png)](https://www.figma.com/design/Vnn1y0fCs0i6Gv67nVtnGQ/Spotify-Session-App?node-id=0-1&t=x7rMBCipKQkkgSHH-1)
+[![Figma Design](/media/images/figma-logo.png)](https://www.figma.com/design/Vnn1y0fCs0i6Gv67nVtnGQ/Mursica-FM?node-id=0-1&t=x7rMBCipKQkkgSHH-1)
 
 ---
 
-For more details, check the [issues page](https://github.com/Dominicdaniel86/Spotify-Session-App/issues) of this repository.
+For more details, check the [issues page](https://github.com/Dominicdaniel86/Mursica-FM/issues) of this repository.
