@@ -43,7 +43,6 @@ cd /home/ec2-user/Mursica-FM
 cd /home/ec2-user/Mursica-FM/backend && npm install
 cd /home/ec2-user/Mursica-FM/frontend && npm install
 
-until [ "$(systemctl is-active docker)" = "active" ]; do sleep 1; done
 cd /home/ec2-user/Mursica-FM && docker compose up -d --build
 
 cd /home/ec2-user/Mursica-FM/backend && npm run prisma:migrate
