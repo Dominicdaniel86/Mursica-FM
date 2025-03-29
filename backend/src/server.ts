@@ -1,8 +1,9 @@
 import express from 'express';
 import * as querystring from 'querystring';
-import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack, refreshAuthToken } from './api/index.js';
+import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack, refreshAuthToken, getCurrentVolume, changeCurrentVolume, logout } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { PORT, prisma } from './config.js';
+import { NotFoundError } from './errors/index.js';
 
 // Initialize app
 const app = express();
@@ -64,6 +65,19 @@ app.post('/api/tracks/select', (req, res) => {
     }
 });
 
+app.get('/api/auth/spotify', async (req, res) => {
+    try {
+        const token = await prisma.oAuthToken.findFirst();
+        if(token)
+            res.status(200).send(true);
+        else
+            res.status(200).send(false);
+    } catch(error) {
+        logger.error(error, 'Could not check if an admin is logged in.');
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.get('/api/auth/spotify/login', async (req, res) => {
 
     try {
@@ -80,7 +94,7 @@ app.get('/api/auth/spotify/login', async (req, res) => {
     }
 });
 
-app.get('/api/auth/callback', async (req, res) => {
+app.get('/api/auth/spotify/callback', async (req, res) => {
     logger.info('User login callback');
     const code = req.query.code as string;
     const state = req.query.state as string;
@@ -103,8 +117,21 @@ app.get('/api/auth/callback', async (req, res) => {
     logger.info('Redirected user back to admin.html');
 });
 
-app.post('/api/auth/spotify/logout', (req, res) => {
-    res.send('Logged out now!');
+app.post('/api/auth/spotify/logout', async (req, res) => {
+    logger.info('A user is trying to logout.');
+
+    try {
+        await logout();
+        res.send('Logged out now!');
+    } catch(error) {
+        if(error instanceof NotFoundError) {
+            logger.error(error, 'Failed to log out')
+            res.status(400).json({ error: 'No OAuth token found' });
+        } else {
+            logger.error(error, 'Failed to log out')
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
 });
 
 app.put('/api/admin/control/play', async (req, res) => {
@@ -139,6 +166,46 @@ app.post('/api/admin/control/skip', async (req, res) => {
         res.status(200).send('Skip Song');
     } catch (err) {
         logger.error(err, 'Failed to skip the song');
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/api/admin/control/volume', async (req, res) => {
+    try {
+        await refreshAuthToken();
+        const currentVolume = await getCurrentVolume();
+        res.status(200).send(`${currentVolume}`);
+    } catch(error) {
+        logger.error(error, 'Could not retrieve current volume.');
+        res.status(500).json({ error: 'Internal server error' });
+    }
+    
+});
+
+app.put('/api/admin/control/volume', async (req, res) => {
+    try {
+        const volume = req.query.volume as string;
+
+        logger.debug(volume);
+        await refreshAuthToken();
+        await changeCurrentVolume(volume);
+        res.status(200).send('Volume successfully changed!');
+    } catch(error) {
+        logger.error(error, 'Could not change current volume.');
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+//! Deprecated
+app.get('/api/admin', async (req, res) => {
+    try {
+        const token = await prisma.oAuthToken.findFirst();
+        if(token)
+            res.status(200).send(true);
+        else
+            res.status(200).send(false);
+    } catch(error) {
+        logger.error(error, 'Could not check if an admin is logged in.');
         res.status(500).json({ error: 'Internal server error' });
     }
 });

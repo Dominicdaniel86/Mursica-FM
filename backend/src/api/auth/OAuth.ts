@@ -17,7 +17,7 @@ import { CLIENT_ID, CLIENT_SECRET, prisma} from '../../config.js';
 export async function generateOAuthQuerystring(): Promise<string> {
     const state = generateRandomString(16); // TODO: Use this state to prevent CSRF attacks
     const scope = 'user-modify-playback-state user-read-playback-state';
-    const redirectURI = 'http://127.0.0.1/api/auth/callback';
+    const redirectURI = 'http://127.0.0.1/api/auth/spotify/callback';
 
     try {
         const previousState = await prisma.state.findFirst();
@@ -59,7 +59,7 @@ export async function oAuthAuthorization(code: string) {
     const url = 'https://accounts.spotify.com/api/token';
     const data = {
         code: code,
-        redirect_uri: 'http://127.0.0.1/api/auth/callback',
+        redirect_uri: 'http://127.0.0.1/api/auth/spotify/callback',
         grant_type: 'authorization_code'
     };
     const config = {
