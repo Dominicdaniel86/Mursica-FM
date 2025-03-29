@@ -13,17 +13,17 @@ declare global {
 }
 
 window.addEventListener('load', async () => {
-    
-    // check if user is logged in
-    const firstUrl: string = '/api/admin';
-    const firstConfig: object = {
+
+    // check if the user is logged in
+    const loggedInReqUrl: string = '/api/auth/spotify/login';
+    const loggedInReqConfig: object = {
         headers: {
             'Content-Type': 'application/json'
         }
     };
 
     try {
-        const loggedIn = await axios.get<boolean>(firstUrl, firstConfig);
+        const loggedIn = await axios.get<boolean>(loggedInReqUrl, loggedInReqConfig);
         const loggedINData = loggedIn.data;
 
         if(loggedINData) {

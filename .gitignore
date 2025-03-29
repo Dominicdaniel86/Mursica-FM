@@ -153,3 +153,20 @@ notes.md
 
 # Prisma Files
 *.toml
+
+# CDK
+!jest.config.js
+*.d.ts
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+cdk.context.json
+
+# Certificate files
+*.pem
+*.crt
+*.key
+*.p12
+*.pfx
+*.jks

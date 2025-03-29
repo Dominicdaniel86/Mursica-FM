@@ -1,9 +1,8 @@
 import express from 'express';
 import * as querystring from 'querystring';
-import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack, refreshAuthToken, getCurrentVolume, changeCurrentVolume } from './api/index.js';
+import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack, refreshAuthToken, getCurrentVolume, changeCurrentVolume, logout } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { PORT, prisma } from './config.js';
-import { logout } from './api/auth/logout.js';
 import { NotFoundError } from './errors/index.js';
 
 // Initialize app
@@ -66,6 +65,19 @@ app.post('/api/tracks/select', (req, res) => {
     }
 });
 
+app.get('/api/auth/spotify', async (req, res) => {
+    try {
+        const token = await prisma.oAuthToken.findFirst();
+        if(token)
+            res.status(200).send(true);
+        else
+            res.status(200).send(false);
+    } catch(error) {
+        logger.error(error, 'Could not check if an admin is logged in.');
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.get('/api/auth/spotify/login', async (req, res) => {
 
     try {
@@ -82,7 +94,7 @@ app.get('/api/auth/spotify/login', async (req, res) => {
     }
 });
 
-app.get('/api/auth/callback', async (req, res) => {
+app.get('/api/auth/spotify/callback', async (req, res) => {
     logger.info('User login callback');
     const code = req.query.code as string;
     const state = req.query.state as string;
@@ -184,7 +196,7 @@ app.put('/api/admin/control/volume', async (req, res) => {
     }
 });
 
-
+//! Deprecated
 app.get('/api/admin', async (req, res) => {
     try {
         const token = await prisma.oAuthToken.findFirst();
