@@ -1,12 +1,10 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-const dotenv = require('dotenv');
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { InstanceTarget } from 'aws-cdk-lib/aws-elasticloadbalancingv2-targets';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
 
@@ -26,6 +24,15 @@ export interface BackendEnvProps {
   DATABASE_URL: string;
 }
 
+// The name of the domain. Replace with your own domain name.
+// This domain name must be registered in Route53.
+const domainNameString = 'mursica.fm';
+// More configurations for the github repository
+// Replace with your own repository URL, branch, and app name
+const githubURL = '';
+const gitBranch = 'feature/clean-up';
+const appName = '';
+
 export class CdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -35,7 +42,7 @@ export class CdkStack extends cdk.Stack {
 
     // Route53 hosted zone
     const hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', {
-      domainName: 'mursica.fm',
+      domainName: domainNameString,
     });
 
     // Create an IAM role for the EC2 instance
