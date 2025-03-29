@@ -29,9 +29,9 @@ export interface BackendEnvProps {
 const domainNameString = 'mursica.fm';
 // More configurations for the github repository
 // Replace with your own repository URL, branch, and app name
-const githubURL = '';
-const gitBranch = 'feature/clean-up';
-const appName = '';
+const repositoryURL = 'https://github.com/Dominicdaniel86/Mursica-FM.git';
+const repositoryName = 'Mursica-FM'; // Needs to match the name of the repository
+const gitBranch = 'main';
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -140,8 +140,8 @@ export class CdkStack extends cdk.Stack {
     instance.addUserData(
       'dnf update -y',
       'dnf install -y git',
-      'git clone https://github.com/Dominicdaniel86/Mursica-FM.git /home/ec2-user/Mursica-FM',
-      'cd /home/ec2-user/Mursica-FM && git checkout feature/clean-up',
+      `git clone ${repositoryURL} /home/ec2-user/Mursica-FM`,
+      `cd /home/ec2-user/${repositoryName} && git checkout ${gitBranch}`,
       'bash /home/ec2-user/Mursica-FM/scripts/installation.sh',
     );
   }
