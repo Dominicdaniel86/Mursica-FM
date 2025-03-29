@@ -27,6 +27,7 @@ services:
     container_name: spotify-session-proxy
     ports:
       - "80:80"
+      - "443:443"
     networks:
       - spotify-session-network
     depends_on:
