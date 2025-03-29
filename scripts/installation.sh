@@ -37,8 +37,8 @@ DATABASE_URL=$(aws ssm get-parameter --name "/mursica/backend/DATABASE_URL" --qu
     && echo "DATABASE_URL=$DATABASE_URL" >> /home/ec2-user/Mursica-FM/backend/.env
 
 cd /home/ec2-user/Mursica-FM
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout /home/ec2-user/Mursica-FM/ssl/server.key -out /home/ec2-user/Mursica-FM/ssl/server.crt
+# openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+#     -keyout /home/ec2-user/Mursica-FM/ssl/server.key -out /home/ec2-user/Mursica-FM/ssl/server.crt
 
 cd /home/ec2-user/Mursica-FM/backend && npm install
 cd /home/ec2-user/Mursica-FM/frontend && npm install
