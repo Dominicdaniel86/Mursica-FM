@@ -1,0 +1,3 @@
+[submodule "docs"]
+	path = docs
+	url = https://github.com/Dominicdaniel86/Mursica-FM.wiki.git
