@@ -14,16 +14,16 @@ This Privacy Policy describes how we collect, use, share, and protect the inform
 #### 1.1 **Hosting Users**
 
 1. **Account Registration:**  
-   - When you register an account on **MursicaFM**, we collect your chosen username and email address, which are stored in plain text. Your password is stored securely using modern hashing functions and is never stored in plain text.
-2. **Spotify OAuth Tokens:**  
-   - When you log into **MursicaFM** with your Spotify account, we do not directly access or see your Spotify credentials. Instead, we receive an authentication token from Spotify (OAuth token), which is stored and refreshed by our system so we can make Spotify API calls (e.g., play, pause, skip tracks).
+   - When you register for a MursicaFM hosting account, we collect your chosen username and email address, which are stored in plain text. Your password is stored securely using modern hashing functions and is never stored in plain text.  
+2. **Spotify Premium Account Required:**  
+   - To create a music party and host a session, you must log in with a **Spotify Premium** account. We do not directly access your Spotify credentials. Instead, we receive an authentication token from Spotify, which we store and refresh on our servers to make Spotify API calls on your behalf (e.g., play, pause, skip tracks).  
 3. **Session Cookies:**  
-   - We use cookies or similar technologies to store a session token for authentication purposes on our platform. This helps us keep you logged in and associate your actions with your account.
+   - We use cookies or similar technologies to store a session token for authentication purposes on our platform. This helps us keep you logged in and associate your actions with your hosting account.
 
 #### 1.2 **Joining Members (Non-Hosting Users)**
 
 - **User Name & Session Association:**  
-  - When you join a party created by a hosting user, you may provide a custom user name. We store this user name alongside the session you joined. We do not require or process any Spotify credentials for joining members unless they later decide to host their own session.
+  - When you join a party created by a hosting user, you may provide a custom user name. We store this user name alongside the session you joined. We do not require or process any Spotify credentials for joining members, unless they later decide to host their own session (at which point a Premium account is needed).
 
 ---
 
@@ -31,7 +31,7 @@ This Privacy Policy describes how we collect, use, share, and protect the inform
 
 - **To Provide the Services:** We use your account information (hosting users) and session data to let you create or join a music party, control Spotify playback, and display real-time updates about the music session.
 - **Authentication & Security:** Cookies and session tokens are used to verify your identity, protect your account from unauthorized access, and keep you logged in.
-- **Spotify Playback Control:** We use the stored Spotify token solely for making authorized Spotify API calls on your behalf (e.g., play, pause, skip).
+- **Spotify Playback Control:** We use your stored Spotify OAuth token exclusively for making authorized Spotify API calls on your behalf (e.g., play, pause, skip).
 - **Service Improvements:** We may use anonymized or aggregated data to improve our Services (e.g., ensuring our platform runs smoothly and securely).
 
 ---
@@ -52,11 +52,13 @@ This Privacy Policy describes how we collect, use, share, and protect the inform
 
 ### 5. Cookies & Tracking Technologies
 
-- **What Are Cookies?** Cookies are small text files placed on your device to help us recognize you, maintain your login session, and provide certain functionalities.
+- **What Are Cookies?**
+  - Cookies are small text files placed on your device to help us recognize you, maintain your login session, and provide certain functionalities.
 - **Types of Cookies We Use:**  
   - **Session Cookies:** These keep you logged in during your visit. They expire when you close your browser.  
   - **Authentication Tokens:** These allow our backend to verify your identity after login.
-- **How to Manage Cookies:** Most web browsers automatically accept cookies, but you can modify your browser settings to decline cookies if you prefer. However, doing so may affect certain functionalities of **MursicaFM**.
+- **How to Manage Cookies:**  
+  - Most web browsers automatically accept cookies, but you can modify your browser settings to decline cookies if you prefer. However, doing so may affect certain functionalities of **MursicaFM**.
 
 ---
 
