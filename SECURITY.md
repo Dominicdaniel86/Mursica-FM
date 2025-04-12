@@ -9,6 +9,8 @@ We recommend running the **most recent version** of MursicaFM. As a small projec
 | Latest  | ✅                 |
 | Older   | ❌ (No support)    |
 
+Only the official MursicaFM repository and website are guaranteed to have the latest updates. Forks or third-party versions may lack updates and are not endorsed by the developer. Use the official release for security and reliability.
+
 ## Reporting a Vulnerability
 
 Please **do not publicly disclose** security vulnerabilities (e.g., in a GitHub Issue). Instead, follow the instructions below for responsible disclosure:
@@ -36,10 +38,10 @@ At this time, MursicaFM **does not** offer a paid bug bounty program. We still a
 
 ## License
 
-This project is released under the **GPL3.0 License**, which can be found in the repository. By contributing to MursicaFM, you agree to its terms and conditions.
+This project is released under the [GPL3.0 License](https://github.com/Dominicdaniel86/Mursica-FM/blob/main/LICENSE), which can be found in the repository. By contributing to MursicaFM, you agree to its terms and conditions.
 
 ## Contact
 
 For all security-related concerns, questions, or clarifications, please contact:  
-**Email:** [Dominicdaniel3107@gmail.com]  
+**Email:** [Dominicdaniel3107@gmail.com](mailto:dominicdaniel3107@gmail.com)
 **Website:** [https://mursica.fm](https://mursica.fm)
