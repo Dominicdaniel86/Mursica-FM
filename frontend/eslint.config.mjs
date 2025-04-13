@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
 export default [
-  // ✅ Base rules (shared across both frontend and backend)
+  // Base rules (shared across both frontend and backend)
   ...tseslint.config(
     eslint.configs.recommended,
     tseslint.configs.recommended,
@@ -11,7 +11,7 @@ export default [
     prettier,
   ),
 
-  // ✅ Frontend (Browser/TSX) rules
+  // Frontend (Browser/TSX) rules
   ...tseslint.config({
     files: ['frontend/**/*.ts', 'frontend/**/*.tsx'],
     languageOptions: {
@@ -23,8 +23,17 @@ export default [
       },
     },
     rules: {
+      // TypeScript-specific rules
       '@typescript-eslint/explicit-function-return-type': 'warn',
       '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-floating-promises': 'error',
+
+      // React/TSX-specific rules
+      // Might follow in the future
+
+      // Prettier integration
+      'prettier/prettier': 'error', // Enforce Prettier formatting
     },
   }),
 ];
