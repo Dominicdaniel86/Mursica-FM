@@ -1,6 +1,8 @@
+// filepath: /home/dkraemer/programming-projects/mursica-fm/backend/eslint.config.mjs
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
+import prettierPlugin from 'eslint-plugin-prettier';
 
 export default [
     // Base rules (shared across both frontend and backend)
@@ -10,7 +12,7 @@ export default [
       tseslint.configs.strict,
       prettier,
     ),
-  
+
     // Backend (Node.js) rules
     ...tseslint.config({
       files: ['backend/**/*.ts'],
@@ -27,8 +29,12 @@ export default [
         '@typescript-eslint/consistent-type-imports': 'warn',
         '@typescript-eslint/no-unused-vars': 'warn',
         '@typescript-eslint/explicit-function-return-type': 'off', // Adjust as needed
-        'prettier/prettier': 'error',
+
+        // Prettier integration
+        'prettier/prettier': 'error', // Enforce Prettier formatting
+      },
+      plugins: {
+        prettier: prettierPlugin,
       },
     }),
-  ];
-  
+];
