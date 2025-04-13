@@ -25,6 +25,9 @@ export default [
       rules: {
         '@typescript-eslint/no-floating-promises': 'error',
         '@typescript-eslint/consistent-type-imports': 'warn',
+        '@typescript-eslint/no-unused-vars': 'warn',
+        '@typescript-eslint/explicit-function-return-type': 'off', // Adjust as needed
+        'prettier/prettier': 'error',
       },
     }),
   ];
