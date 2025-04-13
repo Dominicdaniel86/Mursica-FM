@@ -1,6 +1,7 @@
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
+import prettierPlugin from 'eslint-plugin-prettier';
 
 export default [
   // Base rules (shared across both frontend and backend)
@@ -35,5 +36,8 @@ export default [
       // Prettier integration
       'prettier/prettier': 'error', // Enforce Prettier formatting
     },
+    plugins: {
+      prettier: prettierPlugin,
+    }
   }),
 ];
