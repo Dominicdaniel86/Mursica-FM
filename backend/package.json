@@ -1,6 +1,6 @@
 {
-  "name": "spotify-session-app-nodejs-backend",
-  "version": "0.3.0",
+  "name": "mursica-fm-backend",
+  "version": "1.0.0-alpha.1",
   "description": "A Node.js backend for hosting a third-party Spotify session app.",
   "type": "module",
   "main": "dist/server.js",
@@ -14,11 +14,14 @@
     "prisma:deploy": "npx prisma migrate deploy",
     "prisma:generate": "npx prisma generate",
     "prisma:studio": "npx prisma studio",
-    "postinstall": "npx prisma generate"
+    "postinstall": "npx prisma generate",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Dominicdaniel86/Spotify-Session-App"
+    "url": "https://github.com/Dominicdaniel86/MursicaFM"
   },
   "keywords": [
     "typescript",
@@ -36,14 +39,20 @@
     "pino": "^9.6.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.24.0",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.1",
+    "eslint": "^9.24.0",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-prettier": "^5.2.6",
     "esm": "^3.2.25",
     "nodemon": "^3.1.9",
     "pino-pretty": "^13.0.0",
+    "prettier": "^3.5.3",
     "prisma": "^6.3.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.1"
   },
   "engines": {
     "node": ">=22.12.0"

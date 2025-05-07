@@ -5,136 +5,24 @@
 Please note that this app is currently in its conceptual phase. Your feedback is more than welcome. You can reach out to me at my email address [Dominicdaniel3107@gmail.com](mailto:Dominicdaniel3107@gmail.com).
 If you are a developer, feel encouraged to provide feedback or fork the project, adhering to the [GPL3.0 license](https://github.com/Dominicdaniel86/Mursica-FM?tab=GPL-3.0-1-ov-file).
 
-## Overview (To-Do!)
+### Getting started
 
-Topics to cover:
+As a user, you can access the app directly at <https://mursica.fm> to enjoy the latest stable version. For a sneak peek at upcoming features, feel free to explore the development and feature branches, where work-in-progress updates are available.
 
-- More detailed description.
-- How to use it.
-- Architecture & components.
-- User roles.
+For developers, the [project's wiki](https://github.com/Dominicdaniel86/Mursica-FM/wiki) offers detailed instructions on setting up and maintaining an efficient development environment. It also provides in-depth insights into the app's architecture, development roadmap, and key design decisions. Be sure to check it out for a deeper understanding of the project and to contribute effectively.
 
-## Getting started
+The project's changelog resides in the root of the GitHub repository. It provides a detailed history of changes, updates, and fixes made to the app. You can view it [here](https://github.com/Dominicdaniel86/Mursica-FM/blob/main/CHANGELOG.md).
 
-This application is currently in early development, and there is no simple way to install or use it without technical knowledge. If you're a developer or have experience with development tools, please refer to the following [Setup for Developers](#setup-for-developers) section to try it out.
+### Setup for Developers
 
-## Setup for Developers
+#### Prequisites
 
-### Prerequisites
+To set up an optimal development environment, ensure you have the following tools installed:
 
-- [Git](https://git-scm.com/)
-- [Node.js](https://nodejs.org/)
-- [Docker](https://www.docker.com/)
+- [Git](https://git-scm.com/) - Version control system for managing your codebase.
+- [Node.js](https://nodejs.org/) - JavaScript runtime for building and running the application.
+- [Docker](https://www.docker.com/) - Containerization platform for consistent development and deployment.
+- [Docker Compose](https://docs.docker.com/compose/) - A tool for defining and running multi-container Docker applications. It simplifies the process of managing and orchestrating services required for the app during development.
+- [AWS CDK](https://aws.amazon.com/cdk/) (Optional) - Infrastructure as code tool for managing cloud resources.
 
-### Installation Steps
-
-**1. Clone the repository**
-
-Open a command shell and run:
-
-```bash
-git clone https://github.com/Dominicdaniel86/Mursica-FM.git
-```
-
-**2. Switch to the appropriate branch**
-
-Navigate to the cloned directory and checkout the correct branch if needed:
-
-```bash
-git checkout <branch-name>
-```
-
-**3. Create an official Spotify app**
-
-Log into the [dashboard](https://developer.spotify.com/) using your Spotify account and create an app. You can find more information on [Spotifys Documentation](https://developer.spotify.com/documentation/web-api).
-
-**4. Configure backend env variable file**
-
-You will find an `.example.env` file in the `/backend` directory. You need to create a new `.env` file or rename the `.example.env` file to `.env`. Configure the values "ENVIRONMENT", "CLIENT_ID" and "CLIENT_SECRET" in the `/backend/.env` file:
-
-| Env Variable  | Description | Valid Values |
-| ------------- | ----------- | ------------ |
-| ENVIRONMENT   | Environment type | 'production' or 'testing' (depending on the deployment) |
-| CLIENT_ID     | Spotify Client ID | Can be found on your created [Spotify app](https://developer.spotify.com/) |
-| CLIENT_SECRET | Spotify Client Secret | Can be found on your created [Spotify app](https://developer.spotify.com/) |
-
-**5. Configure database env variable file**
-
-You will find an `.example.env` file in the `/database` directory. You need to create a new `.env` file or rename the `.example.env` file to `.env`. Configure the database environment variables in the `/database/.env` file:
-
-| Env Variable     | Description | Example Value |
-| ---------------- | ----------- | ------------- |
-| POSTGRES_USER    | Database user | spotify_session_user |
-| POSTGRES_PASSWORD| Database password | password |
-| POSTGRES_DB      | Database name | spotify_session_database |
-
-**6. Start the application**
-
-**For Windows users:** Before starting the application, ensure that all `.sh` files use the LF (Line Feed) file ending. This guarantees compatibility in Linux-based environments, such as Docker containers, and prevents potential script execution issues.
-
-Run the following command to build and start the application:
-
-```bash
-docker compose up -d --build
-```
-
-**7. Migrate the database and compile the frontend**
-
-Before accessing the application, you need to migrate the Prisma data to the database. Run the following commands:
-
-```bash
-cd ./backend
-npm run prisma:migrate
-```
-
-Next, compile the JavaScript code for the frontend:
-
-```bash
-cd ./frontend
-npm run build
-```
-
-**8. Access the application**
-
-Once running, you can open the application in your browser at [http://127.0.0.1:80](http://127.0.0.1:80).
-
-### Stopping the Application
-
-To stop and remove the running containers, use:
-
-```bash
-docker compose down
-```
-
-### Additional Step: Install npm packages
-
-Not needed for starting the application, but useful for development and auto-completion.
-
-Navigate to both the `/backend` and `/frontend` folders to execute `npm install`. Tools like *VS Code* can use the created `node_modules` directories to verify the installation of needed dependencies during development.
-
-### Setup for Efficient Development
-
-Developing new features can become tedious if you need to restart the container frequently. To enhance the development experience, this project includes several mechanisms:
-
-1. **Auto-restart Backend on Save**: To automatically restart your backend on every save, run `npm run dev` in your `backend` directory. Ensure the backend container has the environment variable `ENVIRONMENT` set to `development`.
-
-2. **Apply Prisma Migrations**: To apply new migrations from the Prisma schema to the database, run `npm run prisma:migrate` in your `backend` directory.
-
-3. **Auto-compile TypeScript**: To automatically compile your TypeScript into JavaScript on every save, run `npm run start` in the `frontend` directory.
-
-Keep in mind that each of these steps requires running containers. Additionally, steps 1 and 3 will need separate terminal instances.
-
-## Project Roadmap
-
-<picture>
-  <source srcset="/media/roadmap-dark.svg" media="(prefers-color-scheme: dark)">
-  <img src="/media/roadmap-light.svg" alt="Project Roadmap Image">
-</picture>
-
-## UI Design Concept
-
-[![Figma Design](/media/images/figma-logo.png)](https://www.figma.com/design/Vnn1y0fCs0i6Gv67nVtnGQ/Mursica-FM?node-id=0-1&t=x7rMBCipKQkkgSHH-1)
-
----
-
-For more details, check the [issues page](https://github.com/Dominicdaniel86/Mursica-FM/issues) of this repository.
+For more detailed guidance on setting up a robust development environment, visit the [Development Setup Guide](https://github.com/Dominicdaniel86/Mursica-FM/wiki/Developing) in the project's wiki. It provides step-by-step instructions and best practices to ensure a smooth development experience.

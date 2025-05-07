@@ -29,9 +29,12 @@ export interface BackendEnvProps {
 const domainNameString = 'mursica.fm';
 // More configurations for the github repository
 // Replace with your own repository URL, branch, and app name
-const githubURL = '';
-const gitBranch = 'feature/clean-up';
-const appName = '';
+const repositoryURL = 'https://github.com/Dominicdaniel86/Mursica-FM.git';
+const repositoryName = 'Mursica-FM'; // Needs to match the name of the repository
+const gitBranch = 'main';
+
+// Keep in mind that the user data script will still contain the original repository URL
+// and branch name. You may want to update it in the script as well.
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -51,6 +54,7 @@ export class CdkStack extends cdk.Stack {
       description: 'Role to allow EC2 instance to access SSM parameters',
     });
 
+    // Attach the "AmazonSSMManagedInstanceCore" policy to the role
     role.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore')
     );
@@ -63,11 +67,11 @@ export class CdkStack extends cdk.Stack {
       role: role,
     });
 
-    // Add security group to allow HTTP traffic
+    // Add security group to define inbound and outbound rules
     const securityGroup = new ec2.SecurityGroup(this, 'InstanceSecurityGroup', {
       vpc,
-      allowAllOutbound: true,
-      description: 'Allow HTTP traffic',
+      allowAllOutbound: true, // Allow all outbound traffic
+      description: 'Security group for EC2 instance',
       securityGroupName: 'InstanceSecurityGroup',
     });
 
@@ -140,9 +144,9 @@ export class CdkStack extends cdk.Stack {
     instance.addUserData(
       'dnf update -y',
       'dnf install -y git',
-      'git clone https://github.com/Dominicdaniel86/Mursica-FM.git /home/ec2-user/Mursica-FM',
-      'cd /home/ec2-user/Mursica-FM && git checkout feature/clean-up',
-      'bash /home/ec2-user/Mursica-FM/scripts/installation.sh',
+      `git clone ${repositoryURL} /home/ec2-user/Mursica-FM`,
+      `cd /home/ec2-user/${repositoryName} && git checkout ${gitBranch}`,
+      'bash /home/ec2-user/Mursica-FM/scripts/ec2-setup.sh',
     );
   }
 }
