@@ -8,7 +8,10 @@
     "build": "npx tsc",
     "start": "npx tsc --watch",
     "clean": "rm -rf dist",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "repository": {
     "type": "git",
@@ -24,7 +27,15 @@
   "license": "GPL-3.0-or-later",
   "depedencies": {},
   "devDependencies": {
+    "@eslint/js": "^9.24.0",
     "@types/axios": "^0.9.36",
-    "typescript": "^5.7.3"
+    "eslint": "^9.24.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.1"
+  },
+  "dependencies": {
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-prettier": "^5.2.6"
   }
 }
