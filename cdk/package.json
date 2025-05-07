@@ -1,6 +1,6 @@
 {
-  "name": "cdk",
-  "version": "0.1.0",
+  "name": "mursica-fm-cdk",
+  "version": "1.0.0-alpha.1",
   "bin": {
     "cdk": "bin/cdk.js"
   },

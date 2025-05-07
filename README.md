@@ -11,6 +11,8 @@ As a user, you can access the app directly at <https://mursica.fm> to enjoy the 
 
 For developers, the [project's wiki](https://github.com/Dominicdaniel86/Mursica-FM/wiki) offers detailed instructions on setting up and maintaining an efficient development environment. It also provides in-depth insights into the app's architecture, development roadmap, and key design decisions. Be sure to check it out for a deeper understanding of the project and to contribute effectively.
 
+The project's changelog resides in the root of the GitHub repository. It provides a detailed history of changes, updates, and fixes made to the app. You can view it [here](https://github.com/Dominicdaniel86/Mursica-FM/blob/main/CHANGELOG.md).
+
 ### Setup for Developers
 
 #### Prequisites

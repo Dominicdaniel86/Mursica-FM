@@ -1,6 +1,6 @@
 {
-  "name": "spotify-session-app-frontend",
-  "version": "0.3.0",
+  "name": "mursica-fm-frontend",
+  "version": "1.0.0-alpha.1",
   "description": "A compiler for a TypeScript-based frontend for a third-party Spotify session app.",
   "type": "module",
   "main": "dist/index.js",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Dominicdaniel86/Spotify-Session-App"
+    "url": "https://github.com/Dominicdaniel86/MursicaFM"
   },
   "keywords": [
     "typescript",
