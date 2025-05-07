@@ -1,3 +1,6 @@
+# This script sets up the development environment for the project on an EC2 instance.
+# It installs necessary dependencies, initializes submodules, and starts the application.
+
 cd /home/ec2-user
 # Install necessary packages and tools
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash

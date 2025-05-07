@@ -22,6 +22,7 @@ To set up an optimal development environment, ensure you have the following tool
 - [Git](https://git-scm.com/) - Version control system for managing your codebase.
 - [Node.js](https://nodejs.org/) - JavaScript runtime for building and running the application.
 - [Docker](https://www.docker.com/) - Containerization platform for consistent development and deployment.
+- [Docker Compose](https://docs.docker.com/compose/) - A tool for defining and running multi-container Docker applications. It simplifies the process of managing and orchestrating services required for the app during development.
 - [AWS CDK](https://aws.amazon.com/cdk/) (Optional) - Infrastructure as code tool for managing cloud resources.
 
 For more detailed guidance on setting up a robust development environment, visit the [Development Setup Guide](https://github.com/Dominicdaniel86/Mursica-FM/wiki/Developing) in the project's wiki. It provides step-by-step instructions and best practices to ensure a smooth development experience.
