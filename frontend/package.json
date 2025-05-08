@@ -25,17 +25,18 @@
   ],
   "author": "Dominic Daniel Kraemer",
   "license": "GPL-3.0-or-later",
-  "depedencies": {},
+  "dependencies": {
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-prettier": "^5.2.6"
+  },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
     "@types/axios": "^0.9.36",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
     "eslint": "^9.24.0",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.29.1"
-  },
-  "dependencies": {
-    "eslint-config-prettier": "^10.1.2",
-    "eslint-plugin-prettier": "^5.2.6"
   }
 }
