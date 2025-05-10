@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as querystring from 'querystring';
-import { SpotifyAuthTokenResponse } from '../../interfaces/index.js';
+import type { SpotifyAuthTokenResponse } from '../../interfaces/index.js';
 import logger from '../../logger/logger.js';
 import { generateRandomString } from '../../utility/fileUtils.js';
 import { CLIENT_ID, CLIENT_SECRET, prisma} from '../../config.js';
@@ -25,11 +25,11 @@ export async function generateOAuthQuerystring(): Promise<string> {
         if(previousState) {
             await prisma.state.update({
                 where: {id: previousState.id},
-                data: { state: state}
+                data: { state }
             })
         } else {
             await prisma.state.create({
-                data: { state: state}
+                data: { state }
             })
         }
     } catch (error) {
@@ -40,9 +40,9 @@ export async function generateOAuthQuerystring(): Promise<string> {
     return querystring.stringify({
         response_type: 'code',
         client_id: CLIENT_ID,
-        scope: scope,
+        scope,
         redirect_uri: redirectURI,
-        state: state
+        state
     });
 }
 
@@ -55,10 +55,10 @@ export async function generateOAuthQuerystring(): Promise<string> {
  * 
  * @param {string} code - The authorization code received from Spotify during the authentication flow.
  */
-export async function oAuthAuthorization(code: string) {
+export async function oAuthAuthorization(code: string): Promise<void> {
     const url = 'https://accounts.spotify.com/api/token';
     const data = {
-        code: code,
+        code,
         redirect_uri: 'http://127.0.0.1/api/auth/spotify/callback',
         grant_type: 'authorization_code'
     };
@@ -81,11 +81,11 @@ export async function oAuthAuthorization(code: string) {
         if(currentToken) {
             await prisma.oAuthToken.update({
                 where: {id: currentToken.id },
-                data: { token: accessToken, validUntil: validUntilDate, refreshToken: refreshToken}
+                data: { token: accessToken, validUntil: validUntilDate, refreshToken}
             });
         } else {
             await prisma.oAuthToken.create({
-                data: { token: accessToken, validUntil: validUntilDate, refreshToken: refreshToken}
+                data: { token: accessToken, validUntil: validUntilDate, refreshToken}
             });
         }
 
@@ -100,7 +100,7 @@ export async function oAuthAuthorization(code: string) {
  * Refreshes the OAuth access token using the stored refresh token.
  * Requires an already existing OAuth token in the database.
  */
-export async function refreshAuthToken() {
+export async function refreshAuthToken(): Promise<void> {
 
     try {
         const currentToken = await prisma.oAuthToken.findFirst();
@@ -131,7 +131,7 @@ export async function refreshAuthToken() {
 
         await prisma.oAuthToken.update({
             where: {id: currentToken.id },
-            data: { token: accessToken, validUntil: validUntilDate, refreshToken: refreshToken}
+            data: { token: accessToken, validUntil: validUntilDate, refreshToken}
         });
 
         logger.info('Successfully refreshed the OAuth token');
