@@ -10,7 +10,7 @@ function login() {
     const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
     const usernameInput = usernameInputElement.value;
 
-    if(usernameInput.length === 0) {
+    if (usernameInput.length === 0) {
         // TODO: Implement better solution than alerting
         // eslint-disable-next-line no-alert
         alert('Invalid credentials!');

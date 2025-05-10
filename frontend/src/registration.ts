@@ -14,12 +14,11 @@ function registration() {
     const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
     const usernameInput = usernameInputElement.value;
 
-    if(emailInput.length === 0 || usernameInput.length === 0) {
+    if (emailInput.length === 0 || usernameInput.length === 0) {
         // TODO: Implement better solution than alerting
         // eslint-disable-next-line no-alert
         alert('Invalid credentials!');
     } else {
         window.location.href = '/static/html/add-song.html';
     }
-
 }
