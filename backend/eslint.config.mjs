@@ -1,6 +1,7 @@
 import tseslint from 'typescript-eslint';
 import unusedImportsPlugin from 'eslint-plugin-unused-imports';
 import { rules } from '../shared/eslintRules.mjs';
+import prettierPlugin from 'eslint-plugin-prettier';
 
 export default [
     {
@@ -16,7 +17,7 @@ export default [
       settings: {},
       plugins: {
           '@typescript-eslint': tseslint.plugin,
-           // prettier: prettierPlugin,
+           prettier: prettierPlugin,
           'unused-imports': unusedImportsPlugin,
       },
       rules: {

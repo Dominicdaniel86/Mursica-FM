@@ -29,5 +29,5 @@ export const rules = {
     'spaced-comment': ['error', 'always'], // Enforce space after comment markers
 
     // Prettier integration
-    // 'prettier/prettier': 'error', // Enforce Prettier formatting
+    'prettier/prettier': 'error', // Enforce Prettier formatting
 }
