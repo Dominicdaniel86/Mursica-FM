@@ -1,6 +1,18 @@
 import express from 'express';
 import * as querystring from 'querystring';
-import { validateClientToken, generateOAuthQuerystring, oAuthAuthorization, searchSong, playTrack, pauseTrack, skipTrack, refreshAuthToken, getCurrentVolume, changeCurrentVolume, logout } from './api/index.js';
+import {
+    validateClientToken,
+    generateOAuthQuerystring,
+    oAuthAuthorization,
+    searchSong,
+    playTrack,
+    pauseTrack,
+    skipTrack,
+    refreshAuthToken,
+    getCurrentVolume,
+    changeCurrentVolume,
+    logout,
+} from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { PORT, prisma } from './config.js';
 import { NotFoundError } from './errors/index.js';
@@ -14,9 +26,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // Initialize log file
 try {
-    initializeLoggingFile();  
-} catch(error: unknown) {
-    const errorMessage = error instanceof Error ? `Failed to initialize the logging file: ${error.message}` : 'Failed to initialize the logging file due to an unknown reason';
+    initializeLoggingFile();
+} catch (error: unknown) {
+    const errorMessage =
+        error instanceof Error
+            ? `Failed to initialize the logging file: ${error.message}`
+            : 'Failed to initialize the logging file due to an unknown reason';
     logger.fatal(errorMessage);
     throw new Error('Failed to initialize the logging file');
 }
@@ -25,40 +40,39 @@ try {
 await validateClientToken();
 
 app.get('/api', (req, res) => {
-    res.send("Hello from the backend!");
+    res.send('Hello from the backend!');
 });
 
 app.get('/api/tracks/search', async (req, res) => {
-
     try {
         await validateClientToken();
 
         const trackTitle = req.query.trackTitle as string;
 
-        if(!trackTitle) {
-            res.status(400).json({error: 'Empty track title'});
-            return
+        if (!trackTitle) {
+            res.status(400).json({ error: 'Empty track title' });
+            return;
         }
 
         const tracks = await searchSong(trackTitle);
 
-        if(tracks.length === 0) {
-            res.status(404).json({error: 'No tracks found'});
-            return
+        if (tracks.length === 0) {
+            res.status(404).json({ error: 'No tracks found' });
+            return;
         }
 
         logger.info(`Sucessfully send ${tracks.length} track results to the user.`);
-        res.status(200).json({tracks});
-    } catch(error) {
+        res.status(200).json({ tracks });
+    } catch (error) {
         logger.error(error, 'Failed to find tracks through the Spotify API.');
-        res.status(500).json({error: 'Internal server error'});
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
 app.post('/api/tracks/select', (req, res) => {
-    if(req.body.trackID !== undefined && req.body.trackID !== null) {
+    if (req.body.trackID !== undefined && req.body.trackID !== null) {
         logger.info('Song got selected: ' + req.body.trackID);
-        res.send("You selected the song!");
+        res.send('You selected the song!');
     } else {
         logger.warn('Empty song selection received');
         res.status(400).send('Empty song send');
@@ -68,29 +82,27 @@ app.post('/api/tracks/select', (req, res) => {
 app.get('/api/auth/spotify', async (req, res) => {
     try {
         const token = await prisma.oAuthToken.findFirst();
-        if(token) {
+        if (token) {
             res.status(200).send(true);
-        }
-        else {
+        } else {
             res.status(200).send(false);
         }
-    } catch(error) {
+    } catch (error) {
         logger.error(error, 'Could not check if an admin is logged in.');
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
 app.get('/api/auth/spotify/login', async (req, res) => {
-
     try {
         logger.info('A user is trying to log in.');
 
         const url = 'https://accounts.spotify.com/authorize?';
         const spotifyQueryString = await generateOAuthQuerystring();
-    
+
         res.redirect(url + spotifyQueryString);
         logger.info('Redirected user to the Spotify login page.');
-    } catch(error) {
+    } catch (error) {
         logger.error(error, 'Could not redirect user to Spotify login page.');
         res.status(500).json({ error: 'Internal server error' });
     }
@@ -104,11 +116,10 @@ app.get('/api/auth/spotify/callback', async (req, res) => {
     try {
         const currentState = await prisma.state.findFirst();
 
-        if(!state || state !== currentState?.state) {
+        if (!state || state !== currentState?.state) {
             logger.warn('OAuth authentication failed: Received invalid state');
             return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
         }
-
     } catch {
         logger.error('Failed to read state from the database');
         return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
@@ -125,12 +136,12 @@ app.post('/api/auth/spotify/logout', async (req, res) => {
     try {
         await logout();
         res.send('Logged out now!');
-    } catch(error) {
-        if(error instanceof NotFoundError) {
-            logger.error(error, 'Failed to log out')
+    } catch (error) {
+        if (error instanceof NotFoundError) {
+            logger.error(error, 'Failed to log out');
             res.status(400).json({ error: 'No OAuth token found' });
         } else {
-            logger.error(error, 'Failed to log out')
+            logger.error(error, 'Failed to log out');
             res.status(500).json({ error: 'Internal server error' });
         }
     }
@@ -142,7 +153,7 @@ app.put('/api/admin/control/play', async (req, res) => {
         await playTrack();
         logger.info('Admin plays/ continues the song');
         res.status(200).send('Play Song');
-    } catch(error) {
+    } catch (error) {
         logger.error(error, 'Failed to play/ continue the song');
         res.status(500).json({ error: 'Internal server error' });
     }
@@ -177,11 +188,10 @@ app.get('/api/admin/control/volume', async (req, res) => {
         await refreshAuthToken();
         const currentVolume = await getCurrentVolume();
         res.status(200).send(`${currentVolume}`);
-    } catch(error) {
+    } catch (error) {
         logger.error(error, 'Could not retrieve current volume.');
         res.status(500).json({ error: 'Internal server error' });
     }
-    
 });
 
 app.put('/api/admin/control/volume', async (req, res) => {
@@ -192,7 +202,7 @@ app.put('/api/admin/control/volume', async (req, res) => {
         await refreshAuthToken();
         await changeCurrentVolume(volume);
         res.status(200).send('Volume successfully changed!');
-    } catch(error) {
+    } catch (error) {
         logger.error(error, 'Could not change current volume.');
         res.status(500).json({ error: 'Internal server error' });
     }
@@ -202,13 +212,12 @@ app.put('/api/admin/control/volume', async (req, res) => {
 app.get('/api/admin', async (req, res) => {
     try {
         const token = await prisma.oAuthToken.findFirst();
-        if(token) {
+        if (token) {
             res.status(200).send(true);
-        }
-        else {
+        } else {
             res.status(200).send(false);
         }
-    } catch(error) {
+    } catch (error) {
         logger.error(error, 'Could not check if an admin is logged in.');
         res.status(500).json({ error: 'Internal server error' });
     }

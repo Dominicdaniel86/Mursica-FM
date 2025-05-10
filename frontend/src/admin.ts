@@ -15,38 +15,37 @@ declare global {
 }
 
 window.addEventListener('load', async () => {
-
     // check if the user is logged in
     const loggedInReqUrl = '/api/auth/spotify/login';
     const loggedInReqConfig: object = {
         headers: {
-            'Content-Type': 'application/json'
-        }
+            'Content-Type': 'application/json',
+        },
     };
 
     try {
         const loggedIn = await axios.get<boolean>(loggedInReqUrl, loggedInReqConfig);
         const loggedINData = loggedIn.data;
 
-        if(loggedINData) {
+        if (loggedINData) {
             const accountField = document.getElementById('spotify-account-logged-in') as HTMLDivElement;
             accountField.style.display = 'block';
-            console.info("LOGGED IN");
+            console.info('LOGGED IN');
         } else {
             const accountField = document.getElementById('spotify-account-logged-out') as HTMLDivElement;
             accountField.style.display = 'block';
-            console.info("LOGGED IN");
+            console.info('LOGGED IN');
         }
     } catch {
         console.error('Error retrieving loggin status');
     }
-    
+
     // load current volume
     const url = '/api/admin/control/volume';
     const config: object = {
         headers: {
-            'Content-Type': 'application/json'
-        }
+            'Content-Type': 'application/json',
+        },
     };
 
     try {
@@ -58,22 +57,19 @@ window.addEventListener('load', async () => {
     } catch {
         console.error('Error retrieving the current volume');
     }
-
-
 });
 
 export async function spotifyLogin(): Promise<void> {
-
     const url = '/api/auth/spotify/login';
     const config: object = {
         headers: {
-            'Content-Type': 'application/json'
-        }
+            'Content-Type': 'application/json',
+        },
     };
 
     try {
         window.location.replace('/api/auth/spotify/login');
-    } catch(error) {
+    } catch (error) {
         console.error(error);
     }
 }
@@ -82,8 +78,8 @@ export async function spotifyLogout(): Promise<void> {
     const url = '/api/auth/spotify/logout';
     const config: object = {
         headers: {
-            'Content-Type': 'application/json'
-        }
+            'Content-Type': 'application/json',
+        },
     };
 
     axios.post(url, config);
@@ -108,10 +104,10 @@ export async function switchVolumeVisbility(): Promise<void> {
     const volumeSliderElement = document.getElementById('volume-slider') as HTMLInputElement;
     const visiblity = volumeSliderElement.style.display;
 
-    if(visiblity === 'none') {
+    if (visiblity === 'none') {
         volumeSliderElement.style.display = 'block';
     } else {
-        volumeSliderElement.style.display = 'none'; 
+        volumeSliderElement.style.display = 'none';
     }
 }
 
@@ -123,8 +119,8 @@ export async function changeVolume(): Promise<void> {
     const url = `/api/admin/control/volume?volume=${element.value}`;
     const config: object = {
         headers: {
-            'Content-Type': 'application/json'
-        }
+            'Content-Type': 'application/json',
+        },
     };
 
     await axios.put<string>(url, config);

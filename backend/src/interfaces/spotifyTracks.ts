@@ -9,7 +9,7 @@ export interface SpotifyTrackResponse {
         total: number;
         items: Array<Track>;
     };
-};
+}
 
 // Filtered track search response
 export interface TrackSummary {
@@ -39,7 +39,7 @@ interface Track {
     track_number: number;
     type: string;
     uri: string;
-};
+}
 
 interface Album {
     album_type: string;
@@ -56,7 +56,7 @@ interface Album {
     total_tracks: number;
     type: string;
     uri: string;
-};
+}
 
 interface Artists {
     external_urls: object;
@@ -65,10 +65,10 @@ interface Artists {
     name: string;
     type: string;
     uri: string;
-};
+}
 
 interface Image {
     height: number;
     width: number;
     url: string;
-};
+}
