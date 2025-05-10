@@ -1,4 +1,4 @@
-import { TrackResp } from "./interfaces/search-song";
+import type { TrackResp } from "./interfaces/search-song";
 
 declare global {
     interface Window {
@@ -8,28 +8,31 @@ declare global {
 }
 
 //* Global variables
-let searchSongElement: HTMLInputElement = document.getElementById('search-song') as HTMLInputElement;
+const searchSongElement = document.getElementById('search-song') as HTMLInputElement;
 let timeoutID: number;
 
-//* Called when the DOM has loaded
-window.addEventListener('load', () => {
-    console.log('DOM has loaded');
+/**
+ * Send the ID of the favored song.
+ * @param {string} ID The song ID
+ */
+export async function sendResponse(ID: string): Promise<void> {
 
-    // Reset searched song value
-    searchSongElement.value = '';
+    console.log(`ID: ${ID}`);
 
-    searchSongElement.addEventListener('input', () => {
-        clearTimeout(timeoutID);
-        timeoutID = setTimeout(() => {
-            searchSong(searchSongElement.value);
-        }, 1000);
+    const url = `/api/tracks/select`;
+    const data = new URLSearchParams({
+        trackID: ID
     });
-});
+    const response = await axios.post<TrackResp>(url, data);
 
-// Routing to admin page
-// TODO: Implement authorization step
-export function switchToAdmin() {
-    window.location.href = '/static/html/admin.html';
+    console.log(response.data);
+
+    // Clear track input and result
+    searchSongElement.value = '';
+    const targetDiv: HTMLDivElement = document.getElementById("song-results") as HTMLDivElement;
+    while(targetDiv.firstChild) {
+        targetDiv.removeChild(targetDiv.lastChild as ChildNode);
+    }
 }
 
 /**
@@ -48,20 +51,21 @@ async function searchSong(input: string) {
     }
 
     // If input is empty: stop function execution
-    if(!input)
+    if(!input) {
         return;
+    }
 
     // Request to backend
-    const url: string = `/api/tracks/search/?trackTitle=${input}`;
-    let response = await axios.get<TrackResp>(url);
+    const url = `/api/tracks/search/?trackTitle=${input}`;
+    const response = await axios.get<TrackResp>(url);
 
     // Create HTML elements for all the retrieved tracks
     response.data.tracks.forEach(element => {
         const newDiv = document.createElement("div");
         newDiv.className = 'song-result';
         newDiv.setAttribute('track-id', element.id);
-        newDiv.onclick = () => {
-            sendResponse(newDiv.getAttribute('track-id') as string);
+        newDiv.onclick = () => async () => {
+            await sendResponse(newDiv.getAttribute('track-id') as string);
         };
 
         const albumElement = document.createElement("img");
@@ -80,29 +84,28 @@ async function searchSong(input: string) {
     });
 }
 
-/**
- * Send the ID of the favored song.
- * @param {string} ID The song ID
- */
-export async function sendResponse(ID: string) {
+//* Called when the DOM has loaded
+window.addEventListener('load', () => {
+    console.log('DOM has loaded');
 
-    console.log(`ID: ${ID}`);
-
-    const url: string = `/api/tracks/select`;
-    const data = new URLSearchParams({
-        trackID: ID
-    });
-    let response = await axios.post<TrackResp>(url, data);
-
-    console.log(response.data);
-
-    // Clear track input and result
+    // Reset searched song value
     searchSongElement.value = '';
-    const targetDiv: HTMLDivElement = document.getElementById("song-results") as HTMLDivElement;
-    while(targetDiv.firstChild) {
-        targetDiv.removeChild(targetDiv.lastChild as ChildNode);
-    }
+
+    searchSongElement.addEventListener('input', () => {
+        clearTimeout(timeoutID);
+        timeoutID = setTimeout(async () => {
+            await searchSong(searchSongElement.value);
+        }, 1000);
+    });
+});
+
+// Routing to admin page
+// TODO: Implement authorization step
+export function switchToAdmin(): void {
+    window.location.href = '/static/html/admin.html';
 }
 
 window.switchToAdmin = switchToAdmin;
+// TODO: Fix this ESLint error
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 window.sendResponse = sendResponse;

@@ -1,25 +1,12 @@
-window.addEventListener('load', () => {
-    console.log('DOM has loaded');
-
-    // Reset session-id value
-    let sessionIDInputElement: HTMLInputElement = document.getElementById('session-id-input') as HTMLInputElement;
-    sessionIDInputElement.value = '';
-
-    // Custom behaviour of the session-id-input Element
-    sessionIDInputElement.addEventListener('input', (event) => {
-        sessionIDInputValidation(sessionIDInputElement);
-    });
-});
-
-let previousChars: number = 0;
+let previousChars = 0;
 
 function sessionIDInputValidation(sessionIDInputElement: HTMLInputElement) {
 
     // Read required input
-    let rawValue: string = sessionIDInputElement.value.replace(/[^a-zA-Z0-9]/g, '');
-    let resultingValue: string = '#';
-    let selectionStart: number = sessionIDInputElement.selectionStart || 0;
-    let newCursorPos: number = selectionStart;
+    const rawValue = sessionIDInputElement.value.replace(/[^a-zA-Z0-9]/g, '');
+    let resultingValue = '#';
+    const selectionStart = sessionIDInputElement.selectionStart || 0;
+    let newCursorPos = selectionStart;
 
     // Calculate new value and curser position
     switch(rawValue.length) {
@@ -28,18 +15,21 @@ function sessionIDInputValidation(sessionIDInputElement: HTMLInputElement) {
         case 3:
             // Input has 1-3 chars
             resultingValue += rawValue;
-            if(selectionStart === 1)
+            if(selectionStart === 1) {
                 newCursorPos++;
+            }
             break;
         case 4:
         case 5:
         case 6:
             // Input has 4-6 chars
             resultingValue += rawValue.slice(0, 3) + '-' + rawValue.slice(3, 6);
-            if(selectionStart === 1) // Deals with writes before the #
+            if(selectionStart === 1) {  // Deals with writes before the #
                 newCursorPos++;
-            if(selectionStart === 5 && previousChars < 6) // Deals with writes before the -
+            }
+            if(selectionStart === 5 && previousChars < 6) { // Deals with writes before the -
                 newCursorPos++;
+            }
             break;
         case 7:
             // Input has overflowing characters
@@ -73,11 +63,26 @@ function sessionIDInputValidation(sessionIDInputElement: HTMLInputElement) {
     sessionIDInputElement.setSelectionRange(newCursorPos, newCursorPos);
 }
 
+window.addEventListener('load', () => {
+    console.log('DOM has loaded');
+
+    // Reset session-id value
+    const sessionIDInputElement = document.getElementById('session-id-input') as HTMLInputElement;
+    sessionIDInputElement.value = '';
+
+    // Custom behaviour of the session-id-input Element
+    sessionIDInputElement.addEventListener('input', (event) => {
+        sessionIDInputValidation(sessionIDInputElement);
+    });
+});
+
 function joinSession() {
-    let sessionIDInputElement: HTMLInputElement = document.getElementById('session-id-input') as HTMLInputElement;
-    let sessionID: string = sessionIDInputElement.value.replace(/[^a-zA-Z0-9]/g, '');
+    const sessionIDInputElement = document.getElementById('session-id-input') as HTMLInputElement;
+    const sessionID = sessionIDInputElement.value.replace(/[^a-zA-Z0-9]/g, '');
 
     if(sessionID.length !== 6) {
+        // TODO: Implement better solution than alerting
+        // eslint-disable-next-line no-alert
         alert('Session-ID invalid!')
     } else {
         window.location.href = '/static/html/add-song.html';
