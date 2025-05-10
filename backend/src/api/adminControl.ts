@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { prisma } from '../config.js';
-import { SpotifyPlayer } from '../interfaces/index.js';
+import type { SpotifyPlayer } from '../interfaces/index.js';
 
 /**
  * Plays the currently active track on the Spotify player.
@@ -10,7 +10,7 @@ import { SpotifyPlayer } from '../interfaces/index.js';
  * error if no OAuth token is found for the user.
  * 
  */
-export async function playTrack() {
+export async function playTrack(): Promise<void> {
 
     const token = await prisma.oAuthToken.findFirst();
 
@@ -35,7 +35,7 @@ export async function playTrack() {
  * error if no OAuth token is found for the user.
  * 
  */
-export async function pauseTrack() {
+export async function pauseTrack(): Promise<void> {
 
     const token = await prisma.oAuthToken.findFirst();
 
@@ -60,7 +60,7 @@ export async function pauseTrack() {
  * Throws an error if no OAuth token is found for the user.
  * 
  */
-export async function skipTrack() {
+export async function skipTrack(): Promise<void> {
 
     const token = await prisma.oAuthToken.findFirst();
 
@@ -77,7 +77,7 @@ export async function skipTrack() {
     }
 }
 
-export async function getCurrentVolume() {
+export async function getCurrentVolume(): Promise<number> {
 
     const token = await prisma.oAuthToken.findFirst();
 
@@ -96,7 +96,7 @@ export async function getCurrentVolume() {
     }
 }
 
-export async function changeCurrentVolume(desiredVolume: string) {
+export async function changeCurrentVolume(desiredVolume: string): Promise<void> {
 
     const token = await prisma.oAuthToken.findFirst();
 

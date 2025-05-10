@@ -2,13 +2,14 @@ import fs from 'fs';
 import { pino } from 'pino';
 import { IS_PRODUCTION } from '../config.js';
 
-const logFile: string = './logs/app.log';
+const logFile = './logs/app.log';
 
 /**
  * Initializes the app.log file. If the file already exists, it created the file and writes some metadata on top of it.
  * Else it just creates a new line break.
  */
-export function initializeLoggingFile() {
+// TODO: Replace synchronous file operations with asynchronous ones
+export function initializeLoggingFile(): void {
     // Check if the log file exists
     if(!fs.existsSync(logFile)) {
 
