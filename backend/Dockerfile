@@ -1,7 +1,7 @@
-FROM node:19-bullseye
+FROM node:24.0.1-bullseye
 RUN apt-get update
 RUN apt-get install -y dos2unix \
-    && apt-get install -y netcat
+    && apt-get install -y netcat-openbsd
 
 WORKDIR /usr/src/app
 
