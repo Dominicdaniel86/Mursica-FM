@@ -10,17 +10,17 @@ help:
 	@echo "Mursica-FM Makefile Help"
 	@echo "========================="
 	@echo "Available targets:"
-	@echo "  dev-setup                             - Setup the development environment"
-	@echo "  dev-setup-windows                     - Setup the development environment for Windows"
-	@echo "  update-deps                           - Update npm dependencies"
-	@echo "  test-tools                            - Check which required dev tools are installed"
-	@echo "  db-<command>	                        - Run database commands (migrate, generate, push, reset)"
-	@echo "  docker-<command>                      - Run Docker cdommands (up, build, down, logs, push)"
-	@echo "  set-version VERSION=<version>         - Set the project version and all references to it"
-	@echo "  increase-version(-major/-minor)       - Increase the project version (major or minor if specified, else patch)"
-	@echo "  lint(-fix)                            - Run ESLint (and fix errors if specified)"
-	@echo "  prettier(-fix)                        - Run Prettier (and fix errors if specified)"
-	@echo "  update-wiki                           - Update the wiki submodule"
+	@echo "  dev-setup                                       - Setup the development environment"
+	@echo "  dev-setup-windows                               - Setup the development environment for Windows"
+	@echo "  update-deps                                     - Update npm dependencies"
+	@echo "  test-tools                                      - Check which required dev tools are installed"
+	@echo "  db-<command>	                                  - Run database commands (migrate, generate, push, reset)"
+	@echo "  docker-<command>                                - Run Docker commands (up, build, down, logs, push)"
+	@echo "  set-version VERSION=<version>                   - Set the project version and all references to it"
+	@echo "  increase-version(-major/-minor/-prerelease)     - Increase project version (default: patch | major | minor | prerelease (alpha/ beta))"
+	@echo "  lint(-fix)                                      - Run ESLint (and fix errors if specified)"
+	@echo "  prettier(-fix)                                  - Run Prettier (and fix errors if specified)"
+	@echo "  update-wiki                                     - Update the wiki submodule"
 	@echo "     "  
 
 # Setup the development environment
@@ -96,6 +96,11 @@ increase-version-major:
 increase-version-minor:
 	@echo "Increasing version to next minor version..."
 	bash ./scripts/increase-version.sh minor
+
+# Increase project version (prerelease)
+increase-version-prerelease:
+	@echo "Increasing version to next prerelease version..."
+	bash ./scripts/increase-version.sh prerelease
 
 # Eslint & Prettier commands
 lint:

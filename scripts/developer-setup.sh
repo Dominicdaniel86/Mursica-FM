@@ -1,6 +1,6 @@
-# !/bin/bash
+!/bin/bash
 # This script sets up the development environment for the project.
-# It installs necessary dependencies, initializes submodules, and starts the application.
+# It installs necessary dependencies, initializes submodules, migrates the database, and starts the application.
 # Required tools: docker, docker compose, nodejs, npm
 # Optional tool: xdg-open (for opening the browser automatically)
 
