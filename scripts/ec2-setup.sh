@@ -1,3 +1,4 @@
+#!/bin/bash
 # This script sets up the development environment for the project on an EC2 instance.
 # It installs necessary dependencies, initializes submodules, and starts the application.
 

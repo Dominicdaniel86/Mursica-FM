@@ -1,4 +1,10 @@
 #!/bin/bash
+# This script updates the version in the following files:
+# - backend/package.json
+# - frontend/package.json
+# - backend/package-lock.json
+# - frontend/package-lock.json
+# - docker-compose.yaml
 
 # Print the version passed as an argument
 if [ -z "$1" ]; then

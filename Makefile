@@ -20,6 +20,8 @@ help:
 	@echo "  increase-version(-major/-minor/-prerelease)     - Increase project version (default: patch | major | minor | prerelease (alpha/ beta))"
 	@echo "  lint(-fix)                                      - Run ESLint (and fix errors if specified)"
 	@echo "  prettier(-fix)                                  - Run Prettier (and fix errors if specified)"
+	@echo "  activate-githooks                               - Activate pre-defined git hooks"
+	@echo "  deactivate-githooks                             - Deactivate all local git hooks"
 	@echo "  update-wiki                                     - Update the wiki submodule"
 	@echo "     "  
 
@@ -116,6 +118,14 @@ prettier-fix:
 	@echo "Running Prettier fix..."
 	bash ./scripts/prettier-fix.sh
 
+# Activate/ Deactivate git hooks
+activate-githooks:
+	@echo "Activating git hooks..."
+	bash ./scripts/activate-githooks.sh
+deactivate-githooks:
+	@echo "Deactivating git hooks..."
+	bash ./scripts/deactivate-githooks.sh
+
 # Update wiki submodule
 update-wiki:
 	@echo "Updating wiki submodule..."
@@ -129,4 +139,4 @@ update-wiki:
 # TODO: Run tests
 # Test backend, test frontend, test all
 
-.PHONY: help dev-setup dev-setup-windows update-deps test-tools db-migrate db-reset db-push docker-up docker-build docker-down docker-logs set-version increase-version increase-version-major increase-version-minor lint prettier lint-fix prettier-fix update-wiki
+.PHONY: help dev-setup dev-setup-windows update-deps test-tools db-migrate db-reset db-push docker-up docker-build docker-down docker-logs set-version increase-version increase-version-major increase-version-minor lint prettier lint-fix prettier-fix activate-githooks deactivate-githooks update-wiki
