@@ -1,4 +1,6 @@
 #!/bin/bash
+# This script builds and pushes Docker Compose containers.
+# It pushes the images with the currently set version, as well as with the ":latest" tag.
 
 # Exit immediately if a command exits with a non-zero status
 set -e

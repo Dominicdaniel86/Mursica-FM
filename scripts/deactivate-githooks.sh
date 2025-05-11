@@ -1,4 +1,7 @@
 #!/bin/bash
+# This script deactivates all Git hooks by removing all files in the .git/hooks directory that do not have a .sample extension.
+
+echo "Deactivating Git hooks..."
 
 # Navigate to the .git/hooks directory
 HOOKS_DIR=".git/hooks"

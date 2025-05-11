@@ -1,5 +1,5 @@
 #!/bin/bash
-# Description: This script checks if the required tools are installed on the system.
+# This script updates the npm dependencies for the backend and frontend of the project.
 
 # Backend
 cd backend

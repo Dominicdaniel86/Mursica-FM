@@ -1,4 +1,6 @@
 #!/bin/bash
+# This script uses the set-version.sh to update the major/minor/patch or pre-release version of the project.
+# It requires a provisioned type of version (major, minor, patch, or pre-release) as an argument.
 
 # Print the version passed as an argument
 if [ -z "$1" ]; then

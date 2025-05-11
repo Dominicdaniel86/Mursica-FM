@@ -1,5 +1,5 @@
 #!/bin/bash
-# Check if the entire toolchain is installed
+# Check if the entire development toolchain is installed
 
 echo "--------------------------------------------------------------------------------"
 
