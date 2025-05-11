@@ -9,18 +9,18 @@ FINAL_COMMIT_MSG="..." # Placeholder for final commit message
 
 if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "develop" ]]; then
   echo "❌ Commit messages are not allowed on the main or develop branches."
-  exit 0
+  exit 1
 elif [[ "$BRANCH_NAME" == feature/* ]]; then
   CORE_COMMIT_MSG=${BRANCH_NAME#feature/}
   FINAL_COMMIT_MSG=" feat "
 elif [[ "$BRANCH_NAME" == chore/* ]]; then
-  CORE_COMMIT_MSG=${BRANCH_NAME#feature/}
+  CORE_COMMIT_MSG=${BRANCH_NAME#chore/}
   FINAL_COMMIT_MSG=" chore "
 elif [[ "$BRANCH_NAME" == bugfix/* ]]; then
-  CORE_COMMIT_MSG=${BRANCH_NAME#feature/}
+  CORE_COMMIT_MSG=${BRANCH_NAME#bugfix/}
   FINAL_COMMIT_MSG=" fix "
 elif [[ "$BRANCH_NAME" == hotfix/* ]]; then
-  CORE_COMMIT_MSG=${BRANCH_NAME#feature/}
+  CORE_COMMIT_MSG=${BRANCH_NAME#hotfix/}
   FINAL_COMMIT_MSG=" hotfix "
 else
   echo "❌ Invalid branch name format. Expected format: feature/*, chore/* bugfix/*, or hotfix/*."
