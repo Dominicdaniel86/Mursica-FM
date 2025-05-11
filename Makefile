@@ -22,7 +22,7 @@ help:
 	@echo "  prettier(-fix)                                  - Run Prettier (and fix errors if specified)"
 	@echo "  activate-githooks                               - Activate pre-defined git hooks"
 	@echo "  deactivate-githooks                             - Deactivate all local git hooks"
-	@echo "  aws-<command>                                   - Run AWS CDK commands (login, bootstrap, synth, deploy, diff)"
+	@echo "  aws-<command>                                   - Run AWS CDK commands (login, bootstrap, synth, deploy, diff, destroy)"
 	@echo "  update-wiki                                     - Update the wiki submodule"
 	@echo "     "  
 
@@ -148,20 +148,25 @@ aws-bootstrap:
 aws-synth:
 	@echo "Synthesizing AWS CDK..."
 	@echo "Please make sure to have AWS CDK installed."
-	cdk synth
+	cd aws && cdk synth
 	@echo "AWS CDK synth complete."
 aws-deploy:
 	@echo "Deploying AWS CDK..."
 	@echo "Please make sure to have AWS CDK installed."
-	cdk deploy
+	cd aws && cdk deploy
 	@echo "AWS CDK deploy complete."
 aws-diff:
 	@echo "Diffing AWS CDK..."
 	@echo "Please make sure to have AWS CDK installed."
-	cdk diff
+	cd aws && cdk diff
 	@echo "AWS CDK diff complete."
+aws-destroy:
+	@echo "Destroying AWS CDK..."
+	@echo "Please make sure to have AWS CDK installed."
+	cd aws && cdk destroy
+	@echo "AWS CDK destroy complete."
 
 # TODO: Run tests
 # Test backend, test frontend, test all
 
-.PHONY: help dev-setup dev-setup-windows update-deps test-tools db-migrate db-reset db-push docker-up docker-build docker-down docker-logs set-version increase-version increase-version-major increase-version-minor lint prettier lint-fix prettier-fix activate-githooks deactivate-githooks update-wiki
+.PHONY: help dev-setup dev-setup-windows update-deps test-tools db-migrate db-reset db-push docker-up docker-build docker-down docker-logs set-version increase-version increase-version-major increase-version-minor lint prettier lint-fix prettier-fix activate-githooks deactivate-githook aws update-wiki aws-login aws-bootstrap aws-synth aws-deploy aws-diff aws-destroy
