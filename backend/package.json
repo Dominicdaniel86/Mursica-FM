@@ -1,6 +1,6 @@
 {
   "name": "mursica-fm-backend",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "A Node.js backend for hosting a third-party Spotify session app.",
   "type": "module",
   "main": "dist/server.js",
@@ -11,11 +11,13 @@
     "clean": "rm -rf dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prisma:migrate": "npx prisma migrate dev --name init",
-    "prisma:deploy": "npx prisma migrate deploy",
+    "prisma:push": "npx prisma db push",
     "prisma:generate": "npx prisma generate",
+    "prisma:reset": "npx prisma reset",
     "prisma:studio": "npx prisma studio",
     "postinstall": "npx prisma generate",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

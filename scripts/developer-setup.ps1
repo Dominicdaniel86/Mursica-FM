@@ -1,5 +1,5 @@
 # This script sets up the development environment for the project on Windows.
-# It installs necessary dependencies, initializes submodules, and starts the application.
+# It installs necessary dependencies, initializes submodules, migrates the database, and starts the application.
 # Required tools: docker, docker compose, nodejs, npm
 
 # 1. Check out wiki submodule
