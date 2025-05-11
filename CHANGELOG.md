@@ -12,6 +12,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
+## [1.0.0-alpha.2] - 2025-05-11
+
+### Added
+
+- Integration of ESLint for ...
+- Integration of Prettier for ...
+- Integration of Makefile for automation purposes.
+
+### Changed
+
+- Updated multiple commands and dependencies in the package.json
+
+### Fixed
+
+
 ## [1.0.0-alpha.1] - 2025-05-07
 
 ### Added
