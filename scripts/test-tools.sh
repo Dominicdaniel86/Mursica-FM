@@ -64,6 +64,13 @@ else
     fi
 fi
 
+# AWS CLI
+if command -v aws &> /dev/null; then
+    echo "[AWS CLI] installed - $(aws --version)"
+else
+    echo "[AWS CLI] not installed"
+fi
+
 # AWS CDK
 if command -v cdk &> /dev/null; then
     echo "[AWS CDK] installed - $(cdk --version)"
