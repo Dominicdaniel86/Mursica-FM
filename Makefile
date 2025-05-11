@@ -22,6 +22,7 @@ help:
 	@echo "  prettier(-fix)                                  - Run Prettier (and fix errors if specified)"
 	@echo "  activate-githooks                               - Activate pre-defined git hooks"
 	@echo "  deactivate-githooks                             - Deactivate all local git hooks"
+	@echo "  aws-<command>                                   - Run AWS CDK commands (login, bootstrap, synth, deploy, diff)"
 	@echo "  update-wiki                                     - Update the wiki submodule"
 	@echo "     "  
 
@@ -133,8 +134,32 @@ update-wiki:
 	cd docs && git checkout master
 	cd docs && git pull
 
-# TODO: AWS specifics
-# CDK deploy/ CDK synth/ cdk diff
+# AWS & CDK related commands
+aws-login:
+	@echo "Logging into AWS..."
+	@echo "Please make sure to have AWS CLI installed and configured."
+	aws configure
+	@echo "AWS login complete."
+aws-bootstrap:
+	@echo "Bootstrapping AWS CDK..."
+	@echo "Please make sure to have AWS CDK installed."
+	cdk bootstrap
+	@echo "AWS CDK bootstrap complete."
+aws-synth:
+	@echo "Synthesizing AWS CDK..."
+	@echo "Please make sure to have AWS CDK installed."
+	cdk synth
+	@echo "AWS CDK synth complete."
+aws-deploy:
+	@echo "Deploying AWS CDK..."
+	@echo "Please make sure to have AWS CDK installed."
+	cdk deploy
+	@echo "AWS CDK deploy complete."
+aws-diff:
+	@echo "Diffing AWS CDK..."
+	@echo "Please make sure to have AWS CDK installed."
+	cdk diff
+	@echo "AWS CDK diff complete."
 
 # TODO: Run tests
 # Test backend, test frontend, test all
