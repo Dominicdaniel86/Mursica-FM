@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 # Check if the entire toolchain is installed
 
 echo "--------------------------------------------------------------------------------"

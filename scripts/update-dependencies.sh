@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 # Description: This script checks if the required tools are installed on the system.
 
 # Backend
