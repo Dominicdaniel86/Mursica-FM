@@ -1,43 +1,44 @@
-import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import prettier from 'eslint-config-prettier';
+import unusedImportsPlugin from 'eslint-plugin-unused-imports';
+import { rules } from '../shared/eslintRules.mjs';
 import prettierPlugin from 'eslint-plugin-prettier';
 
 export default [
-  // Base rules (shared across both frontend and backend)
-  ...tseslint.config(
-    eslint.configs.recommended,
-    tseslint.configs.recommended,
-    tseslint.configs.strict,
-    prettier,
-  ),
-
-  // Frontend (Browser/TSX) rules
-  ...tseslint.config({
-    files: ['frontend/**/*.ts', 'frontend/**/*.tsx'],
-    languageOptions: {
-      parserOptions: {
-        project: './frontend/tsconfig.json',
+    {
+      files: ['**/*.ts'],
+      ignores: ['eslint.config.mjs'],
+      languageOptions: {
+          parser: tseslint.parser,
+          parserOptions: {
+              project: './tsconfig.json',
+              sourceType: 'module',
+          },
       },
-      env: {
-        browser: true,
+      settings: {},
+      plugins: {
+          '@typescript-eslint': tseslint.plugin,
+           prettier: prettierPlugin,
+          'unused-imports': unusedImportsPlugin,
       },
-    },
-    rules: {
-      // TypeScript-specific rules
-      '@typescript-eslint/explicit-function-return-type': 'warn',
-      '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-floating-promises': 'error',
+      rules: {
+            ...tseslint.configs.recommended.rules, // Import recommended TypeScript rules
+            ...tseslint.configs.recommendedTypeChecked.rules, // Import recommended TypeScript rules for type-checked files
+            ...rules, // Import shared rules
 
-      // React/TSX-specific rules
-      // Might follow in the future
+            //* Frontend specific rules
+            // TypeScript-specific rules
+            '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }], // Warn on unused variables, that are not prefixed with an underscore
 
-      // Prettier integration
-      'prettier/prettier': 'error', // Enforce Prettier formatting
+            // Browser-specific rules
+            'no-alert': 'error', // Disallow usage of alert, confirm, and prompt
+            'no-restricted-globals': ['error', 'event', 'fdescribe'], // Disallow usage of certain global variables
+
+            // React/TSX-specific rules
+            // Might follow in the future
+
+            // Code quality & strictness
+            'no-console': ['warn', { allow: ['warn', 'error'] }], // Warn on console.log, but allow console.warn and console.error
+            'no-implicit-globals': 'error', // Disallow implicit globals
+        },
     },
-    plugins: {
-      prettier: prettierPlugin,
-    }
-  }),
 ];

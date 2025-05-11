@@ -2,7 +2,7 @@
 export interface SpotifyClientTokenResponse {
     access_token: string;
     token_type: string;
-    expires_in: number;  // in seconds
+    expires_in: number; // in seconds
 }
 
 // Response from Spotify API for the OAuth authorization

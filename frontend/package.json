@@ -1,6 +1,6 @@
 {
   "name": "mursica-fm-frontend",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.1-alpha.1",
   "description": "A compiler for a TypeScript-based frontend for a third-party Spotify session app.",
   "type": "module",
   "main": "dist/index.js",
@@ -10,6 +10,7 @@
     "clean": "rm -rf dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -25,17 +26,19 @@
   ],
   "author": "Dominic Daniel Kraemer",
   "license": "GPL-3.0-or-later",
-  "depedencies": {},
-  "devDependencies": {
-    "@eslint/js": "^9.24.0",
-    "@types/axios": "^0.9.36",
-    "eslint": "^9.24.0",
-    "prettier": "^3.5.3",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.29.1"
-  },
   "dependencies": {
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.2.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "@types/axios": "^0.9.36",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "eslint": "^9.24.0",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.1"
   }
 }
