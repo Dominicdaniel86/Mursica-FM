@@ -36,7 +36,7 @@ const gitBranch = 'main';
 // Keep in mind that the user data script will still contain the original repository URL
 // and branch name. You may want to update it in the script as well.
 
-export class CdkStack extends cdk.Stack {
+export class ec2Stack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
