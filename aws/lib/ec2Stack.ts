@@ -8,22 +8,6 @@ import { InstanceTarget } from 'aws-cdk-lib/aws-elasticloadbalancingv2-targets';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as targets from 'aws-cdk-lib/aws-route53-targets';
 
-// // The database environment variables
-// export interface DatabaseEnvProps {
-//   POSTGRES_USER: string;
-//   POSTGRES_PASSWORD: string;
-//   POSTGRES_DB: string;
-// }
-
-// // The backend environment variables
-// export interface BackendEnvProps {
-//   ENVIRONMENT: string;
-//   PORT: number;
-//   CLIENT_ID: string;
-//   CLIENT_SECRET: string;
-//   DATABASE_URL: string;
-// }
-
 // Keep in mind that the user data script will still contain the original repository URL
 // and branch name. You may want to update it in the script as well.
 
@@ -84,8 +68,8 @@ export class ec2Stack extends cdk.Stack {
     // Create an EC2 instance in the VPC
     const instance = new ec2.Instance(this, 'MursicaEC2Instance', {
       vpc,
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO), // TODO: More flexible configuration
-      machineImage: ec2.MachineImage.latestAmazonLinux2023(), // TODO: More flexible configuration
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
+      machineImage: ec2.MachineImage.latestAmazonLinux2023(),
       role
     });
 
@@ -120,7 +104,7 @@ export class ec2Stack extends cdk.Stack {
       port: 80,
       protocol: elbv2.ApplicationProtocol.HTTP,
       targetType: elbv2.TargetType.INSTANCE,
-      // healthCheck: {
+      // healthCheck: { // TODO: Implement health check
       //   path: '/',
       //   port: '80',
       //   protocol: elbv2.Protocol.HTTP,
@@ -172,7 +156,7 @@ export class ec2Stack extends cdk.Stack {
       'dnf install -y git',
       `git clone ${repositoryURL} /home/ec2-user/Mursica-FM`,
       `cd /home/ec2-user/${repositoryName} && git checkout ${gitBranch}`,
-      'bash /home/ec2-user/Mursica-FM/scripts/ec2-setup.sh',
+      `bash /home/ec2-user/Mursica-FM/scripts/ec2-setup.sh "${repositoryName}"`,
     );
   }
 }

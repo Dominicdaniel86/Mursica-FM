@@ -22,7 +22,9 @@ help:
 	@echo "  prettier(-fix)                                  - Run Prettier (and fix errors if specified)"
 	@echo "  activate-githooks                               - Activate pre-defined git hooks"
 	@echo "  deactivate-githooks                             - Deactivate all local git hooks"
-	@echo "  aws-<command>                                   - Run AWS CDK commands (login, bootstrap, synth, deploy, diff, destroy)"
+	@echo "  aws-<command>(-verbose)                         - Run AWS CDK commands (login, bootstrap, synth, deploy, diff, destroy). Verbose can be enabled for synth, deploy, diff and destroy"
+	@echo "  aws-config-print                                - Print current config for the AWS CDK deployment"
+	@echo "  aws-config-edit                                 - Edit the current config for the AWS CDK deployment"
 	@echo "  update-wiki                                     - Update the wiki submodule"
 	@echo "     "  
 
@@ -145,28 +147,52 @@ aws-bootstrap:
 	@echo "Please make sure to have AWS CDK installed."
 	cdk bootstrap
 	@echo "AWS CDK bootstrap complete."
+
 aws-synth:
 	@echo "Synthesizing AWS CDK..."
 	@echo "Please make sure to have AWS CDK installed."
-	cd aws && cdk synth
-	@echo "AWS CDK synth complete."
+	bash ./scripts/aws/deploy.sh synth
 aws-deploy:
 	@echo "Deploying AWS CDK..."
 	@echo "Please make sure to have AWS CDK installed."
-	cd aws && cdk deploy
-	@echo "AWS CDK deploy complete."
+	bash ./scripts/aws/deploy.sh deploy
 aws-diff:
 	@echo "Diffing AWS CDK..."
 	@echo "Please make sure to have AWS CDK installed."
-	cd aws && cdk diff
-	@echo "AWS CDK diff complete."
+	bash ./scripts/aws/deploy.sh diff
 aws-destroy:
 	@echo "Destroying AWS CDK..."
 	@echo "Please make sure to have AWS CDK installed."
-	cd aws && cdk destroy
-	@echo "AWS CDK destroy complete."
+	bash ./scripts/aws/deploy.sh destroy
+
+aws-synth-verbose:
+	@echo "Synthesizing AWS CDK..."
+	@echo "Please make sure to have AWS CDK installed."
+	bash ./scripts/aws/deploy.sh synth verbose
+aws-deploy-verbose:
+	@echo "Deploying AWS CDK..."
+	@echo "Please make sure to have AWS CDK installed."
+	bash ./scripts/aws/deploy.sh deploy verbose
+aws-diff-verbose:
+	@echo "Diffing AWS CDK..."
+	@echo "Please make sure to have AWS CDK installed."
+	bash ./scripts/aws/deploy.sh diff verbose
+aws-destroy-verbose:
+	@echo "Destroying AWS CDK..."
+	@echo "Please make sure to have AWS CDK installed."
+	bash ./scripts/aws/deploy.sh destroy verbose
+
+aws-config-print:
+	@echo "Printing AWS CDK config..."
+	@echo "Please make sure to have AWS CDK installed, as well as the 'jq' tool."
+	bash ./scripts/aws/print-values.sh
+
+aws-config-edit:
+	@echo "Editing AWS CDK config..."
+	@echo "Please make sure to have AWS CDK installed, as well as the '' tool."
+	bash ./scripts/aws/configure-values.sh
 
 # TODO: Run tests
 # Test backend, test frontend, test all
 
-.PHONY: help dev-setup dev-setup-windows update-deps test-tools db-migrate db-reset db-push docker-up docker-build docker-down docker-logs set-version increase-version increase-version-major increase-version-minor lint prettier lint-fix prettier-fix activate-githooks deactivate-githook aws update-wiki aws-login aws-bootstrap aws-synth aws-deploy aws-diff aws-destroy
+.PHONY: help dev-setup dev-setup-windows update-deps test-tools db-migrate db-reset db-push docker-up docker-build docker-down docker-logs set-version increase-version increase-version-major increase-version-minor lint prettier lint-fix prettier-fix activate-githooks deactivate-githook aws update-wiki aws-login aws-bootstrap aws-synth aws-deploy aws-diff aws-destroy aws-synth-verbose aws-deploy-verbose aws-diff-verbose aws-destroy-verbose aws-config-print aws-config-edit
