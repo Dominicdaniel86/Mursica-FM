@@ -22,7 +22,7 @@ cd "$ROOT_DIR/backend"
 npm install
 cd "$ROOT_DIR/frontend"
 npm install
-cd "$ROOT_DIR/cdk"
+cd "$ROOT_DIR/aws"
 npm install
 
 # 3. Compile the frontend

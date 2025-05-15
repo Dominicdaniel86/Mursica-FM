@@ -13,7 +13,7 @@ Set-Location -Path ./backend
 npm install
 Set-Location -Path ../frontend
 npm install
-Set-Location -Path ../cdk
+Set-Location -Path ../aws
 npm install
 Set-Location -Path ..
 
