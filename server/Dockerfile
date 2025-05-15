@@ -1,5 +1,5 @@
 # Build stage
-FROM node:16-alpine AS builder
+FROM node:24-alpine3.20 AS builder
 WORKDIR /app
 
 COPY frontend/package*.json ./
