@@ -21,23 +21,32 @@ import { NotFoundError } from './errors/index.js';
 const app = express();
 
 // Add body parser middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// TODO: Check additional middlewares
+app.use(express.json()); // Parses incoming requests with JSON payloads
+app.use(express.urlencoded({ extended: true })); // Parses incoming requests with URL-encoded payloads
 
 // Initialize log file
 try {
-    initializeLoggingFile();
+    await initializeLoggingFile();
 } catch (error: unknown) {
-    const errorMessage =
-        error instanceof Error
-            ? `Failed to initialize the logging file: ${error.message}`
-            : 'Failed to initialize the logging file due to an unknown reason';
-    logger.fatal(errorMessage);
-    throw new Error('Failed to initialize the logging file');
+    let errorMessage = '';
+    if (error instanceof Error) {
+        errorMessage = `Failed to initialize the logging file: ${error.message}`;
+        logger.fatal(errorMessage);
+        throw error;
+    } else if (typeof error === 'string') {
+        errorMessage = `Failed to initialize the logging file: ${error}`;
+        logger.fatal(errorMessage);
+        throw new Error(`Failed to initialize the logging file: ${error}`);
+    } else {
+        errorMessage = 'Failed to initialize the logging file due to an unknown reason';
+        logger.fatal(errorMessage);
+        throw new Error(errorMessage);
+    }
 }
 
 // Retrieve client credential token
-await validateClientToken();
+await validateClientToken(); // TODO: Check this function
 
 app.get('/api', (req, res) => {
     res.send('Hello from the backend!');

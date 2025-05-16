@@ -8,14 +8,14 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 
 #### Basics
 
-- [ ] /src/server.ts
-  - [ ] initialization
-  - [ ] /api
-- [ ] /src/logger
-  - [ ] logger.ts
-- [ ] src/config.ts
-- [ ] .env
-- [ ] wait-for-it.sh
+- [X] /src/server.ts
+  - [X] initialization
+  - [X] /api
+- [X] /src/logger
+  - [X] logger.ts
+- [X] src/config.ts
+- [X] .env
+- [X] wait-for-it.sh
 
 #### Authentication
 
@@ -71,12 +71,12 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 
 #### Structure Only
 
-- [ ] /src/auth
-  - [ ] auth.ts
-- [ ] /src/services
-  - [ ] algorithm.ts
-- [ ] /src/tests
-  - [ ] test.ts
+- [X] /src/auth
+  - [X] auth.ts
+- [X] /src/services
+  - [X] algorithm.ts
+- [X] /src/tests
+  - [X] test.ts
 
 ### Frontend Improvement
 
@@ -88,6 +88,7 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 - [ ] Remove windows dev setup...
 - [ ] How to use the wiki in a forked project?
 - [ ] Add installation of "jq" to dev setup [sudo apt-get install jq]
+- [ ] Check remaining TODOs
 
 ### ☁️ AWS specific [Issue Nr. [OLP18](https://github.com/Dominicdaniel86/Mursica-FM/issues/80)]
 
