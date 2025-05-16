@@ -6,6 +6,9 @@
     <title>Registration | Mursica FM</title>
     <link rel="icon" href="/static/icons/favicon.ico" type="image/x-icon">
 
+    <!-- Meta Description -->
+    <meta name="description" content="Create your Mursica FM account to host or join music sessions." />
+
     <!-- Google Sora Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,21 +16,30 @@
 
     <!-- CSS Files -->
     <link rel="stylesheet" href="/static/css/base.css">
-    <link rel="stylesheet" href="/static/css/registration.css">
+    <link rel="stylesheet" href="/static/css/base-files/registration.css">
 </head>
 <body>
-    <h1 id="header">Let's get started!</h1>
-    <div id="app-icon">
-        <img src="/static/icons/favicon.ico"><br>
-    </div>
+    <header>
+        <h1 id="header">Let's get started!</h1>
+        <div id="app-icon">
+            <img src="/static/icons/favicon.ico"><br>
+        </div>        
+    </header>
 
-    <input type="email" placeholder="Email" id="email-input">
-    <input type="text" placeholder="Username" id="username-input">
-    <input type="password" placeholder="Password">
-    <button onclick="registration()">Register</button>
+    <main>
+        <input type="email" placeholder="Email" id="email-input">
+        <input type="text" placeholder="Username" id="username-input">
+        <input type="password" placeholder="Password">
+        <button onclick="registration()">Register</button>
+    </main>
 
-    <div id="footer">
-        <a href="/static/html/login.html"><p>Already have an account?</p></a>
+    <footer id="footer">
+        <p>
+            Already have an account?
+            <span id="login-link">
+                <a href="/static/html/login.html">Log in</a>
+            </span>
+        </p>
     </div>
 
     <!-- JavaScript files -->

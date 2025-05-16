@@ -2,8 +2,9 @@ import type { TrackResp } from './interfaces/search-song';
 
 declare global {
     interface Window {
+        sendResponse: (input: string) => Promise<void>;
+        searchSong: (input: string) => Promise<void>;
         switchToAdmin: () => void;
-        sendResponse: (input: string) => void;
     }
 }
 
@@ -15,16 +16,19 @@ let timeoutID: number;
  * Send the ID of the favored song.
  * @param {string} ID The song ID
  */
-export async function sendResponse(ID: string): Promise<void> {
-    console.log(`ID: ${ID}`);
+// TODO: Implement and test this function
+async function sendResponse(ID: string): Promise<void> {
+    if (ID === undefined || ID === null) {
+        console.error('ID is undefined or null');
+        return;
+    }
 
     const url = `/api/tracks/select`;
     const data = new URLSearchParams({
         trackID: ID,
     });
-    const response = await axios.post<TrackResp>(url, data);
 
-    console.log(response.data);
+    await axios.post<TrackResp>(url, data);
 
     // Clear track input and result
     searchSongElement.value = '';
@@ -43,13 +47,18 @@ export async function sendResponse(ID: string): Promise<void> {
 async function searchSong(input: string) {
     const targetDiv: HTMLDivElement = document.getElementById('song-results') as HTMLDivElement;
 
+    if (targetDiv === null || targetDiv === undefined) {
+        console.error('Target div not found');
+        return;
+    }
+
     // Remove existing child elements (searched songs from previous requests)
     while (targetDiv.firstChild) {
         targetDiv.removeChild(targetDiv.lastChild as ChildNode);
     }
 
     // If input is empty: stop function execution
-    if (!input) {
+    if (!input || input.length === 0) {
         return;
     }
 
@@ -82,13 +91,19 @@ async function searchSong(input: string) {
     });
 }
 
+// Routing to admin page
+// TODO: Implement authorization step
+function switchToAdmin(): void {
+    window.location.href = '/static/html/admin.html';
+}
+
 //* Called when the DOM has loaded
 window.addEventListener('load', () => {
-    console.log('DOM has loaded');
-
     // Reset searched song value
     searchSongElement.value = '';
 
+    // Add event listener to the search song input field
+    // -> search for songs after 1 second of input inactivity
     searchSongElement.addEventListener('input', () => {
         clearTimeout(timeoutID);
         timeoutID = setTimeout(async () => {
@@ -97,13 +112,6 @@ window.addEventListener('load', () => {
     });
 });
 
-// Routing to admin page
-// TODO: Implement authorization step
-export function switchToAdmin(): void {
-    window.location.href = '/static/html/admin.html';
-}
-
-window.switchToAdmin = switchToAdmin;
-// TODO: Fix this ESLint error
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
 window.sendResponse = sendResponse;
+window.searchSong = searchSong;
+window.switchToAdmin = switchToAdmin;

@@ -1,4 +1,4 @@
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import { pino } from 'pino';
 import { IS_PRODUCTION } from '../config.js';
 
@@ -8,25 +8,20 @@ const logFile = './logs/app.log';
  * Initializes the app.log file. If the file already exists, it created the file and writes some metadata on top of it.
  * Else it just creates a new line break.
  */
-// TODO: Replace synchronous file operations with asynchronous ones
-export function initializeLoggingFile(): void {
-    // Check if the log file exists
-    if (!fs.existsSync(logFile)) {
-        const date = new Date().toLocaleString;
-
-        // If not - write some custom lines
-        const initialMessage =
+export async function initializeLoggingFile(): Promise<void> {
+    try {
+        await fs.access(logFile); // Check if the log file exists
+        await fs.appendFile(logFile, '\n'); // Add line break
+    } catch {
+        // File does not exist, create it
+        const date = new Date().toLocaleString();
+        const initialMessage: string =
             'Application Log - Service: Spotify Session Backend\n' +
             'Generated on: ' +
             date +
             '\n' +
-            '===========================================================================================================================================================\n' +
-            '\n';
-
-        fs.writeFileSync(logFile, initialMessage);
-    } else {
-        // If - add line break
-        fs.appendFileSync(logFile, '\n');
+            '===========================================================================================================================================================\n';
+        await fs.writeFile(logFile, initialMessage); // Write initial message
     }
 }
 

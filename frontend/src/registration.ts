@@ -1,17 +1,16 @@
-window.addEventListener('load', () => {
-    console.log('DOM has loaded!');
+export {};
 
-    // Reset email and username
-    const emailInputElement = document.getElementById('email-input') as HTMLInputElement;
-    emailInputElement.value = '';
-    const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
-    usernameInputElement.value = '';
-});
+declare global {
+    interface Window {
+        registration: () => void;
+    }
+}
 
 function registration() {
     const emailInputElement = document.getElementById('email-input') as HTMLInputElement;
-    const emailInput = emailInputElement.value;
     const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
+
+    const emailInput = emailInputElement.value;
     const usernameInput = usernameInputElement.value;
 
     if (emailInput.length === 0 || usernameInput.length === 0) {
@@ -22,3 +21,13 @@ function registration() {
         window.location.href = '/static/html/add-song.html';
     }
 }
+
+window.addEventListener('load', () => {
+    // Reset email and username
+    const emailInputElement = document.getElementById('email-input') as HTMLInputElement;
+    emailInputElement.value = '';
+    const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
+    usernameInputElement.value = '';
+});
+
+window.registration = registration;

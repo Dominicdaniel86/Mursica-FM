@@ -2,6 +2,7 @@ import axios from 'axios';
 import type { SpotifyClientTokenResponse } from '../../interfaces/index.js';
 import logger from '../../logger/logger.js';
 import { CLIENT_ID, CLIENT_SECRET, prisma } from '../../config.js';
+import { ClientCredentialFlow } from '../../errors/authentication.js';
 
 /**
  * Requests an access token from the Spotify API using the Client Credentials flow.
@@ -14,9 +15,9 @@ import { CLIENT_ID, CLIENT_SECRET, prisma } from '../../config.js';
  *   - The duration (in seconds) for which the token remains valid.
  */
 async function requestClientCredentialToken(): Promise<[string, number]> {
-    if (!CLIENT_ID || !CLIENT_SECRET) {
-        logger.warn('Client ID or Client Secret not set."');
-        throw new Error('Client-Credentials-Flow failed: Cliend ID or Client Secret not set');
+    if (CLIENT_ID === undefined || CLIENT_ID === null || CLIENT_SECRET === undefined || CLIENT_SECRET === null) {
+        logger.warn('Client ID or Client Secret not set.');
+        throw new Error('Client-Credentials-Flow failed: Client ID or Client Secret not set');
     }
 
     const url = 'https://accounts.spotify.com/api/token';
@@ -33,11 +34,11 @@ async function requestClientCredentialToken(): Promise<[string, number]> {
         const response = await axios.post<SpotifyClientTokenResponse>(url, data, config);
 
         const accessToken = response.data.access_token;
-        const expresIn = response.data.expires_in;
+        const expiresIn = response.data.expires_in;
 
-        logger.info({ accessToken, expresIn }, `Client-Credentials-Flow request succeeded.`);
+        logger.info({ accessToken, expiresIn }, `Client-Credentials-Flow request succeeded.`);
 
-        return [accessToken, expresIn];
+        return [accessToken, expiresIn];
     } catch (error) {
         if (axios.isAxiosError(error)) {
             if (error.response) {
@@ -54,7 +55,7 @@ async function requestClientCredentialToken(): Promise<[string, number]> {
             logger.error(error, `Axios request to Spotify API failed: Unexpected error.`);
         }
 
-        throw new Error('Client-Credentials-Flow request failed');
+        throw new ClientCredentialFlow('Client-Credentials-Flow request failed');
     }
 }
 
@@ -72,7 +73,7 @@ export async function validateClientToken(): Promise<void> {
     let valid = false;
     let difference = 0;
 
-    if (currentToken) {
+    if (currentToken !== null && currentToken !== undefined) {
         const validUntil = currentToken.validUntil.getTime();
         const currentTime = currentDate.getTime();
 
@@ -84,14 +85,14 @@ export async function validateClientToken(): Promise<void> {
     }
 
     // If difference is less than 10 sec or token does not exist at all
-    if (!valid) {
+    if (valid === false) {
         try {
             const clientTokenResult: [string, number] = await requestClientCredentialToken();
 
             const accessToken = clientTokenResult[0];
-            const expresIn = clientTokenResult[1];
+            const expiresIn = clientTokenResult[1];
 
-            const validUntilDate: Date = new Date(Date.now() + expresIn * 1000);
+            const validUntilDate: Date = new Date(Date.now() + expiresIn * 1000);
 
             if (currentToken) {
                 await prisma.clientToken.update({
@@ -106,6 +107,9 @@ export async function validateClientToken(): Promise<void> {
 
             logger.info('Successfully updated client token.');
         } catch (error) {
+            if (error instanceof ClientCredentialFlow) {
+                throw error;
+            }
             logger.fatal(error, 'Failed to update the client token.');
             throw new Error('Failed to update the client token.');
         }

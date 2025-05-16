@@ -4,12 +4,42 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 
 ---
 
+### Structure Validation
+
+##### /errors/database.ts
+
+- [ ] NotFoundError
+
+##### /interfaces/spotifyPlayer.ts
+
+- [ ] SpotifyPlayer
+
+##### /interfaces/spotifyTokens.ts
+
+- [ ] SpotifyClientTokenResponse
+- [ ] SpotifyAuthTokenResponse
+
+##### /interfaces/spotifyTracks.ts
+
+- [ ] SpotifyTrackResponse
+- [ ] TrackSummary
+
+#### Structure Only
+
+- [X] /src/auth
+  - [X] auth.ts
+- [X] /src/services
+  - [X] algorithm.ts
+- [X] /src/tests
+  - [X] test.ts
+
 ### 🧹 Project Cleanup
 
 - [ ] Add a better structure for the `/scripts` directory
 - [ ] Remove windows dev setup...
 - [ ] How to use the wiki in a forked project?
 - [ ] Add installation of "jq" to dev setup [sudo apt-get install jq]
+- [ ] Check remaining TODOs
 
 ### ☁️ AWS specific [Issue Nr. [OLP18](https://github.com/Dominicdaniel86/Mursica-FM/issues/80)]
 

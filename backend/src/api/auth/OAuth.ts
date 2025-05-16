@@ -4,6 +4,8 @@ import type { SpotifyAuthTokenResponse } from '../../interfaces/index.js';
 import logger from '../../logger/logger.js';
 import { generateRandomString } from '../../utility/fileUtils.js';
 import { CLIENT_ID, CLIENT_SECRET, prisma } from '../../config.js';
+import { AuthenticationError } from '../../errors/authentication.js';
+import { NotFoundError } from '../../errors/database.js';
 
 /**
  * Generates an OAuth query string for initiating Spotify authentication.
@@ -22,7 +24,7 @@ export async function generateOAuthQuerystring(): Promise<string> {
     try {
         const previousState = await prisma.state.findFirst();
 
-        if (previousState) {
+        if (previousState !== null && previousState !== undefined) {
             await prisma.state.update({
                 where: { id: previousState.id },
                 data: { state },
@@ -34,7 +36,7 @@ export async function generateOAuthQuerystring(): Promise<string> {
         }
     } catch (error) {
         console.error(error, 'Failed to update the state in the database');
-        throw new Error('Failed to update the state in the database');
+        throw new AuthenticationError('Failed to update the state in the database');
     }
 
     return querystring.stringify({
@@ -72,13 +74,13 @@ export async function oAuthAuthorization(code: string): Promise<void> {
     try {
         const response = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
         const accessToken = response.data.access_token;
-        const expresIn = response.data.expires_in;
+        const expiresIn = response.data.expires_in;
         const refreshToken = response.data.refresh_token;
 
-        const validUntilDate: Date = new Date(Date.now() + expresIn * 1000);
+        const validUntilDate: Date = new Date(Date.now() + expiresIn * 1000);
         const currentToken = await prisma.oAuthToken.findFirst();
 
-        if (currentToken) {
+        if (currentToken !== null && currentToken !== undefined) {
             await prisma.oAuthToken.update({
                 where: { id: currentToken.id },
                 data: { token: accessToken, validUntil: validUntilDate, refreshToken },
@@ -89,10 +91,10 @@ export async function oAuthAuthorization(code: string): Promise<void> {
             });
         }
 
-        logger.info('OAuth user authentication successfully completed.');
+        logger.info({ accessToken, validUntil: validUntilDate }, 'OAuth user authentication successfully completed.');
     } catch (error) {
-        logger.error(error, 'OAuth user authentication failed!');
-        throw error;
+        logger.error(error);
+        throw new AuthenticationError('OAuth user authentication failed');
     }
 }
 
@@ -104,9 +106,9 @@ export async function refreshAuthToken(): Promise<void> {
     try {
         const currentToken = await prisma.oAuthToken.findFirst();
 
-        if (!currentToken) {
+        if (currentToken === null || currentToken === undefined) {
             logger.warn('AuthToken could not be refreshed, as there is no current token in the database');
-            throw Error('refreshAuthToken failed: No current token found in database');
+            throw new NotFoundError('refreshAuthToken failed: No current token found in database');
         }
 
         const url = 'https://accounts.spotify.com/api/token';
@@ -123,10 +125,10 @@ export async function refreshAuthToken(): Promise<void> {
 
         const response = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
         const accessToken = response.data.access_token;
-        const expresIn = response.data.expires_in;
+        const expiresIn = response.data.expires_in;
         const refreshToken = response.data.refresh_token;
 
-        const validUntilDate: Date = new Date(Date.now() + expresIn * 1000);
+        const validUntilDate: Date = new Date(Date.now() + expiresIn * 1000);
 
         await prisma.oAuthToken.update({
             where: { id: currentToken.id },
@@ -135,6 +137,10 @@ export async function refreshAuthToken(): Promise<void> {
 
         logger.info('Successfully refreshed the OAuth token');
     } catch (error) {
+        if (error instanceof NotFoundError) {
+            throw error;
+        }
         logger.error(error, 'OAuth token refresh failed');
+        throw new AuthenticationError('OAuth token refresh failed');
     }
 }

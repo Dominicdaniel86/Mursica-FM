@@ -6,6 +6,9 @@
     <title>Add Song | Mursica FM</title>
     <link rel="icon" href="/static/icons/favicon.ico" type="image/x-icon">
 
+    <!-- Meta Description -->
+    <meta name="description" content="Add and search for songs in your Mursica FM session." />
+
     <!-- Google Sora Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,33 +16,39 @@
 
     <!-- CSS Files -->
     <link rel="stylesheet" href="/static/css/main-page.css">
-    <link rel="stylesheet" href="/static/css/add-song.css">
+    <link rel="stylesheet" href="/static/css/main-page-files/add-song.css">
 </head>
 <body>
-    <div id="logout">
-        <a href="/static/html/index.html"><img src="/static/icons/exit.png" height="60px"></a>
-    </div>
-    <div id="admin">
-        <img src="/static/icons/admin.png" onclick="switchToAdmin()" height="60px">
-    </div>
+    <header>
+        <nav>
+            <div id="logout">
+                <a href="/static/html/index.html"><img src="/static/icons/exit.png" height="60px"></a>
+            </div>
+            <div id="admin">
+                <img src="/static/icons/admin.png" onclick="switchToAdmin()" height="60px">
+            </div>
+        </nav>
+    </header>
 
-    <div id="search-song-div">
-        <input type="text" placeholder="Search Song" id="search-song">
-        <img src="/static/icons/hearth-icon.svg" id="heart-icon">
-    </div>
+    <main>
+        <section id="search-song-div">
+            <input type="text" placeholder="Search Song" id="search-song">
+            <img src="/static/icons/hearth-icon.svg" id="heart-icon">            
+        </section>
 
-    <br>
+        <br>
 
-    <div id="song-results">
+        <section id="song-results">
+            <!-- Song search results injected here -->
+        </section>
 
-    </div>
-
-    <div id="current-song">
-        <div id="album cover">
-
-        </div>
-        <p>Connect your Spotify account to play a song!</p>
-    </div>
+        <section id="current-song">
+            <div id="album-cover">
+                <!-- Album cover image injected here -->
+            </div>
+            <p>Connect your Spotify account to play a song!</p>
+        </section>
+    </main>
 
      <!-- JavaScript files -->
      <script type="module" src="/static/javascript/interfaces/search-song.js"></script>

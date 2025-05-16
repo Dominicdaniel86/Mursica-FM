@@ -6,6 +6,9 @@
     <title>Mursica FM</title>
     <link rel="icon" href="/static/icons/favicon.ico" type="image/x-icon">
 
+    <!-- Meta Description -->
+    <meta name="description" content="Mursica FM - Listening music with your friends has never been easier!">
+
     <!-- Google Sora Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,28 +16,37 @@
 
     <!-- CSS Files -->
     <link rel="stylesheet" href="/static/css/base.css">
-    <link rel="stylesheet" href="/static/css/index.css">
+    <link rel="stylesheet" href="/static/css/base-files/index.css">
 </head>
 
 <body>
-    <h1 id="header">Welcome to Mursica FM!</h1>
-    <div id="app-icon">
-        <img src="/static/icons/favicon.ico"><br>
-    </div>
+    <header>
+        <h1 id="header">Welcome to Mursica FM!</h1>
+        <div id="app-icon">
+            <img src="/static/icons/favicon.ico" alt="Mursica FM Logo"><br>
+        </div>        
+    </header>
     
-    <div id="login">
-        <a href="/static/html/login.html"><button id="host-session">Host a Session</button></a><br>
-        <input type="text" placeholder="Session-ID" id="session-id-input"><br>
-        <button id="join-session" onclick="joinSession()">Join a Session</button>
-    </div>
+    <main>
+        <section id="login">
+            <a href="/static/html/login.html">
+                <button id="host-session">Host a Session</button>
+            </a><br>
+            <input type="text" placeholder="Session-ID" id="session-id-input"><br>
+            <button id="join-session" onclick="joinSession()">Join a Session</button>
+        </section>
+    </main>
 
-    <p id="footer">
-        By using this service, you agree to our 
-        <a href="https://github.com/Dominicdaniel86/Mursica-FM/blob/main/TERMS.md">Terms of Use</a> and 
-        <a href="https://github.com/Dominicdaniel86/Mursica-FM/blob/main/PRIVACY.md">Privacy Policy</a>.
-    </p>
+
+    <footer id="footer">
+        <p>
+            By using this service, you agree to our 
+            <a href="https://github.com/Dominicdaniel86/Mursica-FM/blob/main/TERMS.md">Terms of Use</a> and 
+            <a href="https://github.com/Dominicdaniel86/Mursica-FM/blob/main/PRIVACY.md">Privacy Policy</a>.
+        </p>
+    </footer>
 
     <!-- JavaScript files -->
-    <script src="/static/javascript/index.js"></script>
+    <script type="module" src="/static/javascript/index.js"></script>
 </body>
 </html>
