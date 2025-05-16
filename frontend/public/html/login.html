@@ -16,7 +16,7 @@
 
     <!-- CSS Files -->
     <link rel="stylesheet" href="/static/css/base.css">
-    <link rel="stylesheet" href="/static/css/login.css">
+    <link rel="stylesheet" href="/static/css/base-files/login.css">
 </head>
 <body>
     <header>
@@ -24,18 +24,18 @@
             <img src="/static/icons/back-icon.png" id="back-icon" alt="Back to Home">
         </a>
         <br><br>
-        <h1 id="header">Login to start<br>your Session!</h1>
-        <div id="app-icon">
-            <img src="/static/icons/favicon.ico" alt="Mursica FM Logo"><br>
-        </div>       
+        <h1 id="header">Login to start<br>your Session!</h1>    
     </header>
 
     <main>
+        <div id="app-icon">
+            <img src="/static/icons/favicon.ico" alt="Mursica FM Logo"><br>
+        </div>   
         <div id="login-form">
             <input type="text" placeholder="Username" id="username-input">
             <input type="password" placeholder="Password">
             <button onclick="login()">Sign In</button>
-            <p>Listening music with your<br>friends has never been easier!</p>
+            <p id="login-info">Listening music with your<br>friends has never been easier!</p>
         </div>
     </main>
 
