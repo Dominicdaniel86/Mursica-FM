@@ -4,6 +4,84 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 
 ---
 
+### Backend Improvement
+
+#### Basics
+
+- [ ] /src/server.ts
+  - [ ] initialization
+  - [ ] /api
+- [ ] /src/logger
+  - [ ] logger.ts
+- [ ] src/config.ts
+- [ ] .env
+- [ ] wait-for-it.sh
+
+#### Authentication
+
+- [ ] /src/server.ts
+  - [ ] /api/auth/spotify
+  - [ ] /api/auth/spotify/login
+  - [ ] /api/auth/spotify/callback
+  - [ ] /api/auth/spotify/logout
+- [ ] /src/utility
+  - [ ] fileUtils.ts
+- [ ] Prisma DB
+- [ ] /src/api
+  - [ ] /src/api/auth
+    - [ ] clientCredentials.ts
+    - [ ] logout.ts
+    - [ ] OAuth.ts
+  - [ ] index.ts
+- [ ] /src/errors
+  - [ ] database.ts
+  - [ ] index.ts
+- [ ] /src/interfaces
+  - [ ] index.ts
+  - [ ] spotifyPlayer.ts
+
+#### Track Selection
+
+- [ ] /src/server.ts
+  - [ ] /api/tracks/search
+  - [ ] /api/tracks/select
+- [ ] Prisma DB
+- [ ] /src/api
+  - [ ] index.ts
+  - [ ] trackInfo.ts
+- [ ] /src/interfaces
+  - [ ] index.ts
+  - [ ] spotifyTracks.ts
+
+#### Admin Controls
+
+- [ ] /src/server.ts
+  - [ ] /api/admin/control/play
+  - [ ] /api/admin/control/stop
+  - [ ] /adi/admin/control/skip
+  - [ ] /api/admin/control/volume GET
+  - [ ] /api/admin/control/volume PUT
+  - [ ] /api/admin DEPRECATED
+- [ ] /src/api
+  - [ ] adminControl.ts
+  - [ ] index.ts
+- [ ] /src/interfaces
+  - [ ] index.ts
+  - [ ] spotifyTokens.ts
+
+#### Structure Only
+
+- [ ] /src/auth
+  - [ ] auth.ts
+- [ ] /src/services
+  - [ ] algorithm.ts
+- [ ] /src/tests
+  - [ ] test.ts
+
+### Frontend Improvement
+
+- [ ] ...
+
 ### 🧹 Project Cleanup
 
 - [ ] Add a better structure for the `/scripts` directory
