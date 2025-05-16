@@ -1,0 +1,388 @@
+{
+  "name": "Mursica-FM",
+  "version": "1",
+  "items": [
+    {
+      "type": "folder",
+      "name": "Spotify-Authentication",
+      "filename": "Spotify-Authentication",
+      "seq": 2,
+      "root": {
+        "meta": {
+          "name": "Spotify-Authentication",
+          "seq": 2
+        }
+      },
+      "items": [
+        {
+          "type": "http",
+          "name": "/api/auth/spotify",
+          "filename": "api-auth-spotify.bru",
+          "seq": 1,
+          "request": {
+            "url": "http://127.0.0.1:80/api/auth/spotify",
+            "method": "GET",
+            "headers": [],
+            "params": [],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": [],
+              "file": []
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "docs": "",
+            "auth": {
+              "mode": "inherit"
+            }
+          }
+        },
+        {
+          "type": "http",
+          "name": "/api/auth/spotify/login",
+          "filename": "api-auth-spotify-login.bru",
+          "seq": 2,
+          "request": {
+            "url": "http://127.0.0.1:80/api/auth/spotify/login",
+            "method": "GET",
+            "headers": [],
+            "params": [],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": [],
+              "file": []
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "docs": "",
+            "auth": {
+              "mode": "inherit"
+            }
+          }
+        },
+        {
+          "type": "http",
+          "name": "/api/auth/spotify/callback",
+          "filename": "api-auth-spotify-callback.bru",
+          "seq": 3,
+          "request": {
+            "url": "http://127.0.0.1:80/api/auth/spotify/callback",
+            "method": "GET",
+            "headers": [],
+            "params": [],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": [],
+              "file": []
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "docs": "",
+            "auth": {
+              "mode": "inherit"
+            }
+          }
+        },
+        {
+          "type": "http",
+          "name": "/api/auth/spotify/logout",
+          "filename": "api-auth-spotify-logout.bru",
+          "seq": 4,
+          "request": {
+            "url": "http://127.0.0.1:80/api/auth/spotify/logout",
+            "method": "POST",
+            "headers": [],
+            "params": [],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": [],
+              "file": []
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "docs": "",
+            "auth": {
+              "mode": "inherit"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "folder",
+      "name": "Tracks",
+      "filename": "Tracks",
+      "seq": 4,
+      "root": {
+        "meta": {
+          "name": "Tracks",
+          "seq": 4
+        }
+      },
+      "items": [
+        {
+          "type": "http",
+          "name": "/api/tracks/select",
+          "filename": "api-tracks-select.bru",
+          "seq": 2,
+          "request": {
+            "url": "http://127.0.0.1:80/api/tracks/select",
+            "method": "POST",
+            "headers": [],
+            "params": [],
+            "body": {
+              "mode": "none",
+              "json": "{\n  \"\": \"\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": [],
+              "file": []
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "docs": "",
+            "auth": {
+              "mode": "inherit"
+            }
+          }
+        },
+        {
+          "type": "http",
+          "name": "/api/tracks/search",
+          "filename": "api-tracks-search.bru",
+          "seq": 1,
+          "request": {
+            "url": "http://127.0.0.1:80/api/tracks/search?trackTitle=Example Song",
+            "method": "GET",
+            "headers": [],
+            "params": [
+              {
+                "name": "trackTitle",
+                "value": "Example Song",
+                "type": "query",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "json",
+              "json": "{\n  \"trackTitle\": \"Master\"\n}",
+              "formUrlEncoded": [],
+              "multipartForm": [],
+              "file": []
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "docs": "",
+            "auth": {
+              "mode": "inherit"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "folder",
+      "name": "Admin-Control",
+      "filename": "Admin-Control",
+      "seq": 3,
+      "root": {
+        "meta": {
+          "name": "Admin-Control",
+          "seq": 3
+        }
+      },
+      "items": [
+        {
+          "type": "http",
+          "name": "/api/admin/control/playTrack",
+          "filename": "api-admin-control-playTrack.bru",
+          "seq": 1,
+          "request": {
+            "url": "http://127.0.0.1:80/api/admin/control/play",
+            "method": "PUT",
+            "headers": [],
+            "params": [],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": [],
+              "file": []
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "docs": "",
+            "auth": {
+              "mode": "inherit"
+            }
+          }
+        },
+        {
+          "type": "http",
+          "name": "/api/admin/control/pauseTrack",
+          "filename": "api-admin-control-pauseTrack.bru",
+          "seq": 2,
+          "request": {
+            "url": "http://127.0.0.1:80/api/admin/control/stop",
+            "method": "PUT",
+            "headers": [],
+            "params": [],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": [],
+              "file": []
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "docs": "",
+            "auth": {
+              "mode": "inherit"
+            }
+          }
+        },
+        {
+          "type": "http",
+          "name": "/api/admin/control/skip",
+          "filename": "api-admin-control-skip.bru",
+          "seq": 3,
+          "request": {
+            "url": "http://127.0.0.1:80/api/admin/control/skip",
+            "method": "POST",
+            "headers": [],
+            "params": [],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": [],
+              "file": []
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "docs": "",
+            "auth": {
+              "mode": "inherit"
+            }
+          }
+        },
+        {
+          "type": "http",
+          "name": "/api/admin/control/volumeGET",
+          "filename": "api-admin-control-volumeGET.bru",
+          "seq": 4,
+          "request": {
+            "url": "http://127.0.0.1:80/api/admin/control/volume",
+            "method": "GET",
+            "headers": [],
+            "params": [],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": [],
+              "file": []
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "docs": "",
+            "auth": {
+              "mode": "inherit"
+            }
+          }
+        },
+        {
+          "type": "http",
+          "name": "/api/admin/control/volumePUT",
+          "filename": "api-admin-control-volumePUT.bru",
+          "seq": 5,
+          "request": {
+            "url": "http://127.0.0.1:80/api/admin/control/volume?volume=100",
+            "method": "PUT",
+            "headers": [],
+            "params": [
+              {
+                "name": "volume",
+                "value": "100",
+                "type": "query",
+                "enabled": true
+              }
+            ],
+            "body": {
+              "mode": "none",
+              "formUrlEncoded": [],
+              "multipartForm": [],
+              "file": []
+            },
+            "script": {},
+            "vars": {},
+            "assertions": [],
+            "tests": "",
+            "docs": "",
+            "auth": {
+              "mode": "inherit"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "http",
+      "name": "/api",
+      "filename": "api.bru",
+      "seq": 4,
+      "request": {
+        "url": "http://127.0.0.1:80/api/",
+        "method": "GET",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    }
+  ],
+  "environments": [],
+  "brunoConfig": {
+    "version": "1",
+    "name": "Mursica-FM",
+    "type": "collection",
+    "ignore": [
+      "node_modules",
+      ".git"
+    ],
+    "size": 0.0001049041748046875,
+    "filesCount": 1
+  }
+}

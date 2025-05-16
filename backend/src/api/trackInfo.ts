@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import type { SpotifyTrackResponse, TrackSummary } from '../interfaces/index.js';
 import logger from '../logger/logger.js';
 import { prisma } from '../config.js';
@@ -14,7 +14,7 @@ import { prisma } from '../config.js';
 export async function searchSong(track: string): Promise<TrackSummary[]> {
     // Validate input
     if (track === undefined || track === null || track.trim() === '') {
-        logger.warn('Received empty track input in function "searchSong".');
+        logger.error('Received empty track input in function "searchSong".');
         return [];
     }
 
@@ -45,9 +45,9 @@ export async function searchSong(track: string): Promise<TrackSummary[]> {
         return trackSummaries;
     } catch (error) {
         if (axios.isAxiosError(error)) {
-            if (error.response) {
+            if (error.response !== undefined && error.response !== null) {
                 logger.error(error, `Spotify API request failed with status ${error.status}: ${error.message}`);
-            } else if (typeof error.request !== 'undefined' && error.request !== null) {
+            } else if (typeof error.request !== undefined && error.request !== null) {
                 logger.error(error, `Spotify API request failed: No response received.`);
             } else {
                 logger.error(error, `Spotify API request failed: ${error.message}`);
@@ -56,6 +56,6 @@ export async function searchSong(track: string): Promise<TrackSummary[]> {
             logger.error(error, `Spotify API request failed: Unexpected error.`);
         }
 
-        throw new Error('Failed to fetch tracks from Spotify API.');
+        throw new AxiosError('Failed to fetch tracks from Spotify API.');
     }
 }

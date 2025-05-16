@@ -4,52 +4,15 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 
 ---
 
-### Backend Improvement
-
-##### /api/auth/clientCredentials.ts
-
-- [ ] requestClientCredentialToken()
-- [ ] validateClientToken()
-
-##### /api/auth/logout.ts
-
-- [x] logout()
-
-##### /api/auth/OAuth.ts
-
-- [ ] generateOAuthQueryString
-- [ ] oAuthAuthorization
-- [ ] refreshAuthToken
-
-##### /api/adminControl.ts
-
-- [ ] playTrack()
-- [ ] pauseTrack()
-- [ ] skipTrack()
-- [ ] getCurrentVolume()
-- [ ] changeCurrentVolume()
-
-##### /api/trackInfo.ts
-
-- [ ] searchSong()
+### Structure Validation
 
 ##### /errors/database.ts
 
-- [x] NotFoundError
+- [ ] NotFoundError
 
 ##### /interfaces/spotifyPlayer.ts
 
 - [ ] SpotifyPlayer
-- [ ] Device
-- [ ] Context
-- [ ] Item
-- [ ] Album
-- [ ] Artist
-- [ ] ExternalUrls
-- [ ] ExternalIds
-- [ ] Image
-- [ ] Actions
-- [ ] Disallows
 
 ##### /interfaces/spotifyTokens.ts
 
@@ -60,23 +23,6 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 
 - [ ] SpotifyTrackResponse
 - [ ] TrackSummary
-- [ ] Track
-- [ ] Album
-- [ ] Artists
-- [ ] Image
-
-##### /utility/fileUtils.ts
-
-- [ ] generateRandomString()
-
-##### prisma
-
-- [ ] client
-- [ ] db
-- [ ] ClientToken
-- [ ] OAuthToken
-- [ ] State
-- [ ] User
 
 #### Structure Only
 
@@ -86,10 +32,6 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
   - [X] algorithm.ts
 - [X] /src/tests
   - [X] test.ts
-
-### Frontend Improvement
-
-- [ ] ...
 
 ### 🧹 Project Cleanup
 

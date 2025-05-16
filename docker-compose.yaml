@@ -4,14 +4,14 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     image: dominic86/mursica-fm-backend:1.1.0-alpha.1
-    container_name: spotify-session-backend
+    container_name: mursica-fm-backend
     env_file:
     - ./backend/.env
     ports:
       - "3000:3000"
       - "9229:9229"
     networks:
-      - spotify-session-network
+      - mursica-fm-network
     depends_on:
       - database
     volumes:
@@ -24,19 +24,19 @@ services:
       context: ./
       dockerfile: ./server/Dockerfile
     image: dominic86/mursica-fm-proxy:1.1.0-alpha.1
-    container_name: spotify-session-proxy
+    container_name: mursica-fm-proxy
     ports:
       - "80:80"
       - "443:443"
     networks:
-      - spotify-session-network
+      - mursica-fm-network
     depends_on:
       - node-backend
     volumes:
-      - ./frontend/public/html:/var/www/spotify-session-app/assets/html
-      - ./frontend/public/css:/var/www/spotify-session-app/assets/css
-      - ./frontend/public/icons:/var/www/spotify-session-app/assets/icons
-      - ./frontend/dist:/var/www/spotify-session-app/assets/javascript
+      - ./frontend/public/html:/var/www/mursica-fm/assets/html
+      - ./frontend/public/css:/var/www/mursica-fm/assets/css
+      - ./frontend/public/icons:/var/www/mursica-fm/assets/icons
+      - ./frontend/dist:/var/www/mursica-fm/assets/javascript
       - ./server/logs:/var/log/nginx
 
   database:
@@ -47,12 +47,12 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - spotify-session-network
+      - mursica-fm-network
     restart: on-failure
     volumes:
       - ./database/data:/var/lib/postgresql/data
       - ./database/logs:/var/log/postgresql
 
 networks:
-  spotify-session-network:
+  mursica-fm-network:
     driver: bridge
