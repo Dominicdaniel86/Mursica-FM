@@ -42,7 +42,8 @@ model User {
   id        String @id @default(uuid())
   name      String
   email     String @unique
-  password  String
+  password  String // should be hashed
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 }

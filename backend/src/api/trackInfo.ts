@@ -13,7 +13,7 @@ import { prisma } from '../config.js';
  */
 export async function searchSong(track: string): Promise<TrackSummary[]> {
     // Validate input
-    if (!track) {
+    if (track === undefined || track === null || track.trim() === '') {
         logger.warn('Received empty track input in function "searchSong".');
         return [];
     }

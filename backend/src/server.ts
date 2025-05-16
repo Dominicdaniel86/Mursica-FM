@@ -58,7 +58,7 @@ app.get('/api/tracks/search', async (req, res) => {
 
         const trackTitle = req.query.trackTitle as string;
 
-        if (!trackTitle) {
+        if (trackTitle === undefined || trackTitle === null || trackTitle.trim() === '') {
             res.status(400).json({ error: 'Empty track title' });
             return;
         }
@@ -221,7 +221,7 @@ app.put('/api/admin/control/volume', async (req, res) => {
 app.get('/api/admin', async (req, res) => {
     try {
         const token = await prisma.oAuthToken.findFirst();
-        if (token) {
+        if (token !== undefined && token !== null) {
             res.status(200).send(true);
         } else {
             res.status(200).send(false);

@@ -6,68 +6,77 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 
 ### Backend Improvement
 
-#### Basics
+##### /api/auth/clientCredentials.ts
 
-- [X] /src/server.ts
-  - [X] initialization
-  - [X] /api
-- [X] /src/logger
-  - [X] logger.ts
-- [X] src/config.ts
-- [X] .env
-- [X] wait-for-it.sh
+- [ ] requestClientCredentialToken()
+- [ ] validateClientToken()
 
-#### Authentication
+##### /api/auth/logout.ts
 
-- [ ] /src/server.ts
-  - [ ] /api/auth/spotify
-  - [ ] /api/auth/spotify/login
-  - [ ] /api/auth/spotify/callback
-  - [ ] /api/auth/spotify/logout
-- [ ] /src/utility
-  - [ ] fileUtils.ts
-- [ ] Prisma DB
-- [ ] /src/api
-  - [ ] /src/api/auth
-    - [ ] clientCredentials.ts
-    - [ ] logout.ts
-    - [ ] OAuth.ts
-  - [ ] index.ts
-- [ ] /src/errors
-  - [ ] database.ts
-  - [ ] index.ts
-- [ ] /src/interfaces
-  - [ ] index.ts
-  - [ ] spotifyPlayer.ts
+- [x] logout()
 
-#### Track Selection
+##### /api/auth/OAuth.ts
 
-- [ ] /src/server.ts
-  - [ ] /api/tracks/search
-  - [ ] /api/tracks/select
-- [ ] Prisma DB
-- [ ] /src/api
-  - [ ] index.ts
-  - [ ] trackInfo.ts
-- [ ] /src/interfaces
-  - [ ] index.ts
-  - [ ] spotifyTracks.ts
+- [ ] generateOAuthQueryString
+- [ ] oAuthAuthorization
+- [ ] refreshAuthToken
 
-#### Admin Controls
+##### /api/adminControl.ts
 
-- [ ] /src/server.ts
-  - [ ] /api/admin/control/play
-  - [ ] /api/admin/control/stop
-  - [ ] /adi/admin/control/skip
-  - [ ] /api/admin/control/volume GET
-  - [ ] /api/admin/control/volume PUT
-  - [ ] /api/admin DEPRECATED
-- [ ] /src/api
-  - [ ] adminControl.ts
-  - [ ] index.ts
-- [ ] /src/interfaces
-  - [ ] index.ts
-  - [ ] spotifyTokens.ts
+- [ ] playTrack()
+- [ ] pauseTrack()
+- [ ] skipTrack()
+- [ ] getCurrentVolume()
+- [ ] changeCurrentVolume()
+
+##### /api/trackInfo.ts
+
+- [ ] searchSong()
+
+##### /errors/database.ts
+
+- [x] NotFoundError
+
+##### /interfaces/spotifyPlayer.ts
+
+- [ ] SpotifyPlayer
+- [ ] Device
+- [ ] Context
+- [ ] Item
+- [ ] Album
+- [ ] Artist
+- [ ] ExternalUrls
+- [ ] ExternalIds
+- [ ] Image
+- [ ] Actions
+- [ ] Disallows
+
+##### /interfaces/spotifyTokens.ts
+
+- [ ] SpotifyClientTokenResponse
+- [ ] SpotifyAuthTokenResponse
+
+##### /interfaces/spotifyTracks.ts
+
+- [ ] SpotifyTrackResponse
+- [ ] TrackSummary
+- [ ] Track
+- [ ] Album
+- [ ] Artists
+- [ ] Image
+
+##### /utility/fileUtils.ts
+
+- [ ] generateRandomString()
+
+##### prisma
+
+- [ ] client
+- [ ] db
+- [ ] ClientToken
+- [ ] OAuthToken
+- [ ] State
+- [ ] User
 
 #### Structure Only
 
