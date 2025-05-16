@@ -1,5 +1,13 @@
+// Global variables
 let previousChars = 0;
 
+/**
+ * Validates the session ID input field.
+ * The session ID should be in the format #XXX-XXX, where X is a letter or digit.
+ * The function formats the input as the user types and manages the cursor position.
+ *
+ * @param {HTMLInputElement} sessionIDInputElement - The input element for the session ID.
+ */
 function sessionIDInputValidation(sessionIDInputElement: HTMLInputElement) {
     // Read required input
     const rawValue = sessionIDInputElement.value.replace(/[^a-zA-Z0-9]/g, '');
@@ -71,18 +79,21 @@ function sessionIDInputValidation(sessionIDInputElement: HTMLInputElement) {
 }
 
 window.addEventListener('load', () => {
-    console.log('DOM has loaded');
-
     // Reset session-id value
     const sessionIDInputElement = document.getElementById('session-id-input') as HTMLInputElement;
     sessionIDInputElement.value = '';
 
     // Custom behaviour of the session-id-input Element
-    sessionIDInputElement.addEventListener('input', (event) => {
+    sessionIDInputElement.addEventListener('input', () => {
         sessionIDInputValidation(sessionIDInputElement);
     });
 });
 
+// TODO: Implement and use this function
+/**
+ * Joins a session with the given session ID.
+ * The session ID is validated and if valid, the user is redirected to the add-song page.
+ */
 function joinSession() {
     const sessionIDInputElement = document.getElementById('session-id-input') as HTMLInputElement;
     const sessionID = sessionIDInputElement.value.replace(/[^a-zA-Z0-9]/g, '');

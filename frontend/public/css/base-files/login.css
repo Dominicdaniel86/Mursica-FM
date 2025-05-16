@@ -1,0 +1,43 @@
+p {
+    font-size: 17px;
+}
+
+input {
+    margin-bottom: 20px;
+    width: 75%;
+}
+
+button {
+    width: 70%;
+}
+
+#app-icon {
+    margin-bottom: 15px;
+}
+
+#back-icon {
+    float: left;
+    margin: 20px 25px;
+    width: 40px;
+}
+
+#header {
+    margin-top: 70px;
+}
+
+#register {
+    color: green;
+}
+
+#login-info {
+    margin-top: 2em;
+}
+
+#footer {
+    position: absolute;
+    bottom: 0;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 20px;
+    font-weight: bold;
+}

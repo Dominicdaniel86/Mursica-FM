@@ -3,29 +3,19 @@ p {
 }
 
 input {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     width: 75%;
 }
 
 button {
-    width: 70%;
+    margin-top: 15px;
 }
 
 #app-icon {
-    margin-bottom: 15px;
+    margin-bottom: 80px;
 }
 
-#back-icon {
-    float: left;
-    margin: 20px 25px;
-    width: 40px;
-}
-
-#header {
-    margin-top: 70px;
-}
-
-#register {
+#login-link {
     color: green;
 }
 

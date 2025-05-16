@@ -10,8 +10,9 @@ window.addEventListener('load', () => {
 
 function registration() {
     const emailInputElement = document.getElementById('email-input') as HTMLInputElement;
-    const emailInput = emailInputElement.value;
     const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
+
+    const emailInput = emailInputElement.value;
     const usernameInput = usernameInputElement.value;
 
     if (emailInput.length === 0 || usernameInput.length === 0) {

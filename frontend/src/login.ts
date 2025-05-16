@@ -1,6 +1,4 @@
 window.addEventListener('load', () => {
-    console.log('DOM has loaded!');
-
     // Reset username
     const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
     usernameInputElement.value = '';
