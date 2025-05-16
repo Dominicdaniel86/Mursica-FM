@@ -1,3 +1,11 @@
+export {};
+
+declare global {
+    interface Window {
+        joinSession: () => void;
+    }
+}
+
 // Global variables
 let previousChars = 0;
 
@@ -78,18 +86,7 @@ function sessionIDInputValidation(sessionIDInputElement: HTMLInputElement) {
     sessionIDInputElement.setSelectionRange(newCursorPos, newCursorPos);
 }
 
-window.addEventListener('load', () => {
-    // Reset session-id value
-    const sessionIDInputElement = document.getElementById('session-id-input') as HTMLInputElement;
-    sessionIDInputElement.value = '';
-
-    // Custom behaviour of the session-id-input Element
-    sessionIDInputElement.addEventListener('input', () => {
-        sessionIDInputValidation(sessionIDInputElement);
-    });
-});
-
-// TODO: Implement and use this function
+// TODO: Implement this function
 /**
  * Joins a session with the given session ID.
  * The session ID is validated and if valid, the user is redirected to the add-song page.
@@ -106,3 +103,16 @@ function joinSession() {
         window.location.href = '/static/html/add-song.html';
     }
 }
+
+window.addEventListener('load', () => {
+    // Reset session-id value
+    const sessionIDInputElement = document.getElementById('session-id-input') as HTMLInputElement;
+    sessionIDInputElement.value = '';
+
+    // Custom behaviour of the session-id-input Element
+    sessionIDInputElement.addEventListener('input', () => {
+        sessionIDInputValidation(sessionIDInputElement);
+    });
+});
+
+window.joinSession = joinSession;
