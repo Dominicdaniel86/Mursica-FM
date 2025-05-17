@@ -4,52 +4,51 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 
 ---
 
-### Structure Validation
+### 🧑‍🦱 User authentication
 
-##### /errors/database.ts
+#### Login/ Logout features
 
-- [ ] NotFoundError
+- [ ] Redirect after successfull email validation
+- [ ] Send token to frontend
+- [ ] Implement cookie management in frontend
+- [ ] Validate tokens in backend for every step that requires it
+- [ ] Enable logout
 
-##### /interfaces/spotifyPlayer.ts
+#### Guest implementation
 
-- [ ] SpotifyPlayer
+- [ ] Generate Session Token
+- [ ] Let others join the session
+- [ ] Cookie & Authentication management
 
-##### /interfaces/spotifyTokens.ts
+#### Update OAuth token
 
-- [ ] SpotifyClientTokenResponse
-- [ ] SpotifyAuthTokenResponse
+- [ ] Use state for validation
+- [ ] Update the OAuth token for the new 1:1 relation
+- [ ] Use the right token for every (admin) function call
 
-##### /interfaces/spotifyTracks.ts
+#### Improvements
 
-- [ ] SpotifyTrackResponse
-- [ ] TrackSummary
-
-#### Structure Only
-
-- [X] /src/auth
-  - [X] auth.ts
-- [X] /src/services
-  - [X] algorithm.ts
-- [X] /src/tests
-  - [X] test.ts
+- [ ] Improved API calls frontend-backend
+- [ ] Better logging
+- [ ] Replace alerting
+- [ ] Add comments & docs
+- [ ] Add better frontend error handling
+- [ ] Backend: Check status codes
 
 ### 🧹 Project Cleanup
 
 - [ ] Add a better structure for the `/scripts` directory
-- [ ] Remove windows dev setup...
+- [ ] Update windows dev setup (own issue?)
 - [ ] How to use the wiki in a forked project?
 - [ ] Add installation of "jq" to dev setup [sudo apt-get install jq]
-- [ ] Check remaining TODOs
 
 ### ☁️ AWS specific [Issue Nr. [OLP18](https://github.com/Dominicdaniel86/Mursica-FM/issues/80)]
 
 Will be implemented with later AWS/ CDK versions (using a more advanced AWS setup)
 
 - [ ] Integrate prettier & ESLint into the `AWS` directory
-- [ ] Add health check for the EC2 instance
 - [X] Add Makefile commands for AWS
 - [X] Use dynamic values in EC2 deploy script
 - [X] Update wiki for AWS related sites
   - [X] CDK Guide
   - [X] Architecture
-- [ ] Implement more granular security group for EC2 instance
