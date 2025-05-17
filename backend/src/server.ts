@@ -290,7 +290,7 @@ app.put('/api/admin/control/volume', async (req, res) => {
     }
 });
 
-app.post('/api/auth/register', (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
     logger.info('A user is trying to register.');
 
     const { userName, email, password } = req.body;
@@ -312,7 +312,7 @@ app.post('/api/auth/register', (req, res) => {
     }
 
     try {
-        register(userName, email, password);
+        await register(userName, email, password);
     } catch (error) {
         if (error instanceof InvalidParameterError) {
             logger.warn(error.message);

@@ -40,9 +40,11 @@ model State {
 
 model User {
   id        String @id @default(uuid())
-  name      String
+  name      String @unique
   email     String @unique
   password  String // should be hashed
+  verificationCode String? @unique
+  verified  Boolean @default(false)
   guests    Guest[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -51,7 +53,7 @@ model User {
 
 model Guest {
   id        String @id @default(uuid())
-  name      String
+  name      String @unique
   hostID    String
   host      User @relation(fields: [hostID], references: [id])
   createdAt DateTime @default(now())
