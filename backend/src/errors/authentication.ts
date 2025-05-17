@@ -11,3 +11,24 @@ export class AuthenticationError extends Error {
         this.name = 'AuthenticationError';
     }
 }
+
+export class ExistingUserError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'ExistingUserError';
+    }
+}
+
+export class RegistrationError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'RegistrationError';
+    }
+}
+
+export class NotVerifiedError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'NotVerifiedError';
+    }
+}

@@ -15,8 +15,8 @@ import {
 } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { PORT, prisma } from './config.js';
-import { NotFoundError, InvalidParameterError } from './errors/index.js';
-import { register } from './auth/index.js';
+import { NotFoundError, InvalidParameterError, ExistingUserError, NotVerifiedError } from './errors/index.js';
+import { confirmEmail, login, register } from './auth/index.js';
 
 // Initialize app
 const app = express();
@@ -318,6 +318,10 @@ app.post('/api/auth/register', async (req, res) => {
             logger.warn(error.message);
             res.status(400).json({ error: error.message });
             return;
+        } else if (error instanceof ExistingUserError) {
+            logger.warn(error.message);
+            res.status(400).json({ error: error.message });
+            return;
         } else {
             logger.error(error, 'Failed to register user');
             res.status(500).json({ error: 'Internal server error' });
@@ -334,9 +338,51 @@ app.post('/api/auth/register', async (req, res) => {
     res.status(200).send('Register');
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.get('/api/auth/confirm-email', async (req, res) => {
+    logger.info('A user is trying to confirm their email address.');
+    const { token } = req.query as { token: string };
+    if (token === undefined || token === null) {
+        logger.warn('Empty token received');
+        res.status(400).json({ error: 'Empty token' });
+        return;
+    }
+    try {
+        await confirmEmail(token);
+        res.status(200).send('Email confirmed successfully!');
+    } catch (error) {
+        if (error instanceof InvalidParameterError) {
+            logger.warn(error.message);
+            res.status(400).json({ error: error.message });
+            return;
+        } else {
+            logger.error(error, 'Failed to confirm email');
+            res.status(500).json({ error: 'Internal server error' });
+            return;
+        }
+    }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    const { userName, email, password } = req.body;
     logger.info('A user is trying to log in.');
-    res.status(200).send('Login');
+    try {
+        await login(password, email, userName);
+        res.status(200).send('Login successful!');
+    } catch (error) {
+        if (error instanceof InvalidParameterError) {
+            logger.warn(error.message);
+            res.status(400).json({ error: error.message });
+            return;
+        } else if (error instanceof NotVerifiedError) {
+            logger.warn(error.message);
+            res.status(400).json({ error: error.message });
+            return;
+        } else {
+            logger.error(error, 'Failed to log in');
+            res.status(500).json({ error: 'Internal server error' });
+            return;
+        }
+    }
 });
 
 app.post('/api/auth/logout', (req, res) => {

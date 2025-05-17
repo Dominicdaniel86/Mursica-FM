@@ -1,9 +1,9 @@
 import { prisma } from '../config.js';
-import { InvalidParameterError } from '../errors/services.js';
+import { InvalidParameterError, ExistingUserError, RegistrationError, NotVerifiedError } from '../errors/index.js';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
-import bcrypt from 'bcrypt';
 import { generateRandomString } from '../utility/fileUtils.js';
+import { comparePassword, hashPassword } from './auth.middleware.js';
 
 dotenv.config();
 
@@ -49,7 +49,7 @@ export async function register(userName: string, email: string, password: string
         },
     });
     if (existingUserEmail) {
-        throw new InvalidParameterError('Email is already in use');
+        throw new ExistingUserError('Email is already in use');
     }
 
     const existingUserName = await prisma.user.findFirst({
@@ -58,69 +58,103 @@ export async function register(userName: string, email: string, password: string
         },
     });
     if (existingUserName) {
-        throw new InvalidParameterError('Username is already in use');
+        throw new ExistingUserError('Username is already in use');
     }
 
-    // Get verification token
-    const verificationToken = generateRandomString(32);
+    // Get verification code
+    const verificationCode = generateRandomString(32);
 
-    // Has the password been hashed?
-    const saltRounds = 10; // Higher number = more secure but slower
-    bcrypt.hash(password, saltRounds, async (err, hash) => {
-        if (err) {
-            console.error('Error hashing password:', err);
-            throw new Error('Error hashing password');
-        }
-        // Save the user to the database
+    try {
+        const hashedPassword = await hashPassword(password);
         await prisma.user.create({
             data: {
                 name: userName,
                 email,
-                password: hash,
-                verificationCode: verificationToken,
+                password: hashedPassword,
+                verificationCode,
             },
         });
-    });
 
-    /* Example of how to verify a password
-    const inputPassword = 'your_password_here';
-    const storedHash = 'hash_from_database';
+        // Send a confirmation email
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL,
+                pass: process.env.EMAIL_PASSWORD,
+            },
+        });
 
-    bcrypt.compare(inputPassword, storedHash, function(err, result) {
-    if (err) {
-        console.error('Error verifying password:', err);
-    } else if (result) {
-        console.log('Password is correct!');
-    } else {
-        console.log('Password is incorrect.');
-    }
-    });
-    */
+        // Return success message
+        const mailOptions = {
+            from: `"Mursica.FM" <${process.env.EMAIL}>`,
+            to: email,
+            subject: 'Please confirm your email',
+            text: `Please confirm your email by clicking on the following link: http://localhost:80/api/auth/confirm-email?token=${verificationCode}`,
+            // TODO: Implement validation URL API
+        };
 
-    // Send a confirmation email
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL,
-            pass: process.env.EMAIL_PASSWORD,
-        },
-    });
-
-    // Return success message
-    const mailOptions = {
-        from: `"Mursica.FM" <${process.env.EMAIL}>`,
-        to: email,
-        subject: 'Please confirm your email',
-        text: `Please confirm your email by clicking on the following link: http://localhost:3000/confirm-email?token=%${verificationToken}`,
-        // TODO: Implement validation URL API
-    };
-
-    try {
         await transporter.sendMail(mailOptions);
     } catch (error) {
-        console.error('Error sending email:', error);
-        throw new Error('Error sending confirmation email');
+        console.error('Error creating user:', error);
+        throw new RegistrationError('Error creating user');
     }
 
     // TODO: One time an hour it should check if the user has confirmed their email. If not, delete the user from the database.
+}
+
+export async function confirmEmail(token: string): Promise<void> {
+    if (token === undefined || token === '') {
+        throw new InvalidParameterError('Token is required');
+    }
+
+    // Check if the token is valid
+    const user = await prisma.user.findUnique({
+        where: {
+            verificationCode: token,
+        },
+    });
+    if (user === null || user === undefined) {
+        throw new InvalidParameterError('Invalid token');
+    }
+
+    // Update the user's email confirmation status
+    await prisma.user.update({
+        where: {
+            id: user.id,
+        },
+        data: {
+            verified: true,
+            verificationCode: null,
+        },
+    });
+}
+
+export async function login(password: string, email?: string, user?: string): Promise<void> {
+    if (password === undefined || password === '') {
+        throw new InvalidParameterError('Password is required');
+    }
+    if (email === undefined && user === undefined) {
+        throw new InvalidParameterError('Email or username is required');
+    }
+
+    if (email !== undefined && email !== null) {
+        const userDBEntry = await prisma.user.findUnique({
+            where: {
+                email,
+            },
+        });
+
+        if (userDBEntry === null || userDBEntry === undefined) {
+            throw new InvalidParameterError('Invalid credentials');
+        }
+
+        const isPasswordValid = await comparePassword(password, userDBEntry.password);
+        if (!isPasswordValid) {
+            throw new InvalidParameterError('Invalid credentials');
+        }
+
+        if (userDBEntry.verified === false) {
+            throw new NotVerifiedError('Email not verified');
+        }
+    }
 }
