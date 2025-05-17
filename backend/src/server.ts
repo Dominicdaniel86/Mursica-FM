@@ -15,7 +15,8 @@ import {
 } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { PORT, prisma } from './config.js';
-import { NotFoundError } from './errors/index.js';
+import { NotFoundError, InvalidParameterError } from './errors/index.js';
+import { register } from './auth/index.js';
 
 // Initialize app
 const app = express();
@@ -291,6 +292,45 @@ app.put('/api/admin/control/volume', async (req, res) => {
 
 app.post('/api/auth/register', (req, res) => {
     logger.info('A user is trying to register.');
+
+    const { userName, email, password } = req.body;
+
+    if (userName === undefined || userName === null || userName.trim() === '') {
+        logger.warn('Empty username received');
+        res.status(400).json({ error: 'Empty username' });
+        return;
+    }
+    if (email === undefined || email === null || email.trim() === '') {
+        logger.warn('Empty email received');
+        res.status(400).json({ error: 'Empty email' });
+        return;
+    }
+    if (password === undefined || password === null || password.trim() === '') {
+        logger.warn('Empty password received');
+        res.status(400).json({ error: 'Empty password' });
+        return;
+    }
+
+    try {
+        register(userName, email, password);
+    } catch (error) {
+        if (error instanceof InvalidParameterError) {
+            logger.warn(error.message);
+            res.status(400).json({ error: error.message });
+            return;
+        } else {
+            logger.error(error, 'Failed to register user');
+            res.status(500).json({ error: 'Internal server error' });
+            return;
+        }
+    }
+
+    // Verification email is valid for 1 hour. Afterwards, the user has to register again.
+    // Until then: No login possible
+
+    // Path 1: User is not registered: Send verification email
+    // Path 2: User is registered: Send error message
+    // Path 3: User is registered but not verified: Send extra message
     res.status(200).send('Register');
 });
 
