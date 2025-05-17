@@ -1,3 +1,5 @@
+import { generateRandomString } from './fileUtils.js';
+
 export function generateJWTToken(): string {
-    return 'generated-jwt-token';
+    return generateRandomString(250);
 }

@@ -4,6 +4,9 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { generateRandomString } from '../utility/fileUtils.js';
 import { comparePassword, hashPassword } from './auth.middleware.js';
+import { generateJWTToken } from '../utility/jwtUtils.js';
+import type { User } from '@prisma/client';
+import logger from '../logger/logger.js';
 
 dotenv.config();
 
@@ -129,7 +132,7 @@ export async function confirmEmail(token: string): Promise<void> {
     });
 }
 
-export async function login(password: string, email?: string, user?: string): Promise<void> {
+export async function login(password: string, email?: string, user?: string): Promise<string> {
     if (password === undefined || password === '') {
         throw new InvalidParameterError('Password is required');
     }
@@ -137,24 +140,62 @@ export async function login(password: string, email?: string, user?: string): Pr
         throw new InvalidParameterError('Email or username is required');
     }
 
-    if (email !== undefined && email !== null) {
-        const userDBEntry = await prisma.user.findUnique({
-            where: {
-                email,
+    let userDBEntry: User | null;
+
+    try {
+        if (email !== undefined && email !== null) {
+            userDBEntry = await prisma.user.findUnique({
+                where: {
+                    email,
+                },
+            });
+        } else {
+            userDBEntry = await prisma.user.findUnique({
+                where: {
+                    name: user,
+                },
+            });
+        }
+    } catch (error) {
+        logger.error(error, 'Reading userDBEntry during login failed!');
+        throw error;
+    }
+
+    if (userDBEntry === null || userDBEntry === undefined) {
+        throw new InvalidParameterError('Invalid credentials');
+    }
+
+    const isPasswordValid = await comparePassword(password, userDBEntry.password);
+    if (!isPasswordValid) {
+        throw new InvalidParameterError('Invalid credentials');
+    }
+
+    if (userDBEntry.verified === false) {
+        throw new NotVerifiedError('Email not verified');
+    }
+
+    await prisma.jwt.deleteMany({
+        where: {
+            userId: userDBEntry.id,
+        },
+    });
+
+    const jwtToken = generateJWTToken();
+
+    try {
+        await prisma.jwt.create({
+            data: {
+                token: jwtToken,
+                validUntil: new Date(Date.now() + 60 * 60 * 1000 * 24 * 7), // 1 week from now
+                userId: userDBEntry.id,
             },
         });
-
-        if (userDBEntry === null || userDBEntry === undefined) {
-            throw new InvalidParameterError('Invalid credentials');
-        }
-
-        const isPasswordValid = await comparePassword(password, userDBEntry.password);
-        if (!isPasswordValid) {
-            throw new InvalidParameterError('Invalid credentials');
-        }
-
-        if (userDBEntry.verified === false) {
-            throw new NotVerifiedError('Email not verified');
-        }
+        logger.info('Logged in new user');
+        return jwtToken;
+    } catch (error) {
+        console.error(error, 'Error while logging in');
+        throw error;
     }
 }
+
+export async function logout(): Promise<void> {}

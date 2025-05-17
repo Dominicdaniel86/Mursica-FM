@@ -1,6 +1,10 @@
 import bcrypt from 'bcrypt';
 import { InvalidParameterError } from '../errors/index.js';
 
+export async function validateJWTToken(): Promise<void> {}
+
+export async function invalidateJWTToken(): Promise<void> {}
+
 export async function hashPassword(password: string): Promise<string> {
     if (password === undefined || password === '') {
         throw new InvalidParameterError('Password is required');

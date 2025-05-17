@@ -47,7 +47,7 @@ export async function searchSong(track: string): Promise<TrackSummary[]> {
         if (axios.isAxiosError(error)) {
             if (error.response !== undefined && error.response !== null) {
                 logger.error(error, `Spotify API request failed with status ${error.status}: ${error.message}`);
-            } else if (error.request != null) {
+            } else if (error.request !== null) {
                 logger.error(error, `Spotify API request failed: No response received.`);
             } else {
                 logger.error(error, `Spotify API request failed: ${error.message}`);

@@ -366,8 +366,8 @@ app.post('/api/auth/login', async (req, res) => {
     const { userName, email, password } = req.body;
     logger.info('A user is trying to log in.');
     try {
-        await login(password, email, userName);
-        res.status(200).send('Login successful!');
+        const token = await login(password, email, userName);
+        res.status(200).json({ message: 'Login successful!', token });
     } catch (error) {
         if (error instanceof InvalidParameterError) {
             logger.warn(error.message);

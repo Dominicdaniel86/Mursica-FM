@@ -75,21 +75,21 @@ export async function oAuthAuthorization(code: string): Promise<void> {
         const response = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
         const accessToken = response.data.access_token;
         const expiresIn = response.data.expires_in;
-        const refreshToken = response.data.refresh_token;
+        // const refreshToken = response.data.refresh_token;
 
         const validUntilDate: Date = new Date(Date.now() + expiresIn * 1000);
-        const currentToken = await prisma.oAuthToken.findFirst();
+        // const currentToken = await prisma.oAuthToken.findFirst();
 
-        if (currentToken !== null && currentToken !== undefined) {
-            await prisma.oAuthToken.update({
-                where: { id: currentToken.id },
-                data: { token: accessToken, validUntil: validUntilDate, refreshToken },
-            });
-        } else {
-            await prisma.oAuthToken.create({
-                data: { token: accessToken, validUntil: validUntilDate, refreshToken },
-            });
-        }
+        // if (currentToken !== null && currentToken !== undefined) {
+        //     await prisma.oAuthToken.update({
+        //         where: { id: currentToken.id },
+        //         data: { token: accessToken, validUntil: validUntilDate, refreshToken },
+        //     });
+        // } else {
+        //     await prisma.oAuthToken.create({
+        //         data: { token: accessToken, validUntil: validUntilDate, refreshToken },
+        //     });
+        // }
 
         logger.info({ accessToken, validUntil: validUntilDate }, 'OAuth user authentication successfully completed.');
     } catch (error) {
