@@ -289,19 +289,19 @@ app.put('/api/admin/control/volume', async (req, res) => {
     }
 });
 
-// ! Deprecated
-app.get('/api/admin', async (req, res) => {
-    try {
-        const token = await prisma.oAuthToken.findFirst();
-        if (token !== undefined && token !== null) {
-            res.status(200).send(true);
-        } else {
-            res.status(200).send(false);
-        }
-    } catch (error) {
-        logger.error(error, 'Could not check if an admin is logged in.');
-        res.status(500).json({ error: 'Internal server error' });
-    }
+app.post('/api/auth/register', (req, res) => {
+    logger.info('A user is trying to register.');
+    res.status(200).send('Register');
+});
+
+app.post('/api/auth/login', (req, res) => {
+    logger.info('A user is trying to log in.');
+    res.status(200).send('Login');
+});
+
+app.post('/api/auth/logout', (req, res) => {
+    logger.info('A user is trying to log out.');
+    res.status(200).send('Logout');
 });
 
 app.listen(PORT, () => {
