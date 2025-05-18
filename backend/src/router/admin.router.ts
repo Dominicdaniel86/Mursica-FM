@@ -15,6 +15,7 @@ const router = express.Router();
 // 200: OK
 // 400: Bad Request - No OAuth token found
 // 500: Internal Server Error
+// TODO: Validate this function
 router.put('/control/play', async (req, res) => {
     try {
         await refreshAuthToken();
@@ -35,6 +36,7 @@ router.put('/control/play', async (req, res) => {
 // 200: OK
 // 400: Bad Request - No OAuth token found
 // 500: Internal Server Error
+// TODO: Validate this function
 router.put('/control/stop', async (req, res) => {
     try {
         await refreshAuthToken();
@@ -55,6 +57,7 @@ router.put('/control/stop', async (req, res) => {
 // 200: OK
 // 400: Bad Request - No OAuth token found
 // 500: Internal Server Error
+// TODO: Validate this function
 router.post('/control/skip', async (req, res) => {
     try {
         await refreshAuthToken();
@@ -75,6 +78,7 @@ router.post('/control/skip', async (req, res) => {
 // 200: OK
 // 400: Bad Request - No OAuth token found
 // 500: Internal Server Error
+// TODO: Validate this function
 router.get('/control/volume', async (req, res) => {
     try {
         await refreshAuthToken();
@@ -96,6 +100,7 @@ router.get('/control/volume', async (req, res) => {
 // 400: Bad Request - Invalid volume
 // 400: Bad Request - No OAuth token found
 // 500: Internal Server Error
+// TODO: Validate this function
 router.put('/control/volume', async (req, res) => {
     try {
         const volume = req.query.volume as string;

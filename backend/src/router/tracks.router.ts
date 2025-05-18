@@ -8,6 +8,7 @@ const router = express.Router();
 // 400: Bad Request - Empty track title
 // 404: Not Found - No tracks found
 // 500: Internal Server Error
+// TODO: Validate this function
 router.get('/search', async (req, res) => {
     logger.info('A user is searching for tracks');
     try {
