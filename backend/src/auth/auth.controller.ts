@@ -202,4 +202,54 @@ export async function login(password: string, email?: string, user?: string): Pr
     }
 }
 
+// TODO: Implement also to use the email
+export async function resendValidationToken(userName: string): Promise<void> {
+    const userDBEntry = await prisma.user.findUnique({
+        where: {
+            name: userName,
+        },
+    });
+
+    if (userDBEntry === null || userDBEntry === undefined) {
+        throw new InvalidParameterError('Invalid credentials');
+    }
+    if (userDBEntry.verified) {
+        throw new InvalidParameterError('Email already verified');
+    }
+
+    // Get verification code
+    const verificationCode = generateRandomString(32);
+    try {
+        await prisma.user.update({
+            where: {
+                id: userDBEntry.id,
+            },
+            data: {
+                verificationCode,
+            },
+        });
+
+        // Send a confirmation email
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL,
+                pass: process.env.EMAIL_PASSWORD,
+            },
+        });
+
+        const mailOptions = {
+            from: `"Mursica.FM" <${process.env.EMAIL}>`,
+            to: userDBEntry.email,
+            subject: 'Please confirm your email',
+            text: `Please confirm your email by clicking on the following link: http://localhost:80/api/auth/confirm-email?token=${verificationCode}`,
+        };
+
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        logger.error(error, 'Failed to resend verification email');
+        throw error;
+    }
+}
+
 export async function logout(): Promise<void> {}

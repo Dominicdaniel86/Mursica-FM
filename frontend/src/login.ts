@@ -35,7 +35,19 @@ async function login(): Promise<void> {
             const status = error.response?.status;
             const message = error.response?.data?.error;
 
-            if (status === 400) {
+            if (status === 400 && message === 'Email not verified') {
+                if (confirm('Your email is not verified. Would you like to resend the verification email?')) {
+                    try {
+                        await axios.post('/api/auth/resend-verification', { userName: usernameInput });
+                        alert('Verification email resent. Please check your inbox.');
+                    } catch (resendError: any) {
+                        alert(
+                            'Failed to resend verification email: ' +
+                                (resendError.response?.data?.error ?? resendError.message)
+                        );
+                    }
+                }
+            } else if (status === 400) {
                 alert('Invalid input: ' + message);
             } else if (status === 500) {
                 alert('Something went wrong: ' + message);

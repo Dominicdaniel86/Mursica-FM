@@ -16,7 +16,7 @@ import {
 import logger, { initializeLoggingFile } from './logger/logger.js';
 import { PORT, prisma } from './config.js';
 import { NotFoundError, InvalidParameterError, ExistingUserError, NotVerifiedError } from './errors/index.js';
-import { confirmEmail, login, register } from './auth/index.js';
+import { confirmEmail, login, register, resendValidationToken } from './auth/index.js';
 
 // Initialize app
 const app = express();
@@ -387,6 +387,28 @@ app.post('/api/auth/login', async (req, res) => {
             res.status(500).json({ error: 'Internal server error' });
             return;
         }
+    }
+});
+
+// TODO: Additional validation
+app.post('/api/auth/resend-verification', async (req, res) => {
+    logger.info('A user is trying to resend the verification email.');
+    const { userName } = req.body;
+    logger.info(userName);
+
+    if (userName === undefined || userName === null || userName.trim() === '') {
+        logger.warn('Empty username received');
+        res.status(400).json({ error: 'Empty username' });
+        return;
+    }
+
+    try {
+        await resendValidationToken(userName);
+        res.status(200).json({ message: 'Verification email resent successfully!' });
+    } catch (error) {
+        logger.error(error, 'Failed to resend verification email');
+        res.status(500).json({ error: 'Internal server error' });
+        return;
     }
 });
 
