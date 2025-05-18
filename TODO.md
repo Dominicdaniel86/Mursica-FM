@@ -8,9 +8,11 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 
 #### Login/ Logout features
 
-- [ ] Redirect after successfull email validation
+- [x] Redirect after successfull email validation (new HTML page)
+- [ ] Allow to resend email validation token
 - [ ] Send token to frontend
-- [ ] Implement cookie management in frontend
+- [x] Implement cookie management in frontend
+  - [ ] Add new cookie functions
 - [ ] Validate tokens in backend for every step that requires it
 - [ ] Enable logout
 

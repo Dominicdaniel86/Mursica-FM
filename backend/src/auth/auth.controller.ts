@@ -120,6 +120,10 @@ export async function confirmEmail(token: string): Promise<void> {
         throw new InvalidParameterError('Invalid token');
     }
 
+    if (user.verified) {
+        throw new InvalidParameterError('Email already verified');
+    }
+
     // Update the user's email confirmation status
     await prisma.user.update({
         where: {

@@ -343,20 +343,25 @@ app.get('/api/auth/confirm-email', async (req, res) => {
     const { token } = req.query as { token: string };
     if (token === undefined || token === null) {
         logger.warn('Empty token received');
-        res.status(400).json({ error: 'Empty token' });
+        // TODO: Update the HTML file to show the error message
+        res.redirect('/static/html/email-validation/validation-failure.html');
+        // res.status(400).json({ error: 'Empty token' }); // ? Should still a response be sent?
         return;
     }
     try {
         await confirmEmail(token);
-        res.status(200).send('Email confirmed successfully!');
+        res.redirect('/static/html/email-validation/validation-success.html');
+        // res.status(200).send('Email confirmed successfully!');
     } catch (error) {
         if (error instanceof InvalidParameterError) {
             logger.warn(error.message);
-            res.status(400).json({ error: error.message });
+            res.redirect('/static/html/email-validation/validation-failure.html');
+            // res.status(400).json({ error: error.message });
             return;
         } else {
             logger.error(error, 'Failed to confirm email');
-            res.status(500).json({ error: 'Internal server error' });
+            res.redirect('/static/html/email-validation/validation-failure.html');
+            // res.status(500).json({ error: 'Internal server error' });
             return;
         }
     }
