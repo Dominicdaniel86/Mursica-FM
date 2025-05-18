@@ -35,7 +35,7 @@ export async function generateOAuthQuerystring(user?: string, email?: string): P
 
     try {
         let matchingUser: User | null;
-        if (user === undefined || user === null) {
+        if (user !== undefined && user !== null) {
             matchingUser = await prisma.user.findFirst({
                 where: {
                     name: user,
