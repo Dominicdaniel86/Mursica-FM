@@ -18,6 +18,7 @@ model ClientToken {
   id          String  @id @default(uuid())
   token       String  @unique
   validUntil  DateTime
+  // metadata
   createdAt   DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -27,22 +28,63 @@ model OAuthToken {
   token         String @unique
   validUntil    DateTime
   refreshToken  String @unique
+  // relations
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  // metadata
   createdAt     DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt     DateTime @updatedAt
 }
 
 model State {
-  id    String @id @default(uuid())
-  state String @unique
+  id        String @id @default(uuid())
+  state     String @unique
+  validUntil    DateTime
+  // relations
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  // metadata
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+model Jwt {
+  id          String @id @default(uuid())
+  token       String @unique
+  validUntil  DateTime
+  // relations
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  // metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model User {
+  id                String @id @default(uuid())
+  name              String @unique
+  email             String @unique
+  password          String // should be hashed
+  verificationCode  String? @unique
+  verified          Boolean @default(false)
+  guests            Guest[]
+  // relations
+  state            State?
+  oauthToken       OAuthToken?
+  jwt              Jwt?
+  // metadata
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+}
+
+model Guest {
   id        String @id @default(uuid())
-  name      String
-  email     String @unique
-  password  String // should be hashed
+  name      String @unique
+  // relations
+  hostID    String
+  host      User @relation(fields: [hostID], references: [id])
+  // metadata
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?

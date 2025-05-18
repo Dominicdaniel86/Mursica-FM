@@ -1,21 +1,67 @@
-export {};
+/* eslint-disable no-alert */
+import type { LoginResponse } from './interfaces/login';
+import { setCookie } from './shared/cookie-management.js';
 
 declare global {
     interface Window {
-        login: () => void;
+        login: () => Promise<void>;
     }
 }
 
-function login(): void {
+async function login(): Promise<void> {
     const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
-    const usernameInput = usernameInputElement.value ?? '';
+    const passwordInputElement = document.getElementById('password-input') as HTMLInputElement;
 
-    if (usernameInput.length === 0) {
+    const usernameInput = usernameInputElement.value;
+    const passwordInput = passwordInputElement.value;
+
+    if (usernameInput.length === 0 || passwordInput.length === 0) {
         // TODO: Implement better solution than alerting
-        // eslint-disable-next-line no-alert
-        alert('Invalid credentials!');
-    } else {
+        alert('Please fill out all fields');
+        return;
+    }
+    // } else {
+    //     // window.location.href = '/static/html/add-song.html';
+    // }
+
+    try {
+        const url = '/api/auth/login';
+        const response = await axios.post<LoginResponse>(url, {
+            userName: usernameInput,
+            password: passwordInput,
+        });
+        const token = response.data.token;
+        const user = response.data.user.name;
+        const email = response.data.user.email;
+        setCookie('token', token, 7);
+        setCookie('user', user, 7); // TODO: Invalidate token after 7 days
+        setCookie('email', email, 7);
         window.location.href = '/static/html/add-song.html';
+    } catch (error: any) {
+        if (error.response) {
+            const status = error.response?.status;
+            const message = error.response?.data?.error;
+
+            if (status === 400 && message === 'Email not verified') {
+                if (confirm('Your email is not verified. Would you like to resend the verification email?')) {
+                    try {
+                        await axios.post('/api/auth/resend-verification', { userName: usernameInput });
+                        alert('Verification email resent. Please check your inbox.');
+                    } catch (resendError: any) {
+                        alert(
+                            'Failed to resend verification email: ' +
+                                (resendError.response?.data?.error ?? resendError.message)
+                        );
+                    }
+                }
+            } else if (status === 400) {
+                alert('Invalid input: ' + message);
+            } else if (status === 500) {
+                alert('Something went wrong: ' + message);
+            } else {
+                alert('An unexpected error occurred: ' + message);
+            }
+        }
     }
 }
 
@@ -23,6 +69,8 @@ window.addEventListener('load', () => {
     // Reset username
     const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
     usernameInputElement.value = '';
+
+    // TODO: Enter key should also trigger login
 });
 
 window.login = login;

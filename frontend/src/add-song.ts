@@ -1,4 +1,5 @@
 import type { TrackResp } from './interfaces/search-song';
+import { listCookies } from './shared/cookie-management.js';
 
 declare global {
     interface Window {
@@ -110,6 +111,9 @@ window.addEventListener('load', () => {
             await searchSong(searchSongElement.value);
         }, 1000);
     });
+
+    // Testing: Print out current cookies
+    console.log(listCookies());
 });
 
 window.sendResponse = sendResponse;
