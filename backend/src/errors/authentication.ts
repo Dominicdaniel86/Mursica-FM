@@ -19,16 +19,16 @@ export class ExistingUserError extends Error {
     }
 }
 
-export class RegistrationError extends Error {
-    constructor(message: string) {
-        super(message);
-        this.name = 'RegistrationError';
-    }
-}
-
 export class NotVerifiedError extends Error {
     constructor(message: string) {
         super(message);
         this.name = 'NotVerifiedError';
+    }
+}
+
+export class AlreadyVerifiedError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'AlreadyVerifiedError';
     }
 }

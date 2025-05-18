@@ -1,151 +1,50 @@
-import { prisma } from '../config.js';
-import { InvalidParameterError, ExistingUserError, RegistrationError, NotVerifiedError } from '../errors/index.js';
-import nodemailer from 'nodemailer';
+import { prisma, transporter } from '../config.js';
+import {
+    InvalidParameterError,
+    ExistingUserError,
+    InternalServerError,
+    NotVerifiedError,
+    NotFoundError,
+    InvalidPasswordError,
+    AlreadyVerifiedError,
+} from '../errors/index.js';
 import dotenv from 'dotenv';
 import { generateRandomString } from '../utility/fileUtils.js';
-import { comparePassword, hashPassword } from './auth.middleware.js';
+import { checkRegistrationInput, comparePassword, hashPassword } from './auth.middleware.js';
 import { generateJWTToken } from '../utility/jwtUtils.js';
-import type { User } from '@prisma/client';
+import type { User, Jwt } from '@prisma/client';
 import logger from '../logger/logger.js';
 
 dotenv.config();
 
-export async function register(userName: string, email: string, password: string): Promise<void> {
-    if (userName === undefined || userName === '') {
-        throw new InvalidParameterError('Username is required');
-    }
-    if (email === undefined || email === '') {
-        throw new InvalidParameterError('Email is required');
-    }
-    if (password === undefined || password === '') {
-        throw new InvalidParameterError('Password is required');
-    }
-
-    // Username requirements
-    if (userName.length < 3) {
-        throw new InvalidParameterError('Username must be at least 3 characters long');
-    }
-
-    // Email requirements
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const isValidEmail = emailRegex.test(email);
-    if (!isValidEmail) {
-        throw new InvalidParameterError('Invalid email format');
-    }
-
-    // Password requirements
-    if (password.length < 8) {
-        throw new InvalidParameterError('Password must be at least 8 characters long');
-    }
-    if (!/[0-9]/.test(password)) {
-        throw new InvalidParameterError('Password must contain at least 1 number');
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-        throw new InvalidParameterError('Password must contain at least 1 special character');
-    }
-    // TODO: Check if the password is in the top 1000 passwords
-
-    // Check if the username is already taken
-    const existingUserEmail = await prisma.user.findUnique({
-        where: {
-            email,
-        },
-    });
-    if (existingUserEmail) {
-        throw new ExistingUserError('Email is already in use');
-    }
-
-    const existingUserName = await prisma.user.findFirst({
-        where: {
-            name: userName,
-        },
-    });
-    if (existingUserName) {
-        throw new ExistingUserError('Username is already in use');
-    }
-
-    // Get verification code
-    const verificationCode = generateRandomString(32);
-
-    try {
-        const hashedPassword = await hashPassword(password);
-        await prisma.user.create({
-            data: {
-                name: userName,
-                email,
-                password: hashedPassword,
-                verificationCode,
-            },
-        });
-
-        // Send a confirmation email
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL,
-                pass: process.env.EMAIL_PASSWORD,
-            },
-        });
-
-        // Return success message
-        const mailOptions = {
-            from: `"Mursica.FM" <${process.env.EMAIL}>`,
-            to: email,
-            subject: 'Please confirm your email',
-            text: `Please confirm your email by clicking on the following link: http://localhost:80/api/auth/confirm-email?token=${verificationCode}`,
-            // TODO: Implement validation URL API
-        };
-
-        await transporter.sendMail(mailOptions);
-    } catch (error) {
-        console.error('Error creating user:', error);
-        throw new RegistrationError('Error creating user');
-    }
-
-    // TODO: One time an hour it should check if the user has confirmed their email. If not, delete the user from the database.
-}
-
-export async function confirmEmail(token: string): Promise<void> {
-    if (token === undefined || token === '') {
-        throw new InvalidParameterError('Token is required');
-    }
-
-    // Check if the token is valid
-    const user = await prisma.user.findUnique({
-        where: {
-            verificationCode: token,
-        },
-    });
-    if (user === null || user === undefined) {
-        throw new InvalidParameterError('Invalid token');
-    }
-
-    if (user.verified) {
-        throw new InvalidParameterError('Email already verified');
-    }
-
-    // Update the user's email confirmation status
-    await prisma.user.update({
-        where: {
-            id: user.id,
-        },
-        data: {
-            verified: true,
-            verificationCode: null,
-        },
-    });
-}
-
+/**
+ * Logs in a user.
+ * @param password - The password of the user.
+ * @param email - The email address of the user (optional).
+ * @param user - The username of the user (optional).
+ * @returns A JWT token if the login is successful.
+ *
+ * @throws {InvalidParameterError} If any of the parameters are invalid.
+ * @throws {NotFoundError} If the user is not found.
+ * @throws {NotVerifiedError} If the user's email is not verified.
+ * @throws {InternalServerError} If there is an error during login.
+ */
 export async function login(password: string, email?: string, user?: string): Promise<string> {
-    if (password === undefined || password === '') {
+    // Check if the parameters are valid
+    if (password === undefined || password === null || password === '') {
         throw new InvalidParameterError('Password is required');
     }
-    if (email === undefined && user === undefined) {
+    if (
+        (email === undefined && user === undefined) ||
+        (email === null && user === null) ||
+        (email === '' && user === '')
+    ) {
         throw new InvalidParameterError('Email or username is required');
     }
 
     let userDBEntry: User | null;
 
+    // Check if the user exists
     try {
         if (email !== undefined && email !== null) {
             userDBEntry = await prisma.user.findUnique({
@@ -162,22 +61,25 @@ export async function login(password: string, email?: string, user?: string): Pr
         }
     } catch (error) {
         logger.error(error, 'Reading userDBEntry during login failed!');
-        throw error;
+        throw new InternalServerError('Reading userDBEntry during login failed!');
     }
 
     if (userDBEntry === null || userDBEntry === undefined) {
-        throw new InvalidParameterError('Invalid credentials');
+        throw new NotFoundError('Invalid credentials');
     }
 
+    // Check if the password is valid
     const isPasswordValid = await comparePassword(password, userDBEntry.password);
     if (!isPasswordValid) {
-        throw new InvalidParameterError('Invalid credentials');
+        throw new InvalidPasswordError('Invalid credentials');
     }
 
+    // Check if the user is verified
     if (userDBEntry.verified === false) {
         throw new NotVerifiedError('Email not verified');
     }
 
+    // Delete all old JWT tokens
     await prisma.jwt.deleteMany({
         where: {
             userId: userDBEntry.id,
@@ -186,6 +88,7 @@ export async function login(password: string, email?: string, user?: string): Pr
 
     const jwtToken = generateJWTToken();
 
+    // Create a new JWT token
     try {
         await prisma.jwt.create({
             data: {
@@ -194,27 +97,186 @@ export async function login(password: string, email?: string, user?: string): Pr
                 userId: userDBEntry.id,
             },
         });
-        logger.info('Logged in new user');
         return jwtToken;
     } catch (error) {
-        console.error(error, 'Error while logging in');
-        throw error;
+        console.error(error, 'Error while creating JWT token');
+        throw new InternalServerError('Error while creating JWT token');
     }
 }
 
-// TODO: Implement also to use the email
-export async function resendValidationToken(userName: string): Promise<void> {
-    const userDBEntry = await prisma.user.findUnique({
-        where: {
-            name: userName,
-        },
-    });
+/**
+ * Registers a new user.
+ * @param username - The username of the user.
+ * @param email - The email address of the user.
+ * @param password - The password of the user.
+ *
+ * @throws {InvalidParameterError} If any of the parameters are invalid.
+ * @throws {ExistingUserError} If the email or username is already taken.
+ * @throws {InternalServerError} If there is an error creating the user.
+ */
+export async function register(username: string, email: string, password: string): Promise<void> {
+    // Check if the parameters are valid
+    // Throws InvalidParameterError if any of the parameters are invalid
+    checkRegistrationInput(username, email, password);
+
+    try {
+        // Check if the email is already taken
+        const existingUserEmail = await prisma.user.findUnique({
+            where: {
+                email,
+            },
+        });
+        if (existingUserEmail) {
+            throw new ExistingUserError('Email is already in use');
+        }
+
+        // Check if the username is already taken
+        const existingUserName = await prisma.user.findFirst({
+            where: {
+                name: username,
+            },
+        });
+        if (existingUserName) {
+            throw new ExistingUserError('Username is already in use');
+        }
+    } catch (error) {
+        if (error instanceof ExistingUserError) {
+            throw error;
+        } else {
+            logger.error(error, 'Error checking existing user');
+            throw new InternalServerError('Error checking existing user');
+        }
+    }
+
+    // Get verification code
+    const verificationCode = generateRandomString(32);
+
+    try {
+        const hashedPassword = await hashPassword(password);
+        await prisma.user.create({
+            data: {
+                name: username,
+                email,
+                password: hashedPassword,
+                verificationCode,
+            },
+        });
+
+        let text = '';
+
+        if (process.env.ENVIRONMENT === 'production') {
+            text = `Please confirm your email by clicking on the following link: https://mursica.fm/api/auth/confirm-email?token=${verificationCode}`;
+        } else {
+            text = `Please confirm your email by clicking on the following link: http://localhost:80/api/auth/confirm-email?token=${verificationCode}`;
+        }
+
+        // Return success message
+        const mailOptions = {
+            from: `"Mursica.FM" <${process.env.EMAIL}>`,
+            to: email,
+            subject: 'Please confirm your email',
+            text,
+        };
+
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        logger.error(error, 'Error creating user');
+        throw new InternalServerError('Error creating user');
+    }
+
+    // TODO: One time an hour it should check if the user has confirmed their email. If not, delete the user from the database.
+}
+
+/**
+ * Confirms the email address of a user.
+ * @param token - The token to confirm the email.
+ * @returns A promise that resolves when the email is confirmed.
+ *
+ * @throws {InvalidParameterError} If the token is invalid.
+ * @throws {NotFoundError} If the token is not found.
+ * @throws {AlreadyVerifiedError} If the email is already verified.
+ * @throws {InternalServerError} If there is an error confirming the email.
+ */
+export async function confirmEmail(token: string): Promise<void> {
+    if (token === undefined || token === null || token === '') {
+        throw new InvalidParameterError('Token is required');
+    }
+
+    let userDBEntry: User | null;
+
+    // Check if the token is valid
+    try {
+        userDBEntry = await prisma.user.findUnique({
+            where: {
+                verificationCode: token,
+            },
+        });
+    } catch (error) {
+        logger.error(error, 'Reading userDBEntry during confirmEmail failed!');
+        throw new InternalServerError('Reading userDBEntry during confirmEmail failed');
+    }
 
     if (userDBEntry === null || userDBEntry === undefined) {
-        throw new InvalidParameterError('Invalid credentials');
+        throw new NotFoundError('Invalid token');
+    }
+
+    if (userDBEntry.verified) {
+        throw new AlreadyVerifiedError('Email already verified');
+    }
+
+    // Update the user's email confirmation status
+    try {
+        await prisma.user.update({
+            where: {
+                id: userDBEntry.id,
+            },
+            data: {
+                verified: true,
+                verificationCode: null,
+            },
+        });
+    } catch (error) {
+        logger.error(error, 'Error updating userDBEntry during confirmEmail failed!');
+        throw new InternalServerError('Error updating userDBEntry during confirmEmail failed');
+    }
+}
+
+/**
+ * Resends the email verification token to the user.
+ * @param userName - The username of the user.
+ * @returns A promise that resolves when the email is sent.
+ *
+ * @throws {InvalidParameterError} If the username is invalid.
+ * @throws {NotFoundError} If the user is not found.
+ * @throws {AlreadyVerifiedError} If the email is already verified.
+ * @throws {InternalServerError} If there is an error sending the email.
+ */
+// TODO: Implement also to use the email
+export async function resendValidationToken(username: string): Promise<void> {
+    // Check if the parameters are valid
+    if (username === undefined || username === null || username === '') {
+        throw new InvalidParameterError('Username is required');
+    }
+
+    let userDBEntry: User | null;
+
+    try {
+        // Check if the user exists
+        userDBEntry = await prisma.user.findUnique({
+            where: {
+                name: username,
+            },
+        });
+    } catch (error) {
+        logger.error(error, 'Reading userDBEntry during resendValidationToken failed!');
+        throw new InternalServerError('Reading userDBEntry during resendValidationToken failed');
+    }
+
+    if (userDBEntry === null || userDBEntry === undefined) {
+        throw new NotFoundError('Invalid credentials');
     }
     if (userDBEntry.verified) {
-        throw new InvalidParameterError('Email already verified');
+        throw new AlreadyVerifiedError('Email already verified');
     }
 
     // Get verification code
@@ -229,15 +291,7 @@ export async function resendValidationToken(userName: string): Promise<void> {
             },
         });
 
-        // Send a confirmation email
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL,
-                pass: process.env.EMAIL_PASSWORD,
-            },
-        });
-
+        // Send verification email
         const mailOptions = {
             from: `"Mursica.FM" <${process.env.EMAIL}>`,
             to: userDBEntry.email,
@@ -247,9 +301,63 @@ export async function resendValidationToken(userName: string): Promise<void> {
 
         await transporter.sendMail(mailOptions);
     } catch (error) {
-        logger.error(error, 'Failed to resend verification email');
-        throw error;
+        logger.error(error, 'Failed to resend verification email!');
+        throw new InternalServerError('Failed to resend verification email');
     }
 }
 
-export async function logout(): Promise<void> {}
+/**
+ * Logs out a user by invalidating their JWT token.
+ * @param token - The JWT token to invalidate.
+ * @param username - The username of the user (optional).
+ * @param email - The email address of the user (optional).
+ *
+ * @throws {InvalidParameterError} If any of the parameters are invalid.
+ * @throws {NotFoundError} If the token is not found.
+ * @throws {InternalServerError} If there is an error during logout.
+ */
+export async function logout(token: string, username?: string, email?: string): Promise<void> {
+    // Invalidate the user's session or token
+    if (token === undefined || token === null || token === '') {
+        throw new InvalidParameterError('Token is required');
+    }
+    if (
+        (username === undefined && email === undefined) ||
+        (username === null && email === null) ||
+        (username === '' && email === '')
+    ) {
+        throw new InvalidParameterError('Username or email is required');
+    }
+
+    // Check if the token exists
+    let result: Jwt | null;
+
+    try {
+        result = await prisma.jwt.findUnique({
+            where: {
+                token,
+            },
+        });
+    } catch (error) {
+        logger.error(error, 'Error finding JWT token');
+        throw new InternalServerError('Error finding JWT token');
+    }
+
+    if (result === null || result === undefined) {
+        throw new NotFoundError('Invalid token');
+    }
+
+    // TODO: Check if the token belongs to the user
+
+    // Remove the token from the database
+    try {
+        await prisma.jwt.deleteMany({
+            where: {
+                token,
+            },
+        });
+    } catch (error) {
+        logger.error(error, 'Error deleting JWT token');
+        throw new InternalServerError('Error deleting JWT token');
+    }
+}

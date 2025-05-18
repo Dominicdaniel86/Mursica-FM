@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import nodemailer from 'nodemailer';
 
 // replace 'localhost' in DATABASE_URL
 process.env.DATABASE_URL = process.env.DATABASE_URL?.replace('localhost', 'database');
@@ -12,3 +13,12 @@ export const IS_PRODUCTION = process.env.ENVIRONMENT === 'production';
 
 // Prisma client for database interaction
 export const prisma = new PrismaClient();
+
+// Email transporter
+export const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+    },
+});
