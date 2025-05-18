@@ -1,5 +1,6 @@
 /* eslint-disable no-alert */
-export {};
+import type { LoginResponse } from './interfaces/login';
+import { setCookie } from './shared/cookie-management.js';
 
 declare global {
     interface Window {
@@ -25,10 +26,16 @@ async function login(): Promise<void> {
 
     try {
         const url = '/api/auth/login';
-        await axios.post(url, {
+        const response = await axios.post<LoginResponse>(url, {
             userName: usernameInput,
             password: passwordInput,
         });
+        const token = response.data.token;
+        const user = response.data.user.name;
+        const email = response.data.user.email;
+        setCookie('token', token, 7);
+        setCookie('user', user, 7); // TODO: Invalidate token after 7 days
+        setCookie('email', email, 7);
         window.location.href = '/static/html/add-song.html';
     } catch (error: any) {
         if (error.response) {
@@ -62,6 +69,8 @@ window.addEventListener('load', () => {
     // Reset username
     const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
     usernameInputElement.value = '';
+
+    // TODO: Enter key should also trigger login
 });
 
 window.login = login;

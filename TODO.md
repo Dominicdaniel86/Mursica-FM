@@ -10,9 +10,9 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 
 - [x] Redirect after successfull email validation (new HTML page)
 - [x] Allow to resend email validation token
-- [ ] Send token to frontend
+- [x] Send token to frontend
 - [x] Implement cookie management in frontend
-  - [ ] Add new cookie functions
+  - [x] Add new cookie functions
 - [ ] Validate tokens in backend for every step that requires it
 - [ ] Enable logout
 

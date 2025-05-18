@@ -53,6 +53,8 @@ window.addEventListener('load', () => {
     emailInputElement.value = '';
     const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
     usernameInputElement.value = '';
+
+    // TODO: Enter key should also trigger the registration
 });
 
 window.registration = registration;
