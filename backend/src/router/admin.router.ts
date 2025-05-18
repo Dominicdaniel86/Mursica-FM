@@ -9,8 +9,50 @@ import {
 } from '../api/index.js';
 import { NotFoundError } from '../errors/database.js';
 import logger from '../logger/logger.js';
+import { generalPurposeValidation } from '../utility/authsUtils.js';
+import { createNewSession, stopCurrentSession } from '../services/sessionManagement.js';
 
 const router = express.Router();
+
+router.post('/session/start', async (req, res) => {
+    try {
+        await generalPurposeValidation(req, res);
+    } catch {
+        // error handled in generalPurposeValidation
+        return;
+    }
+
+    const { username, email } = req.body;
+
+    try {
+        await createNewSession(username, email);
+        logger.info('Session started');
+        res.status(200).send('Session started');
+    } catch (error) {
+        logger.error(error, 'Failed to start session');
+        res.status(500).send('Failed to start session');
+    }
+});
+
+router.post('/session/stop', async (req, res) => {
+    try {
+        await generalPurposeValidation(req, res);
+    } catch {
+        // error handled in generalPurposeValidation
+        return;
+    }
+
+    const { username, email } = req.body;
+
+    try {
+        await stopCurrentSession(username, email);
+        logger.info('Session stopped');
+        res.status(200).send('Session stopped');
+    } catch (error) {
+        logger.error(error, 'Failed to stop session');
+        res.status(500).send('Failed to stop session');
+    }
+});
 
 // 200: OK
 // 400: Bad Request - No OAuth token found
