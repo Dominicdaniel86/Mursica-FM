@@ -6,6 +6,7 @@ import adminRouter from './router/admin.router.js';
 import authRouter from './router/auth.router.js';
 import authSpotifyRouter from './router/auth.spotify.router.js';
 import tracksRouter from './router/tracks.router.js';
+import cookieParser from 'cookie-parser';
 
 // Initialize app
 const app = express();
@@ -14,8 +15,10 @@ const app = express();
 // TODO: Check additional middlewares
 app.use(express.json()); // Parses incoming requests with JSON payloads
 app.use(express.urlencoded({ extended: true })); // Parses incoming requests with URL-encoded payloads
+app.use(cookieParser()); // Parses incoming requests with cookies
 
 // Initialize log file
+// TODO: Improve this error handling
 try {
     await initializeLoggingFile();
 } catch (error: unknown) {

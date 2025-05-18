@@ -14,7 +14,7 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 - [x] Implement cookie management in frontend
   - [x] Add new cookie functions
 - [ ] Validate tokens in backend for every step that requires it
-- [ ] Enable logout
+- [x] Enable logout
 
 #### Guest implementation
 
@@ -24,8 +24,8 @@ Small tasks, ideas, and notes that don't warannt full GitHub issues.
 
 #### Update OAuth token
 
-- [ ] Use state for validation
-- [ ] Update the OAuth token for the new 1:1 relation
+- [x] Use state for validation
+- [x] Update the OAuth token for the new 1:1 relation
 - [ ] Use the right token for every (admin) function call
 
 #### Improvements

@@ -11,6 +11,7 @@ import { prisma } from '../config.js';
  * @returns {Promise<TrackSummary[]>} - A promise resolving to an array of track summaries.
  *
  */
+// TODO: Update the function to new user and token model
 export async function searchSong(track: string): Promise<TrackSummary[]> {
     // Validate input
     if (track === undefined || track === null || track.trim() === '') {

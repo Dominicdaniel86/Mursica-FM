@@ -2,7 +2,8 @@ import axios from 'axios';
 import type { SpotifyClientTokenResponse } from '../../interfaces/index.js';
 import logger from '../../logger/logger.js';
 import { CLIENT_ID, CLIENT_SECRET, prisma } from '../../config.js';
-import { ClientCredentialFlow } from '../../errors/authentication.js';
+import type { ClientToken } from '@prisma/client';
+import { ClientCredentialFlow, DatabaseOperationError } from '../../errors/index.js';
 
 /**
  * Requests an access token from the Spotify API using the Client Credentials flow.
@@ -17,7 +18,7 @@ import { ClientCredentialFlow } from '../../errors/authentication.js';
 async function requestClientCredentialToken(): Promise<[string, number]> {
     if (CLIENT_ID === undefined || CLIENT_ID === null || CLIENT_SECRET === undefined || CLIENT_SECRET === null) {
         logger.warn('Client ID or Client Secret not set.');
-        throw new Error('Client-Credentials-Flow failed: Client ID or Client Secret not set');
+        throw new ClientCredentialFlow('Client-Credentials-Flow failed: Client ID or Client Secret not set');
     }
 
     const url = 'https://accounts.spotify.com/api/token';
@@ -67,7 +68,14 @@ async function requestClientCredentialToken(): Promise<[string, number]> {
  * that are independent of a specific user.
  */
 export async function validateClientToken(): Promise<void> {
-    const currentToken = await prisma.clientToken.findFirst();
+    let currentToken: ClientToken | null;
+    try {
+        currentToken = await prisma.clientToken.findFirst();
+    } catch (error) {
+        logger.fatal(error, 'Error finding current client token');
+        throw new DatabaseOperationError('Error finding current client token');
+    }
+
     const currentDate: Date = new Date(Date.now());
 
     let valid = false;
@@ -108,12 +116,12 @@ export async function validateClientToken(): Promise<void> {
             logger.info('Successfully updated client token.');
         } catch (error) {
             if (error instanceof ClientCredentialFlow) {
-                throw error;
+                throw new ClientCredentialFlow('Failed to update the client token');
             }
             logger.fatal(error, 'Failed to update the client token.');
             throw new Error('Failed to update the client token.');
         }
     } else {
-        logger.info(`Checked token validity: still valid for ${Number(difference) / 1000} seconds.`);
+        logger.info(`Checked client-token validity: still valid for ${Number(difference) / 1000} seconds.`);
     }
 }

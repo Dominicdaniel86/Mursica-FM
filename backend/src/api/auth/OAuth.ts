@@ -3,9 +3,10 @@ import * as querystring from 'querystring';
 import type { SpotifyAuthTokenResponse } from '../../interfaces/index.js';
 import logger from '../../logger/logger.js';
 import { generateRandomString } from '../../utility/fileUtils.js';
-import { CLIENT_ID, CLIENT_SECRET, prisma } from '../../config.js';
+import { CLIENT_ID, CLIENT_SECRET, IS_PRODUCTION, prisma } from '../../config.js';
 import { AuthenticationError } from '../../errors/authentication.js';
-import { NotFoundError } from '../../errors/database.js';
+import { DatabaseOperationError, NotFoundError } from '../../errors/database.js';
+import type { State, User } from '@prisma/client';
 
 /**
  * Generates an OAuth query string for initiating Spotify authentication.
@@ -15,28 +16,68 @@ import { NotFoundError } from '../../errors/database.js';
  * redirect URI, and a randomly generated state to prevent CSRF attacks.
  *
  * @returns {string} - A URL-encoded query string containing the necessary OAuth parameters.
+ *
+ * @throws {DatabaseOperationError} If there is an error updating the state in the database.
  */
-export async function generateOAuthQuerystring(): Promise<string> {
-    const state = generateRandomString(16); // TODO: Use this state to prevent CSRF attacks
+export async function generateOAuthQuerystring(user?: string, email?: string): Promise<string> {
+    const state = generateRandomString(16);
     const scope = 'user-modify-playback-state user-read-playback-state';
-    const redirectURI = 'http://127.0.0.1/api/auth/spotify/callback';
+    let redirectURI: string;
+
+    if (IS_PRODUCTION) {
+        // TODO: Use an env variable for the redirect URI
+        redirectURI = 'https://mursica.fm/api/auth/spotify/callback';
+    } else {
+        redirectURI = 'http://127.0.0.1/api/auth/spotify/callback';
+    }
+
+    const validUntil = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
     try {
-        const previousState = await prisma.state.findFirst();
-
-        if (previousState !== null && previousState !== undefined) {
-            await prisma.state.update({
-                where: { id: previousState.id },
-                data: { state },
+        let matchingUser: User | null;
+        if (user === undefined || user === null) {
+            matchingUser = await prisma.user.findFirst({
+                where: {
+                    name: user,
+                },
             });
         } else {
+            matchingUser = await prisma.user.findFirst({
+                where: {
+                    email,
+                },
+            });
+        }
+
+        if (matchingUser === null || matchingUser === undefined) {
+            logger.warn('No user found for the provided username or email');
+            throw new NotFoundError('No user found for the provided username or email');
+        }
+
+        // Check if the state already exists in the database
+        const currentState = await prisma.state.findUnique({
+            where: { userId: matchingUser.id },
+        });
+
+        if (currentState !== null && currentState !== undefined) {
+            // Update the existing state
+            await prisma.state.update({
+                where: { id: currentState.id },
+                data: { state, validUntil },
+            });
+        } else {
+            // Create a new state
             await prisma.state.create({
-                data: { state },
+                data: {
+                    state,
+                    validUntil,
+                    userId: matchingUser.id,
+                },
             });
         }
     } catch (error) {
-        console.error(error, 'Failed to update the state in the database');
-        throw new AuthenticationError('Failed to update the state in the database');
+        logger.error(error, 'Failed to update the state in the database');
+        throw new DatabaseOperationError('Failed to update the state in the database');
     }
 
     return querystring.stringify({
@@ -56,8 +97,11 @@ export async function generateOAuthQuerystring(): Promise<string> {
  * in the database.
  *
  * @param {string} code - The authorization code received from Spotify during the authentication flow.
+ * @param {string} state - The state parameter received from Spotify during the authentication flow.
+ *
+ * @throws {AuthenticationError} If the OAuth authentication fails.
  */
-export async function oAuthAuthorization(code: string): Promise<void> {
+export async function oAuthAuthorization(code: string, state: string): Promise<void> {
     const url = 'https://accounts.spotify.com/api/token';
     const data = {
         code,
@@ -75,21 +119,46 @@ export async function oAuthAuthorization(code: string): Promise<void> {
         const response = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
         const accessToken = response.data.access_token;
         const expiresIn = response.data.expires_in;
-        // const refreshToken = response.data.refresh_token;
+        const refreshToken = response.data.refresh_token;
 
         const validUntilDate: Date = new Date(Date.now() + expiresIn * 1000);
-        // const currentToken = await prisma.oAuthToken.findFirst();
 
-        // if (currentToken !== null && currentToken !== undefined) {
-        //     await prisma.oAuthToken.update({
-        //         where: { id: currentToken.id },
-        //         data: { token: accessToken, validUntil: validUntilDate, refreshToken },
-        //     });
-        // } else {
-        //     await prisma.oAuthToken.create({
-        //         data: { token: accessToken, validUntil: validUntilDate, refreshToken },
-        //     });
-        // }
+        const stateDBEntry = await prisma.state.findUnique({
+            where: { state },
+        });
+
+        if (stateDBEntry === null || stateDBEntry === undefined) {
+            logger.error('OAuth authentication failed: Received invalid state');
+            throw new AuthenticationError('OAuth authentication failed: Received invalid state');
+        }
+
+        const userID = stateDBEntry.userId;
+
+        // Find the user associated with the state
+        const user = await prisma.user.findUnique({
+            where: { id: userID },
+        });
+
+        if (user === null || user === undefined) {
+            logger.error('OAuth authentication failed: User not found');
+            throw new AuthenticationError('OAuth authentication failed: User not found');
+        }
+
+        // Update the user with the new access token
+        const currentToken = await prisma.oAuthToken.findFirst({
+            where: { userId: userID },
+        });
+
+        if (currentToken !== null && currentToken !== undefined) {
+            await prisma.oAuthToken.update({
+                where: { id: currentToken.id },
+                data: { token: accessToken, validUntil: validUntilDate, refreshToken },
+            });
+        } else {
+            await prisma.oAuthToken.create({
+                data: { token: accessToken, validUntil: validUntilDate, refreshToken, userId: userID },
+            });
+        }
 
         logger.info({ accessToken, validUntil: validUntilDate }, 'OAuth user authentication successfully completed.');
     } catch (error) {
@@ -99,9 +168,42 @@ export async function oAuthAuthorization(code: string): Promise<void> {
 }
 
 /**
+ * Validates the state parameter received from Spotify during the OAuth callback.
+ *
+ * This function checks if the provided state exists in the database and if it is still valid.
+ * If the state is invalid or expired, an error is thrown.
+ *
+ * @param {string} state - The state parameter received from Spotify during the OAuth callback.
+ *
+ * @throws {AuthenticationError} If the state is invalid or expired.
+ * @throws {DatabaseOperationError} If there is an error reading the state from the database.
+ */
+export async function validateState(state: string): Promise<void> {
+    let currentState: State | null;
+    try {
+        currentState = await prisma.state.findUnique({
+            where: { state },
+        });
+    } catch (error) {
+        logger.error(error, 'Failed to read state from the database');
+        throw new DatabaseOperationError('Failed to read state from the database');
+    }
+
+    if (currentState === null || currentState === undefined) {
+        logger.error('OAuth authentication failed: Received invalid state');
+        throw new AuthenticationError('OAuth authentication failed: Received invalid state');
+    }
+    if (currentState.validUntil < new Date()) {
+        logger.error('OAuth authentication failed: State expired');
+        throw new AuthenticationError('OAuth authentication failed: State expired');
+    }
+}
+
+/**
  * Refreshes the OAuth access token using the stored refresh token.
  * Requires an already existing OAuth token in the database.
  */
+// TODO: Update to new user and token model
 export async function refreshAuthToken(): Promise<void> {
     try {
         const currentToken = await prisma.oAuthToken.findFirst();

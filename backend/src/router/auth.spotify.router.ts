@@ -1,49 +1,74 @@
 import express from 'express';
 import * as querystring from 'querystring';
-import { generateOAuthQuerystring, logout, oAuthAuthorization } from '../api/index.js';
-import { prisma } from '../config.js';
-import { NotFoundError } from '../errors/database.js';
+import { generateOAuthQuerystring, logout, oAuthAuthorization, validateState } from '../api/index.js';
 import logger from '../logger/logger.js';
+import { validateJWTToken } from '../auth/auth.middleware.js';
+import {
+    NotFoundError,
+    InvalidParameterError,
+    ExpiredTokenError,
+    NotVerifiedError,
+    AuthenticationError,
+} from '../errors/index.js';
 
 const router = express.Router();
 
 // 200: OK
 // 500: Internal Server Error
-router.get('/auth-check', async (req, res) => {
-    try {
-        const token = await prisma.oAuthToken.findFirst();
-        if (token) {
-            logger.info('Authentication check: Admin is logged in');
-            res.status(200).json({
-                isAuthenticated: true,
-                expiresAt: token.validUntil,
-            });
-        } else {
-            logger.info('Authentication check: Admin is not logged in');
-            res.status(200).json({
-                isAuthenticated: false,
-            });
-        }
-    } catch (error) {
-        logger.error(error, 'Could not check if an admin is logged in.');
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
+// ! Deprecated: This endpoint is not used anymore
+// router.get('/auth-check', async (req, res) => {
+//     try {
+//         const token = await prisma.oAuthToken.findFirst();
+//         if (token) {
+//             logger.info('Authentication check: Admin is logged in');
+//             res.status(200).json({
+//                 isAuthenticated: true,
+//                 expiresAt: token.validUntil,
+//             });
+//         } else {
+//             logger.info('Authentication check: Admin is not logged in');
+//             res.status(200).json({
+//                 isAuthenticated: false,
+//             });
+//         }
+//     } catch (error) {
+//         logger.error(error, 'Could not check if an admin is logged in.');
+//         res.status(500).json({ error: 'Internal server error' });
+//     }
+// });
 
-// 200: OK
-// 500: Internal Server Error
 router.get('/login', async (req, res) => {
+    const userCookie = req.cookies['mursica-fm-user'];
+    const emailCookie = req.cookies['mursica-fm-email'];
+    const tokenCookie = req.cookies['mursica-fm-token'];
+
     try {
-        logger.info('A user is trying to log in.');
+        logger.info('A user is trying to connect their Spotify account.');
+        await validateJWTToken(tokenCookie, userCookie, emailCookie);
 
         const url = 'https://accounts.spotify.com/authorize?';
-        const spotifyQueryString = await generateOAuthQuerystring();
-
+        const spotifyQueryString = await generateOAuthQuerystring(userCookie, emailCookie);
         res.redirect(url + spotifyQueryString);
         logger.info('Redirected user to the Spotify login page.');
     } catch (error) {
-        logger.error(error, 'Could not redirect user to Spotify login page.');
-        res.status(500).json({ error: 'Internal server error' });
+        if (error instanceof InvalidParameterError) {
+            logger.warn('Invalid parameters received');
+            res.status(400).json({ error: 'Invalid parameters' });
+            return;
+        } else if (
+            error instanceof ExpiredTokenError ||
+            error instanceof NotVerifiedError ||
+            error instanceof AuthenticationError
+        ) {
+            logger.warn('User is not verified or token is expired', error);
+            res.status(403).json({ error: error.message });
+        } else if (error instanceof NotFoundError) {
+            logger.warn('User not found in the database', error);
+            res.status(404).json({ error: 'User not found in the database' });
+        } else {
+            logger.error(error, 'Failed to validate JWT token');
+            res.status(500).json({ error: 'Internal server error' });
+        }
     }
 });
 
@@ -53,19 +78,19 @@ router.get('/callback', async (req, res) => {
     const state = req.query.state as string;
 
     try {
-        const currentState = await prisma.state.findFirst();
-
-        if (state === undefined || state === null || state !== currentState?.state) {
-            logger.error('OAuth authentication failed: Received invalid state');
-            return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
+        await validateState(state);
+    } catch (error) {
+        if (error instanceof AuthenticationError) {
+            logger.warn('Invalid state received');
+            return res.redirect('/#' + querystring.stringify({ error: 'invalid_state' }));
+        } else {
+            logger.error('Failed to validate state', error);
+            return res.redirect('/#' + querystring.stringify({ error: 'state_validation_failed' }));
         }
-    } catch {
-        logger.error('Failed to read state from the database');
-        return res.redirect('/#' + querystring.stringify({ error: 'state_mismatch' }));
     }
 
     try {
-        await oAuthAuthorization(code);
+        await oAuthAuthorization(code, state);
         res.redirect('http://localhost/static/html/admin.html');
         logger.info('Redirected user back to admin.html');
     } catch (error) {
@@ -74,9 +99,7 @@ router.get('/callback', async (req, res) => {
     }
 });
 
-// 200: OK
-// 400: Bad Request - No OAuth token found
-// 500: Internal Server Error
+// TODO: Implement with new structure and multi user support
 router.post('/logout', async (req, res) => {
     logger.info('A user is trying to logout.');
 

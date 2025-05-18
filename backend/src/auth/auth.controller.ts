@@ -7,12 +7,14 @@ import {
     NotFoundError,
     InvalidPasswordError,
     AlreadyVerifiedError,
+    DatabaseOperationError,
+    ExpiredTokenError,
 } from '../errors/index.js';
 import dotenv from 'dotenv';
 import { generateRandomString } from '../utility/fileUtils.js';
-import { checkRegistrationInput, comparePassword, hashPassword } from './auth.middleware.js';
+import { checkRegistrationInput, comparePassword, hashPassword, validateJWTToken } from './auth.middleware.js';
 import { generateJWTToken } from '../utility/jwtUtils.js';
-import type { User, Jwt } from '@prisma/client';
+import type { User } from '@prisma/client';
 import logger from '../logger/logger.js';
 
 dotenv.config();
@@ -312,42 +314,23 @@ export async function resendValidationToken(username: string): Promise<void> {
  * @param username - The username of the user (optional).
  * @param email - The email address of the user (optional).
  *
- * @throws {InvalidParameterError} If any of the parameters are invalid.
- * @throws {NotFoundError} If the token is not found.
- * @throws {InternalServerError} If there is an error during logout.
+ * @throws {InvalidParameterError} If the token, username, or email is invalid.
+ * @throws {DatabaseOperationError} If there is an error finding the token or user in the database.
+ * @throws {NotFoundError} If the token is invalid or not found.
+ * @throws {ExpiredTokenError} If the token is expired.
+ * @throws {AuthenticationError} If the user is invalid or not verified.
+ * @throws {NotVerifiedError} If the user is not verified.
  */
 export async function logout(token: string, username?: string, email?: string): Promise<void> {
-    // Invalidate the user's session or token
-    if (token === undefined || token === null || token === '') {
-        throw new InvalidParameterError('Token is required');
-    }
-    if (
-        (username === undefined && email === undefined) ||
-        (username === null && email === null) ||
-        (username === '' && email === '')
-    ) {
-        throw new InvalidParameterError('Username or email is required');
-    }
-
-    // Check if the token exists
-    let result: Jwt | null;
-
     try {
-        result = await prisma.jwt.findUnique({
-            where: {
-                token,
-            },
-        });
+        await validateJWTToken(token, username, email);
     } catch (error) {
-        logger.error(error, 'Error finding JWT token');
-        throw new InternalServerError('Error finding JWT token');
+        if (!(error instanceof ExpiredTokenError)) {
+            throw error;
+        } else {
+            logger.warn('Token is expired, still deleting it', { token });
+        }
     }
-
-    if (result === null || result === undefined) {
-        throw new NotFoundError('Invalid token');
-    }
-
-    // TODO: Check if the token belongs to the user
 
     // Remove the token from the database
     try {
@@ -358,6 +341,6 @@ export async function logout(token: string, username?: string, email?: string): 
         });
     } catch (error) {
         logger.error(error, 'Error deleting JWT token');
-        throw new InternalServerError('Error deleting JWT token');
+        throw new DatabaseOperationError('Error deleting JWT token');
     }
 }

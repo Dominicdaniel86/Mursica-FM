@@ -13,6 +13,7 @@ import logger from '../logger/logger.js';
  * error if no OAuth token is found for the user.
  *
  */
+// TODO: Update the function to new user and token model
 export async function playTrack(): Promise<void> {
     const token = await prisma.oAuthToken.findFirst();
 
@@ -47,6 +48,7 @@ export async function playTrack(): Promise<void> {
  * error if no OAuth token is found for the user.
  *
  */
+// TODO: Update the function to new user and token model
 export async function pauseTrack(): Promise<void> {
     const token = await prisma.oAuthToken.findFirst();
 
@@ -79,6 +81,7 @@ export async function pauseTrack(): Promise<void> {
  * Throws an error if no OAuth token is found for the user.
  *
  */
+// TODO: Update the function to new user and token model
 export async function skipTrack(): Promise<void> {
     const token = await prisma.oAuthToken.findFirst();
 
@@ -103,6 +106,7 @@ export async function skipTrack(): Promise<void> {
     }
 }
 
+// TODO: Update the function to new user and token model
 export async function getCurrentVolume(): Promise<number> {
     const token = await prisma.oAuthToken.findFirst();
 
@@ -128,6 +132,7 @@ export async function getCurrentVolume(): Promise<number> {
     }
 }
 
+// TODO: Update the function to new user and token model
 export async function changeCurrentVolume(desiredVolume: string): Promise<void> {
     const token = await prisma.oAuthToken.findFirst();
 

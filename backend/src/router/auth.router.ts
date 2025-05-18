@@ -8,6 +8,8 @@ import {
     NotFoundError,
     InvalidPasswordError,
     AlreadyVerifiedError,
+    AuthenticationError,
+    ExpiredTokenError,
 } from '../errors/index.js';
 
 const router = express.Router();
@@ -79,15 +81,19 @@ router.post('/logout', async (req, res) => {
         if (error instanceof InvalidParameterError) {
             logger.warn(error.message, { username, email });
             res.status(400).json({ error: error.message });
-            return;
+        } else if (
+            error instanceof NotVerifiedError ||
+            error instanceof AuthenticationError ||
+            error instanceof ExpiredTokenError
+        ) {
+            logger.warn(error.message, { username, email });
+            res.status(403).json({ error: error.message });
         } else if (error instanceof NotFoundError) {
             logger.warn(error.message, { username, email });
             res.status(404).json({ error: error.message });
-            return;
         } else {
             logger.error(error, 'Failed to log out', { username, email });
             res.status(500).json({ error: 'Internal server error' });
-            return;
         }
     }
 });
