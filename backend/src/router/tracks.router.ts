@@ -1,25 +1,31 @@
 import express from 'express';
 import logger from '../logger/logger.js';
 import { searchSong, validateClientToken } from '../api/index.js';
+import { generalPurposeGuestValidation, generalPurposeValidation } from '../utility/authsUtils.js';
 
 const router = express.Router();
 
-// 200: OK
-// 400: Bad Request - Empty track title
-// 404: Not Found - No tracks found
-// 500: Internal Server Error
-// TODO: Validate this function
+// TODO: Document this API in the wiki
 router.get('/search', async (req, res) => {
-    logger.info('A user is searching for tracks');
+    const { token, username, email } = req.body;
+    const trackTitle = req.query.trackTitle as string;
+    logger.info('A user is searching for tracks', { token, username, email });
+
+    // Check if the token is valid
     try {
-        const trackTitle = req.query.trackTitle as string;
-
-        if (trackTitle === undefined || trackTitle === null || trackTitle.trim() === '') {
-            logger.warn('Empty track title received');
-            res.status(400).json({ error: 'Empty track title' });
-            return;
+        if (token.length === 250) {
+            // token is an admin token
+            await generalPurposeValidation(req, res);
+        } else {
+            // token is a guest token (or invalid)
+            await generalPurposeGuestValidation(req, res);
         }
+    } catch {
+        // Error handled in generalPurposeValidation functions
+        return;
+    }
 
+    try {
         await validateClientToken();
 
         const tracks = await searchSong(trackTitle);
@@ -31,19 +37,17 @@ router.get('/search', async (req, res) => {
         }
 
         res.status(200).json({ tracks });
-        logger.info(`Successfully sent ${tracks.length} track results to the user.`);
+        logger.info(`Successfully sent ${tracks.length} track results to the user.`, { username, email });
     } catch (error) {
         logger.error(error, 'Failed to find tracks through the Spotify API.');
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// 200: OK
-// 400: Bad Request
 // TODO: Implement this function
+// TODO: Document this API in the wiki
 router.post('/select', (req, res) => {
-    if (req.body === undefined || req.body === null) {
-        // TODO: Not working currently
+    if (req.body.trackID === undefined || req.body.trackID === null) {
         logger.warn('Empty song selection received');
         res.status(400).send('Empty song send');
         return;
