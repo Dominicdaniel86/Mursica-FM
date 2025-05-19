@@ -14,6 +14,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model CurrentSession {
+  id          String @id @default(uuid())
+  sessionId   String @unique
+  validUntil  DateTime
+  // relations
+  adminId      String   @unique
+  Admin        User     @relation(fields: [adminId], references: [id])
+  guests            Guest[]
+  // metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model ClientToken {
   id          String  @id @default(uuid())
   token       String  @unique
@@ -67,23 +80,25 @@ model User {
   password          String // should be hashed
   verificationCode  String? @unique
   verified          Boolean @default(false)
-  guests            Guest[]
   // relations
   state            State?
   oauthToken       OAuthToken?
   jwt              Jwt?
+  currentSession   CurrentSession?
   // metadata
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   deletedAt         DateTime?
 }
 
+// TODO: Enable guests with same names to exist in different sessions
 model Guest {
   id        String @id @default(uuid())
   name      String @unique
+  guestToken String @unique
   // relations
-  hostID    String
-  host      User @relation(fields: [hostID], references: [id])
+  sessionId   String
+  session     CurrentSession @relation(fields: [sessionId], references: [id])
   // metadata
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

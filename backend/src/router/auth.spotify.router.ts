@@ -38,16 +38,14 @@ const router = express.Router();
 // });
 
 router.get('/login', async (req, res) => {
-    const userCookie = req.cookies['mursica-fm-user'];
-    const emailCookie = req.cookies['mursica-fm-email'];
-    const tokenCookie = req.cookies['mursica-fm-token'];
+    const { token, user, email } = req.cookies;
 
     try {
         logger.info('A user is trying to connect their Spotify account.');
-        await validateJWTToken(tokenCookie, userCookie, emailCookie);
+        await validateJWTToken(token, user, email);
 
         const url = 'https://accounts.spotify.com/authorize?';
-        const spotifyQueryString = await generateOAuthQuerystring(userCookie, emailCookie);
+        const spotifyQueryString = await generateOAuthQuerystring(user, email);
         res.redirect(url + spotifyQueryString);
         logger.info('Redirected user to the Spotify login page.');
     } catch (error) {

@@ -7,7 +7,7 @@ import {
     NotFoundError,
     NotVerifiedError,
 } from '../errors/index.js';
-import type { Jwt, User } from '@prisma/client';
+import type { CurrentSession, Guest, Jwt, User } from '@prisma/client';
 import { prisma } from '../config.js';
 import logger from '../logger/logger.js';
 
@@ -68,6 +68,7 @@ export function checkRegistrationInput(username: string, email: string, password
  * @throws {AuthenticationError} If the user is invalid or not verified.
  * @throws {NotVerifiedError} If the user is not verified.
  */
+// TODO: Let router use cookies instead of body values
 export async function validateJWTToken(token: string, username?: string, email?: string): Promise<void> {
     // Validate parameters
     if (token === undefined || token === '') {
@@ -164,4 +165,70 @@ export async function comparePassword(password: string, hashedPassword: string):
     }
 
     return await bcrypt.compare(password, hashedPassword);
+}
+
+/**
+ * Validates a guest token by checking the provided guest name, session ID, and token against the database.
+ *
+ * @param guestname - The name of the guest to validate.
+ * @param sessionId - The session ID associated with the guest.
+ * @param token - The guest token to validate.
+ * @returns {Promise<string>} The internal session ID if validation is successful.
+ *
+ * @throws {InvalidParameterError} If any of the parameters are missing or empty.
+ * @throws {NotFoundError} If the guest token is invalid or does not match the guest name.
+ * @throws {AuthenticationError} If the session ID does not match the guest's session.
+ * @throws {DatabaseOperationError} If there is an error querying the database for the guest.
+ */
+// TODO: Can be optimized
+export async function validateGuestToken(guestname: string, sessionId: string, token: string): Promise<string> {
+    if (guestname === null || guestname === undefined || guestname === '') {
+        throw new InvalidParameterError('Missing guestname');
+    }
+    if (sessionId === null || sessionId === undefined || sessionId === '') {
+        throw new InvalidParameterError('Missing sessionId');
+    }
+    if (token === null || token === undefined || token === '') {
+        throw new InvalidParameterError('Missing token');
+    }
+
+    let guest: Guest | null;
+
+    try {
+        guest = await prisma.guest.findUnique({
+            where: {
+                guestToken: token,
+            },
+        });
+    } catch (error) {
+        logger.error(error, 'Error finding guest');
+        throw new DatabaseOperationError('Error finding guest');
+    }
+
+    if (guest === undefined || guest === null || guest.name !== guestname) {
+        throw new AuthenticationError('Token invalid');
+    }
+
+    let sessionDBEntry: CurrentSession | null;
+
+    try {
+        sessionDBEntry = await prisma.currentSession.findUnique({
+            where: {
+                id: guest.sessionId, // not the custom format ID, but the internal one
+            },
+        });
+    } catch (error) {
+        logger.error(error, 'Error finding session');
+        throw new DatabaseOperationError('Error finding session');
+    }
+
+    if (sessionDBEntry === null || sessionDBEntry === undefined) {
+        throw new AuthenticationError('No matching session found');
+    }
+
+    if (sessionId !== sessionDBEntry.sessionId) {
+        throw new AuthenticationError('The session ID does not match');
+    }
+
+    return sessionDBEntry.id;
 }

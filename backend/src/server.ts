@@ -7,6 +7,7 @@ import authRouter from './router/auth.router.js';
 import authSpotifyRouter from './router/auth.spotify.router.js';
 import tracksRouter from './router/tracks.router.js';
 import cookieParser from 'cookie-parser';
+import guestRouter from './router/guest.router.js';
 
 // Initialize app
 const app = express();
@@ -51,6 +52,7 @@ app.use('/api/admin', adminRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/auth/spotify', authSpotifyRouter);
 app.use('/api/tracks/', tracksRouter);
+app.use('/api/guest', guestRouter);
 
 // Let the server listen on the specified port
 app.listen(PORT, () => {

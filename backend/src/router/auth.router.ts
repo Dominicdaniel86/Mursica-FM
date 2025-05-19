@@ -53,19 +53,15 @@ router.post('/login', async (req, res) => {
         if (error instanceof InvalidParameterError) {
             logger.warn(error.message, { username, email });
             res.status(400).json({ error: error.message });
-            return;
         } else if (error instanceof NotVerifiedError || error instanceof InvalidPasswordError) {
             logger.warn(error.message, { username, email });
             res.status(403).json({ error: error.message });
-            return;
         } else if (error instanceof NotFoundError) {
             logger.warn(error.message, { username, email });
             res.status(404).json({ error: error.message });
-            return;
         } else {
             logger.error(error, 'Failed to log in', { username, email });
             res.status(500).json({ error: 'Internal server error' });
-            return;
         }
     }
 });
@@ -110,15 +106,12 @@ router.post('/register', async (req, res) => {
         if (error instanceof InvalidParameterError) {
             logger.warn(error.message, { username, email });
             res.status(400).json({ error: error.message });
-            return;
         } else if (error instanceof ExistingUserError) {
             logger.warn(error.message, { username, email });
             res.status(409).json({ error: error.message });
-            return;
         } else {
             logger.error(error, 'Failed to register user: Internal server error', { username, email });
             res.status(500).json({ error: 'Internal server error' });
-            return;
         }
     }
 });
@@ -136,19 +129,15 @@ router.post('/resend-verification', async (req, res) => {
         if (error instanceof InvalidParameterError) {
             logger.warn(error.message, { username });
             res.status(400).json({ error: error.message });
-            return;
         } else if (error instanceof NotFoundError) {
             logger.warn(error.message, { username });
             res.status(404).json({ error: error.message });
-            return;
         } else if (error instanceof AlreadyVerifiedError) {
             logger.warn(error.message, { username });
             res.status(409).json({ error: error.message });
-            return;
         } else {
             logger.error(error, 'Failed to resend verification email', { username });
             res.status(500).json({ error: 'Internal server error' });
-            return;
         }
     }
 });
