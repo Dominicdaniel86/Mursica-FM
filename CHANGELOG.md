@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2-alpha.3] - 2025-05-20
+
+## Added
+
+- New APIs for the Admin to open and close music sessions
+- New APIs for Guests to join or leave a music session
+
+## Changed
+
+- Updated the Admin control APIs to support the new authentication system
+
 ## [1.1.2-alpha.2] - 2025-05-19
 
 ## Added
