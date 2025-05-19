@@ -6,7 +6,7 @@ import { generateRandomString } from '../../utility/fileUtils.js';
 import { CLIENT_ID, CLIENT_SECRET, IS_PRODUCTION, prisma } from '../../config.js';
 import { AuthenticationError } from '../../errors/authentication.js';
 import { DatabaseOperationError, NotFoundError } from '../../errors/database.js';
-import type { State, User } from '@prisma/client';
+import type { OAuthToken, State, User } from '@prisma/client';
 
 /**
  * Generates an OAuth query string for initiating Spotify authentication.
@@ -201,22 +201,61 @@ export async function validateState(state: string): Promise<void> {
 
 /**
  * Refreshes the OAuth access token using the stored refresh token.
- * Requires an already existing OAuth token in the database.
+ * Looks up the OAuth token in the database by username or email, and refreshes it if expired.
+ *
+ * @param {string} token - The current access token.
+ * @param {string} [username] - The username associated with the token (optional).
+ * @param {string} [email] - The email associated with the token (optional).
+ *
+ * @throws {AuthenticationError} If the parameters are invalid.
+ * @throws {NotFoundError} If the token is not found in the database.
+ * @throws {DatabaseOperationError} If there is an error updating the token in the database.
  */
-// TODO: Update to new user and token model
-export async function refreshAuthToken(): Promise<void> {
-    try {
-        const currentToken = await prisma.oAuthToken.findFirst();
+export async function refreshAuthToken(token: string, username?: string, email?: string): Promise<string> {
+    if (
+        token === null ||
+        token === '' ||
+        ((username === null || username === '') && (email === null || email === ''))
+    ) {
+        // Should never happen, as the function is only called when the token is valid
+        logger.error('Invalid parameters for refreshing the OAuth token');
+        throw new AuthenticationError('Invalid parameters for refreshing the OAuth token');
+    }
 
-        if (currentToken === null || currentToken === undefined) {
-            logger.warn('AuthToken could not be refreshed, as there is no current token in the database');
+    try {
+        let tokenDBEntry: OAuthToken | null;
+        if (username !== undefined && username !== null) {
+            tokenDBEntry = await prisma.oAuthToken.findFirst({
+                where: {
+                    user: {
+                        name: username,
+                    },
+                },
+            });
+        } else {
+            tokenDBEntry = await prisma.oAuthToken.findFirst({
+                where: {
+                    user: {
+                        email,
+                    },
+                },
+            });
+        }
+
+        if (tokenDBEntry === null || tokenDBEntry === undefined) {
+            // Should never happen, as the function is only called when the token is valid
             throw new NotFoundError('refreshAuthToken failed: No current token found in database');
+        }
+
+        if (tokenDBEntry.validUntil > new Date()) {
+            logger.info('OAuth token is still valid, no need to refresh', { username, email });
+            return tokenDBEntry.token;
         }
 
         const url = 'https://accounts.spotify.com/api/token';
         const data = new URLSearchParams({
             grant_type: 'refresh_token',
-            refresh_token: currentToken.refreshToken,
+            refresh_token: tokenDBEntry.refreshToken,
         });
         const config = {
             headers: {
@@ -233,16 +272,17 @@ export async function refreshAuthToken(): Promise<void> {
         const validUntilDate: Date = new Date(Date.now() + expiresIn * 1000);
 
         await prisma.oAuthToken.update({
-            where: { id: currentToken.id },
+            where: { id: tokenDBEntry.id },
             data: { token: accessToken, validUntil: validUntilDate, refreshToken },
         });
 
         logger.info('Successfully refreshed the OAuth token');
+        return accessToken;
     } catch (error) {
         if (error instanceof NotFoundError) {
             throw error;
         }
         logger.error(error, 'OAuth token refresh failed');
-        throw new AuthenticationError('OAuth token refresh failed');
+        throw new DatabaseOperationError('OAuth token refresh failed');
     }
 }
