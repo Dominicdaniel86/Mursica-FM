@@ -27,6 +27,6 @@ export async function generalPurposeValidation(req: Request, res: Response): Pro
             logger.error(error, 'Failed to validate token', { token, username, email });
             res.status(500).json({ error: 'Internal server error' });
         }
-        throw error; // Rethrow the error to propagate it
+        // Error fully handled; no need to rethrow
     }
 }
