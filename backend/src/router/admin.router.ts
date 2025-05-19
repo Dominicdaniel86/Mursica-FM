@@ -7,14 +7,16 @@ import {
     refreshAuthToken,
     skipTrack,
 } from '../api/index.js';
-import { NotFoundError } from '../errors/database.js';
+import { NotFoundError, ValueAlreadyExistsError } from '../errors/database.js';
 import logger from '../logger/logger.js';
 import { generalPurposeValidation } from '../utility/authsUtils.js';
 import { createNewSession, stopCurrentSession } from '../services/sessionManagement.js';
+import { InvalidParameterError } from '../errors/services.js';
 
 const router = express.Router();
 
 router.post('/session/start', async (req, res) => {
+    logger.info('A user is trying to start a session');
     try {
         await generalPurposeValidation(req, res);
     } catch {
@@ -25,16 +27,28 @@ router.post('/session/start', async (req, res) => {
     const { username, email } = req.body;
 
     try {
-        await createNewSession(username, email);
-        logger.info('Session started');
-        res.status(200).send('Session started');
+        const token = await createNewSession(username, email);
+        logger.info('Session started', { username, email });
+        res.status(200).json({ message: 'Session started', token });
     } catch (error) {
-        logger.error(error, 'Failed to start session');
-        res.status(500).send('Failed to start session');
+        if (error instanceof InvalidParameterError) {
+            logger.warn(error.message, { username, email });
+            res.status(400).json({ error: error.message });
+        } else if (error instanceof NotFoundError) {
+            logger.warn(error.message, { username, email });
+            res.status(404).json({ error: error.message });
+        } else if (error instanceof ValueAlreadyExistsError) {
+            logger.warn(error.message, { username, email });
+            res.status(409).json({ error: error.message });
+        } else {
+            logger.error(error, 'Failed to create a new session', { username, email });
+            res.status(500).json({ error: 'Internal Server error' });
+        }
     }
 });
 
 router.post('/session/stop', async (req, res) => {
+    logger.info('A user is trying to stop a session');
     try {
         await generalPurposeValidation(req, res);
     } catch {
@@ -46,11 +60,19 @@ router.post('/session/stop', async (req, res) => {
 
     try {
         await stopCurrentSession(username, email);
-        logger.info('Session stopped');
+        logger.info('Session stopped', { username, email });
         res.status(200).send('Session stopped');
     } catch (error) {
-        logger.error(error, 'Failed to stop session');
-        res.status(500).send('Failed to stop session');
+        if (error instanceof InvalidParameterError) {
+            logger.warn(error.message, { username, email });
+            res.status(400).json({ error: error.message });
+        } else if (error instanceof NotFoundError) {
+            logger.warn(error.message, { username, email });
+            res.status(404).json({ error: error.message });
+        } else {
+            logger.error(error, 'Failed to stop a session', { username, email });
+            res.status(500).json({ error: 'Internal Server error' });
+        }
     }
 });
 

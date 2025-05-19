@@ -91,9 +91,11 @@ model User {
   deletedAt         DateTime?
 }
 
+// TODO: Enable guests with same names to exist in different sessions
 model Guest {
   id        String @id @default(uuid())
   name      String @unique
+  guestToken String @unique
   // relations
   sessionId   String
   session     CurrentSession @relation(fields: [sessionId], references: [id])
