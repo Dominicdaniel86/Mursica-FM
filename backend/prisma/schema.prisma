@@ -80,11 +80,13 @@ model User {
   password          String // should be hashed
   verificationCode  String? @unique
   verified          Boolean @default(false)
+  latTrackPlayed    DateTime @default(now())
   // relations
   state            State?
   oauthToken       OAuthToken?
   jwt              Jwt?
   currentSession   CurrentSession?
+  tracks           Track[]  // One-to-many relation to Track
   // metadata
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -96,11 +98,32 @@ model Guest {
   id        String @id @default(uuid())
   name      String @unique
   guestToken String @unique
+  latTrackPlayed    DateTime @default(now())
   // relations
   sessionId   String
   session     CurrentSession @relation(fields: [sessionId], references: [id])
+  tracks      Track[]  // One-to-many relation to Track
   // metadata
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
+}
+
+// TODO: Implement in the code, so that either user or guest is not null
+model Track {
+  id        String @id @default(uuid())
+  trackId   String
+  title     String
+  artist    String
+  album     String
+  coverUrl String
+  duration  Int
+  // relations
+  userId     String? // optional
+  user      User?   @relation(fields: [userId], references: [id])
+  guestId    String? // optional
+  guest     Guest?  @relation(fields: [guestId], references: [id])
+  // metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

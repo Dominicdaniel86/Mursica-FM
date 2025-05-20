@@ -1,25 +1,33 @@
 import express from 'express';
 import logger from '../logger/logger.js';
 import { searchSong, validateClientToken } from '../api/index.js';
+import { generalPurposeGuestValidation, generalPurposeValidation } from '../utility/authsUtils.js';
+import { addTrackToWishlist } from '../services/trackManagement.js';
+import { InvalidParameterError } from '../errors/services.js';
 
 const router = express.Router();
 
-// 200: OK
-// 400: Bad Request - Empty track title
-// 404: Not Found - No tracks found
-// 500: Internal Server Error
-// TODO: Validate this function
+// TODO: Document this API in the wiki
 router.get('/search', async (req, res) => {
-    logger.info('A user is searching for tracks');
+    const { token, username, email } = req.body;
+    const trackTitle = req.query.trackTitle as string;
+    logger.info('A user is searching for tracks', { token, username, email });
+
+    // Check if the token is valid
     try {
-        const trackTitle = req.query.trackTitle as string;
-
-        if (trackTitle === undefined || trackTitle === null || trackTitle.trim() === '') {
-            logger.warn('Empty track title received');
-            res.status(400).json({ error: 'Empty track title' });
-            return;
+        if (token.length === 250) {
+            // token is an admin token
+            await generalPurposeValidation(req, res);
+        } else {
+            // token is a guest token (or invalid)
+            await generalPurposeGuestValidation(req, res);
         }
+    } catch {
+        // Error handled in generalPurposeValidation functions
+        return;
+    }
 
+    try {
         await validateClientToken();
 
         const tracks = await searchSong(trackTitle);
@@ -31,24 +39,78 @@ router.get('/search', async (req, res) => {
         }
 
         res.status(200).json({ tracks });
-        logger.info(`Successfully sent ${tracks.length} track results to the user.`);
+        logger.info(`Successfully sent ${tracks.length} track results to the user.`, { username, email });
     } catch (error) {
         logger.error(error, 'Failed to find tracks through the Spotify API.');
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// 200: OK
-// 400: Bad Request
-// TODO: Implement this function
-router.post('/select', (req, res) => {
-    if (req.body === undefined || req.body === null) {
-        // TODO: Not working currently
-        logger.warn('Empty song selection received');
-        res.status(400).send('Empty song send');
+// TODO: Document this API in the wiki
+// TODO: Let it use the Interface
+router.post('/select', async (req, res) => {
+    const {
+        token,
+        username,
+        email,
+        sessionId,
+        trackId,
+        trackTitle,
+        trackArtist,
+        trackAlbum,
+        trackCoverURL,
+        trackDuration,
+    } = req.body;
+    logger.info('A user is selecting a track', { token, username, email });
+
+    if (token === undefined || token === null || token === '') {
+        logger.error('Token is required');
+        res.status(400).json({ error: 'Token is required' });
         return;
     }
-    logger.info('Song got selected: ' + req.body.trackID);
+
+    let isAdmin = false;
+    // Check if the token is valid
+    try {
+        if (token.length === 250) {
+            logger.debug('J4o');
+            // token is an admin token
+            await generalPurposeValidation(req, res);
+            isAdmin = true;
+        } else {
+            logger.debug('Jo3');
+            // token is a guest token (or invalid)
+            await generalPurposeGuestValidation(req, res);
+        }
+    } catch {
+        // Error handled in generalPurposeValidation functions
+        return;
+    }
+
+    try {
+        await addTrackToWishlist(
+            trackId,
+            trackTitle,
+            trackArtist,
+            trackAlbum,
+            trackCoverURL,
+            trackDuration,
+            isAdmin,
+            sessionId,
+            username,
+            email
+        );
+    } catch (error) {
+        if (error instanceof InvalidParameterError) {
+            logger.error(error, 'Invalid parameter in addTrackToWishlist');
+            res.status(400).json({ error: error.message });
+            return;
+        }
+        logger.error(error, 'Failed to add track to wishlist.');
+        res.status(500).json({ error: 'Internal server error' });
+        return;
+    }
+    logger.info('Song got selected: ' + trackId);
     res.status(200).send('You selected the song!');
 });
 
