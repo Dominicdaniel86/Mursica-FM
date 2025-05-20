@@ -2,6 +2,8 @@ import express from 'express';
 import logger from '../logger/logger.js';
 import { searchSong, validateClientToken } from '../api/index.js';
 import { generalPurposeGuestValidation, generalPurposeValidation } from '../utility/authsUtils.js';
+import { addTrackToWishlist } from '../services/trackManagement.js';
+import { InvalidParameterError } from '../errors/services.js';
 
 const router = express.Router();
 
@@ -44,15 +46,60 @@ router.get('/search', async (req, res) => {
     }
 });
 
-// TODO: Implement this function
 // TODO: Document this API in the wiki
-router.post('/select', (req, res) => {
-    if (req.body.trackID === undefined || req.body.trackID === null) {
-        logger.warn('Empty song selection received');
-        res.status(400).send('Empty song send');
+// TODO: Let it use the Interface
+router.post('/select', async (req, res) => {
+    const { token, username, email, trackId, trackTitle, trackArtist, trackAlbum, trackCoverURL, trackDuration } =
+        req.body;
+    logger.info('A user is selecting a track', { token, username, email });
+
+    if (token === undefined || token === null || token === '') {
+        logger.error('Token is required');
+        res.status(400).json({ error: 'Token is required' });
         return;
     }
-    logger.info('Song got selected: ' + req.body.trackID);
+
+    let isAdmin = false;
+    // Check if the token is valid
+    try {
+        if (token.length === 250) {
+            logger.debug('J4o');
+            // token is an admin token
+            await generalPurposeValidation(req, res);
+            isAdmin = true;
+        } else {
+            logger.debug('Jo3');
+            // token is a guest token (or invalid)
+            await generalPurposeGuestValidation(req, res);
+        }
+    } catch {
+        // Error handled in generalPurposeValidation functions
+        return;
+    }
+
+    try {
+        await addTrackToWishlist(
+            trackId,
+            trackTitle,
+            trackArtist,
+            trackAlbum,
+            trackCoverURL,
+            trackDuration,
+            isAdmin,
+            username,
+            email
+        );
+    } catch (error) {
+        if (error instanceof InvalidParameterError) {
+            logger.error(error, 'Invalid parameter in addTrackToWishlist');
+            res.status(400).json({ error: error.message });
+            return;
+        }
+        logger.error(error, 'Failed to add track to wishlist.');
+        res.status(500).json({ error: 'Internal server error' });
+        return;
+    }
+    logger.info('Song got selected: ' + trackId);
     res.status(200).send('You selected the song!');
 });
 

@@ -112,6 +112,7 @@ model Guest {
 // TODO: Implement in the code, so that either user or guest is not null
 model Track {
   id        String @id @default(uuid())
+  trackId   String
   title     String
   artist    String
   album     String
