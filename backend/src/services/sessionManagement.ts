@@ -98,6 +98,7 @@ export async function createNewSession(username: string, email: string): Promise
  * @throws {NotFoundError} If the user does not exist or has no active session.
  * @throws {DatabaseOperationError} If a database operation fails.
  */
+// TODO: Remove all tracks related to the session
 export async function stopCurrentSession(username: string, email: string): Promise<void> {
     // Validate input
     if (

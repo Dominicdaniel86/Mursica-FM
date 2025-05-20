@@ -2,6 +2,9 @@ import { DatabaseOperationError } from '../errors/database.js';
 import { prisma } from '../config.js';
 import { InvalidParameterError } from '../errors/services.js';
 import logger from '../logger/logger.js';
+import { getNextTrack } from './algorithm.js';
+import timerManager from './timerManagements.js';
+import { getRemainingDuration } from '../api/trackControl.js';
 
 export async function addTrackToWishlist(
     trackId: string,
@@ -11,6 +14,7 @@ export async function addTrackToWishlist(
     trackCoverURL: string,
     trackDuration: string,
     isAdmin: boolean,
+    sessionId: string,
     username?: string,
     email?: string
 ): Promise<void> {
@@ -27,8 +31,6 @@ export async function addTrackToWishlist(
     if (isNaN(trackDurationNr)) {
         throw new InvalidParameterError('Track duration must be a number');
     }
-
-    logger.debug('"SO FARR"');
 
     try {
         if (isAdmin) {
@@ -90,4 +92,42 @@ export async function addTrackToWishlist(
         logger.error(error, 'Failed to add track to wishlist');
         throw new DatabaseOperationError('Failed to add track to wishlist');
     }
+
+    // TODO: Try-catch
+    const nextTrack = await getNextTrack(sessionId);
+    logger.debug('Next track:' + nextTrack.id);
+
+    // TODO: Clean up & improve (propably entire function...)
+    const currentSessionDB = await prisma.currentSession.findFirst({
+        where: {
+            sessionId,
+        },
+    });
+    if (currentSessionDB === null || currentSessionDB === undefined) {
+        throw new DatabaseOperationError('Session not found');
+    }
+    const adminEntry = await prisma.user.findFirst({
+        where: {
+            id: currentSessionDB.adminId,
+        },
+    });
+    if (adminEntry === null || adminEntry === undefined) {
+        throw new DatabaseOperationError('Admin not found');
+    }
+    const oAuthToken = await prisma.oAuthToken.findFirst({
+        where: {
+            userId: adminEntry.id,
+        },
+    });
+    if (oAuthToken === null || oAuthToken === undefined) {
+        throw new DatabaseOperationError('OAuth token not found');
+    }
+    const token = oAuthToken.token;
+    if (token === null || token === undefined) {
+        throw new DatabaseOperationError('No OAuth token found for this user');
+    }
+
+    const duration = await getRemainingDuration(token);
+
+    await timerManager.setTimer(token, nextTrack.id, duration);
 }

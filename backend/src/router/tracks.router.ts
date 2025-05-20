@@ -49,8 +49,18 @@ router.get('/search', async (req, res) => {
 // TODO: Document this API in the wiki
 // TODO: Let it use the Interface
 router.post('/select', async (req, res) => {
-    const { token, username, email, trackId, trackTitle, trackArtist, trackAlbum, trackCoverURL, trackDuration } =
-        req.body;
+    const {
+        token,
+        username,
+        email,
+        sessionId,
+        trackId,
+        trackTitle,
+        trackArtist,
+        trackAlbum,
+        trackCoverURL,
+        trackDuration,
+    } = req.body;
     logger.info('A user is selecting a track', { token, username, email });
 
     if (token === undefined || token === null || token === '') {
@@ -86,6 +96,7 @@ router.post('/select', async (req, res) => {
             trackCoverURL,
             trackDuration,
             isAdmin,
+            sessionId,
             username,
             email
         );
