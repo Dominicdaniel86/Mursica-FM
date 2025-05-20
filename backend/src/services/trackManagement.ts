@@ -6,6 +6,29 @@ import { getNextTrack } from './algorithm.js';
 import timerManager from './timerManagements.js';
 import { getRemainingDuration } from '../api/trackControl.js';
 
+export async function addTrackToTimerManager(sessionId: string, oAuthToken: string): Promise<void> {
+    // TODO: Try-catch
+    // Get the next track (based on the last played track for each user)
+    const nextTrackResult = await getNextTrack(sessionId);
+    const nextTrackSummary = nextTrackResult.trackSummary;
+    let nextTrackInternalId = nextTrackResult.internalTrackId;
+    // const currentSession = nextTrackResult.currentSession; //! Not used anymore
+    // const admin = nextTrackResult.admin; //! Not used anymore
+
+    logger.debug('Next track:' + nextTrackSummary?.id);
+
+    // TODO: Clean up & improve (propably entire function...)
+    const duration = await getRemainingDuration(oAuthToken);
+
+    let spotifyTrackId = nextTrackSummary?.id;
+
+    // No next track
+    spotifyTrackId ??= '';
+    nextTrackInternalId ??= '';
+
+    await timerManager.setTimer(oAuthToken, sessionId, duration, spotifyTrackId, nextTrackInternalId);
+}
+
 export async function addTrackToWishlist(
     trackId: string,
     trackTitle: string,
@@ -15,16 +38,12 @@ export async function addTrackToWishlist(
     trackDuration: string,
     isAdmin: boolean,
     sessionId: string,
+    oAuthToken: string,
     username?: string,
     email?: string
 ): Promise<void> {
-    if (!trackId) {
+    if (trackId === null || trackId === undefined) {
         throw new InvalidParameterError('Track ID is required');
-    }
-    if (isAdmin && (username === undefined || username === null) && (email === undefined || email === null)) {
-        throw new InvalidParameterError('Username or email is required for admin');
-    } else if (!isAdmin && (username === undefined || username === null)) {
-        throw new InvalidParameterError('Username is required for guest');
     }
 
     const trackDurationNr = parseInt(trackDuration, 10);
@@ -94,40 +113,42 @@ export async function addTrackToWishlist(
     }
 
     // TODO: Try-catch
-    const nextTrack = await getNextTrack(sessionId);
-    logger.debug('Next track:' + nextTrack.id);
+    await addTrackToTimerManager(sessionId, oAuthToken);
+}
 
-    // TODO: Clean up & improve (propably entire function...)
-    const currentSessionDB = await prisma.currentSession.findFirst({
-        where: {
-            sessionId,
-        },
-    });
-    if (currentSessionDB === null || currentSessionDB === undefined) {
-        throw new DatabaseOperationError('Session not found');
-    }
-    const adminEntry = await prisma.user.findFirst({
-        where: {
-            id: currentSessionDB.adminId,
-        },
-    });
-    if (adminEntry === null || adminEntry === undefined) {
-        throw new DatabaseOperationError('Admin not found');
-    }
-    const oAuthToken = await prisma.oAuthToken.findFirst({
-        where: {
-            userId: adminEntry.id,
-        },
-    });
-    if (oAuthToken === null || oAuthToken === undefined) {
-        throw new DatabaseOperationError('OAuth token not found');
-    }
-    const token = oAuthToken.token;
-    if (token === null || token === undefined) {
-        throw new DatabaseOperationError('No OAuth token found for this user');
+export async function removePlayTrack(trackId: string): Promise<void> {
+    if (trackId === null || trackId === undefined) {
+        throw new InvalidParameterError('Track ID is required');
     }
 
-    const duration = await getRemainingDuration(token);
-
-    await timerManager.setTimer(token, nextTrack.id, duration);
+    try {
+        const deletedTrack = await prisma.track.delete({
+            where: {
+                id: trackId,
+            },
+        });
+        if (deletedTrack.userId !== null && deletedTrack.userId !== undefined) {
+            await prisma.user.update({
+                where: {
+                    id: deletedTrack.userId,
+                },
+                data: {
+                    latTrackPlayed: new Date(),
+                },
+            });
+        } else if (deletedTrack.guestId !== null && deletedTrack.guestId !== undefined) {
+            await prisma.guest.update({
+                where: {
+                    id: deletedTrack.guestId,
+                },
+                data: {
+                    latTrackPlayed: new Date(),
+                },
+            });
+        }
+        // Update the timer for this user
+    } catch (error) {
+        logger.error(error, 'Failed to remove track from wishlist');
+        throw new DatabaseOperationError('Failed to remove track from wishlist');
+    }
 }
