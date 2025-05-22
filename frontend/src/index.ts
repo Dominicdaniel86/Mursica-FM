@@ -1,8 +1,13 @@
+/* eslint-disable no-alert */
+import type { GuestJoinResponse } from './interfaces/login';
+import { setCookie } from './shared/cookie-management.js';
+import { validateAdmin, validateGuest } from './shared/validations.js';
+
 export {};
 
 declare global {
     interface Window {
-        joinSession: () => void;
+        joinSession: () => Promise<void>;
     }
 }
 
@@ -91,17 +96,57 @@ function sessionIDInputValidation(sessionIDInputElement: HTMLInputElement) {
  * Joins a session with the given session ID.
  * The session ID is validated and if valid, the user is redirected to the add-song page.
  */
-function joinSession() {
+async function joinSession() {
     const sessionIDInputElement = document.getElementById('session-id-input') as HTMLInputElement;
-    const sessionID = sessionIDInputElement.value.replace(/[^a-zA-Z0-9]/g, '');
+    const guestNameInputElement = document.getElementById('username-input') as HTMLInputElement;
+    // const sessionId = sessionIDInputElement.value.replace(/[^a-zA-Z0-9]/g, '');
+    const sessionId = sessionIDInputElement.value;
+    const guestName = guestNameInputElement.value;
 
-    if (sessionID.length !== 6) {
-        // TODO: Implement better solution than alerting
-        // eslint-disable-next-line no-alert
-        alert('Session-ID invalid!');
-    } else {
-        window.location.href = '/static/html/add-song.html';
+    const body = {
+        sessionId,
+        username: guestName,
+    };
+
+    try {
+        // Check if the session ID is valid
+        if (sessionId.length !== 8) {
+            // eslint-disable-next-line no-alert
+            alert('Session-ID invalid!');
+            return;
+        }
+        const result = await axios.post<GuestJoinResponse>('/api/guest/join', body);
+        if (result.status !== 200) {
+            // eslint-disable-next-line no-alert
+            alert(result.data.message);
+            return;
+        }
+        console.log('Session joined successfully:', result.data);
+        // TODO: Use Enums for the cookies
+        setCookie('mursica-fm-guest-token', result.data.guestToken, 7);
+        setCookie('mursica-fm-guest-username', result.data.username, 7);
+        setCookie('mursica-fm-guest-session-id', result.data.sessionId, 7);
+    } catch (error: any) {
+        if (error.response) {
+            const status = error.response?.status;
+            const message = error.response?.data?.error;
+
+            if (status === 400) {
+                alert('The input is invalid. Please check the session ID and try again.');
+            } else if (status === 404) {
+                alert('Invalid session ID');
+            } else if (status === 409) {
+                alert('Username already taken');
+            }
+            console.error('Error joining session:', status, message);
+            return;
+        }
+        alert('Something went wrong. Please try again later.');
+        return;
     }
+
+    // TODO: Save cookies and stuff
+    window.location.href = '/static/html/add-song.html';
 }
 
 window.addEventListener('load', () => {
@@ -113,6 +158,10 @@ window.addEventListener('load', () => {
     sessionIDInputElement.addEventListener('input', () => {
         sessionIDInputValidation(sessionIDInputElement);
     });
+
+    // Routing validation
+    validateGuest('/static/html/add-song.html');
+    validateAdmin('/static/html/admin.html');
 });
 
 window.joinSession = joinSession;

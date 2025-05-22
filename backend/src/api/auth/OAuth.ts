@@ -211,6 +211,7 @@ export async function validateState(state: string): Promise<void> {
  * @throws {NotFoundError} If the token is not found in the database.
  * @throws {DatabaseOperationError} If there is an error updating the token in the database.
  */
+// TODO: Important! Validate that the token is really belonging to the user
 export async function refreshAuthToken(token: string, username?: string, email?: string): Promise<string> {
     if (
         token === null ||

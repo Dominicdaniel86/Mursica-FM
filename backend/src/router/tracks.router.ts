@@ -1,15 +1,24 @@
 import express from 'express';
 import logger from '../logger/logger.js';
-import { searchSong, validateClientToken } from '../api/index.js';
-import { generalPurposeGuestValidation, generalPurposeValidation } from '../utility/authsUtils.js';
+import { refreshAuthToken, searchSong, validateClientToken } from '../api/index.js';
+import {
+    generalPurposeGETValidation,
+    generalPurposeGuestGETValidation,
+    generalPurposeGuestValidation,
+    generalPurposeValidation,
+} from '../utility/authsUtils.js';
 import { addTrackToWishlist } from '../services/trackManagement.js';
 import { InvalidParameterError } from '../errors/services.js';
+import { getAdminUsernameByGuestToken } from '../auth/auth.middleware.js';
 
 const router = express.Router();
 
 // TODO: Document this API in the wiki
 router.get('/search', async (req, res) => {
-    const { token, username, email } = req.body;
+    const token = (req.headers['x-token'] ?? req.headers['authorization']) as string;
+    const email = req.headers['x-email'] as string;
+    const username = req.headers['x-username'] as string;
+
     const trackTitle = req.query.trackTitle as string;
     logger.info('A user is searching for tracks', { token, username, email });
 
@@ -17,10 +26,10 @@ router.get('/search', async (req, res) => {
     try {
         if (token.length === 250) {
             // token is an admin token
-            await generalPurposeValidation(req, res);
+            await generalPurposeGETValidation(req, res);
         } else {
             // token is a guest token (or invalid)
-            await generalPurposeGuestValidation(req, res);
+            await generalPurposeGuestGETValidation(req, res);
         }
     } catch {
         // Error handled in generalPurposeValidation functions
@@ -62,6 +71,7 @@ router.post('/select', async (req, res) => {
         trackDuration,
     } = req.body;
     logger.info('A user is selecting a track', { token, username, email });
+    // TODO: Validate the track information (caching?)
 
     if (token === undefined || token === null || token === '') {
         logger.error('Token is required');
@@ -87,6 +97,20 @@ router.post('/select', async (req, res) => {
         return;
     }
 
+    let adminUsername = username;
+
+    // Get the current OAuth token for that guest
+    if (token.length !== 250) {
+        adminUsername = await getAdminUsernameByGuestToken(token);
+    }
+
+    const oAuthToken = await refreshAuthToken(token, adminUsername, email);
+    if (oAuthToken === undefined || oAuthToken === null) {
+        logger.error('No OAuth token found');
+        res.status(401).json({ error: 'No OAuth token found' });
+        return;
+    }
+
     try {
         await addTrackToWishlist(
             trackId,
@@ -97,6 +121,7 @@ router.post('/select', async (req, res) => {
             trackDuration,
             isAdmin,
             sessionId,
+            oAuthToken,
             username,
             email
         );

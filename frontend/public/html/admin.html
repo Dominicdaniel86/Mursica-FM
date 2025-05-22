@@ -22,10 +22,7 @@
     <header>
         <nav>
             <div id="logout">
-                <a href="/static/html/index.html"><img src="/static/icons/exit.png" height="60px"></a>
-            </div>
-            <div id="admin">
-                <img src="/static/icons/admin.png" onclick="switchToAdmin()" height="60px">
+                <a href="/static/html/add-song.html"><img src="/static/icons/exit.png" height="60px"></a>
             </div>
         </nav>
     </header>
@@ -33,40 +30,59 @@
     <br>
 
     <main>
-        <section id="session-id-div">
-            <p>
-                Current Session ID:<br>
-                <span id="id">#144-FAO</span>
+        <section id="account-status">
+            <p>Your account name:<br>
+                <span id="account-name">ACCOUNT NAME</span>
             </p>
-        </div>
+        </section>
 
-        <section id="spotify-account-status">
-            <div id="spotify-account-logged-out">
+        <section id="spotify-account-management">
+
+            <!-- Option 1: Spotify account disconnected ---->
+            <section id="spotify-account-disconnected">
                 <p>
-                    Not connected with a<br>Spotify Account
+                    You are not connected with your Spotify account.
+                    Please connect to your Spotify account to use the admin panel.
                 </p>
                 <button onclick="spotifyLogin()">Connect</button>
-            </div>
+                <button onclick="logout()" id="logout-button">Logout</button>
+            </section>
 
-            <div id="spotify-account-logged-in">
+            <!-- Option 2: Spotify account connected ---->
+            <section id="spotify-account-connected">
                 <p>
-                    Connected with account<br>
-                    <span id="account-name">"ACCOUNT NAME"</span>
+                    You are connected with your Spotify account.
                 </p>
-                <button onclick="spotifyLogout()">Disconnect</button>
-            </div>
+                <button onclick="startSession()">Start a Music Session</button>  
+                <button onclick="spotifyLogout()" id="logout-button">Disconnect</button>
+                <button onclick="logout()" id="logout-button">Logout</button>
+            </section>
+
+            <!-- Option 3: Spotify session open ---->
+            <section id="spotify-session-open">
+                <p>
+                    Current Session ID:<br>
+                    <span id="session-id">#XXX-XXX</span>
+                    <button onclick="stopSession()" id="logout-button">Stop Session</button>
+                    <button onclick="logout()" id="logout-button">Logout</button>
+                </p>
+            </section>
+
         </section>
 
-        <section id="volume-control">
-            <input type="range" id="volume-slider" min="0" max="100" value="100" onchange="changeVolume()">
+        <footer>
+            <section id="volume-control">
+                <input type="range" id="volume-slider" min="0" max="100" value="100" onchange="changeVolume()">
+            </section>
 
-            <div id="song-control">
-                <img src="/static/icons/volume.svg" id="control-volume" onclick="switchVolumeVisibility()">
-                <img src="/static/icons/pause.svg" id="control-pause" onclick="stopSong()">
-                <img src="/static/icons/play.svg" id="control-play" onclick="playSong()">
-                <img src="/static/icons/skip.svg" id="control-skip" onclick="skipSong()">
-            </div>
-        </section>
+            <section id="song-control-icons">
+                <img src="/static/icons/volume.svg" id="control-volume" onclick="switchVolumeVisibility()" style="display: none;">
+                <img src="/static/icons/pause.svg" id="control-pause" onclick="stopSong()" style="display: none;">
+                <img src="/static/icons/play.svg" id="control-play" onclick="playSong()" style="display: none;">
+                <img src="/static/icons/skip.svg" id="control-skip" onclick="skipSong()" style="display: none;">
+            </section>
+        </footer>
+
     </main>
 
     <!-- JavaScript files -->

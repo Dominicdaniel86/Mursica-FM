@@ -38,14 +38,16 @@ const router = express.Router();
 // });
 
 router.get('/login', async (req, res) => {
-    const { token, user, email } = req.cookies;
+    const token = req.cookies['mursica-fm-admin-token'];
+    const username = req.cookies['mursica-fm-admin-username'];
+    const email = req.cookies['mursica-fm-admin-email'];
 
     try {
         logger.info('A user is trying to connect their Spotify account.');
-        await validateJWTToken(token, user, email);
+        await validateJWTToken(token, username, email);
 
         const url = 'https://accounts.spotify.com/authorize?';
-        const spotifyQueryString = await generateOAuthQuerystring(user, email);
+        const spotifyQueryString = await generateOAuthQuerystring(username, email);
         res.redirect(url + spotifyQueryString);
         logger.info('Redirected user to the Spotify login page.');
     } catch (error) {
@@ -89,7 +91,11 @@ router.get('/callback', async (req, res) => {
 
     try {
         await oAuthAuthorization(code, state);
-        res.redirect('http://localhost/static/html/admin.html');
+        if (process.env.NODE_ENV !== 'production') {
+            res.redirect('http://localhost/static/html/admin.html');
+        } else {
+            res.redirect('https://mursica.fm/static/html/admin.html');
+        }
         logger.info('Redirected user back to admin.html');
     } catch (error) {
         logger.error(error, 'OAuth authorization failed during callback');

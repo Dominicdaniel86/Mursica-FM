@@ -1,6 +1,7 @@
 /* eslint-disable no-alert */
 import type { LoginResponse } from './interfaces/login';
 import { setCookie } from './shared/cookie-management.js';
+import { validateAdmin, validateGuest } from './shared/validations.js';
 
 declare global {
     interface Window {
@@ -20,32 +21,45 @@ async function login(): Promise<void> {
         alert('Please fill out all fields');
         return;
     }
-    // } else {
-    //     // window.location.href = '/static/html/add-song.html';
-    // }
+
+    // TODO: Implement feature to check 100% if input is email or username
+    const isEmail = usernameInput.includes('@');
 
     try {
         const url = '/api/auth/login';
-        const response = await axios.post<LoginResponse>(url, {
-            userName: usernameInput,
-            password: passwordInput,
-        });
+        let body = {};
+        if (isEmail) {
+            body = { email: usernameInput, password: passwordInput };
+        } else {
+            body = { username: usernameInput, password: passwordInput };
+        }
+        const response = await axios.post<LoginResponse>(url, body);
+        if (response.status !== 200) {
+            alert('Login failed: ' + response.data.message);
+            return;
+        }
         const token = response.data.token;
         const user = response.data.user.name;
         const email = response.data.user.email;
-        setCookie('token', token, 7);
-        setCookie('user', user, 7); // TODO: Invalidate token after 7 days
-        setCookie('email', email, 7);
-        window.location.href = '/static/html/add-song.html';
+        setCookie('mursica-fm-admin-token', token, 7); // TODO: Invalidate the token in the backend after 7 days
+        if (isEmail) {
+            setCookie('mursica-fm-admin-email', usernameInput, 7);
+        } else {
+            setCookie('mursica-fm-admin-username', usernameInput, 7);
+        }
+        window.location.href = '/static/html/admin.html';
     } catch (error: any) {
         if (error.response) {
             const status = error.response?.status;
             const message = error.response?.data?.error;
 
-            if (status === 400 && message === 'Email not verified') {
+            if (status === 400) {
+                alert('Invalid input: ' + message);
+            }
+            if (status === 403 && message === 'Email not verified') {
                 if (confirm('Your email is not verified. Would you like to resend the verification email?')) {
                     try {
-                        await axios.post('/api/auth/resend-verification', { userName: usernameInput });
+                        await axios.post('/api/auth/resend-verification', { username: usernameInput }); // TODO: Allow email as well & let user choose different email
                         alert('Verification email resent. Please check your inbox.');
                     } catch (resendError: any) {
                         alert(
@@ -54,12 +68,11 @@ async function login(): Promise<void> {
                         );
                     }
                 }
-            } else if (status === 400) {
-                alert('Invalid input: ' + message);
-            } else if (status === 500) {
-                alert('Something went wrong: ' + message);
+            } else if (status === 403) {
+                alert('Invalid username or password');
             } else {
-                alert('An unexpected error occurred: ' + message);
+                console.error('Login error:', error);
+                alert('Login failed');
             }
         }
     }
@@ -71,6 +84,10 @@ window.addEventListener('load', () => {
     usernameInputElement.value = '';
 
     // TODO: Enter key should also trigger login
+
+    // Routing validation
+    validateGuest('/static/html/add-song.html');
+    validateAdmin('/static/html/admin.html');
 });
 
 window.login = login;

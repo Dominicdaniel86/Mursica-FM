@@ -9,7 +9,7 @@ import {
 } from '../api/index.js';
 import { NotFoundError, ValueAlreadyExistsError } from '../errors/database.js';
 import logger from '../logger/logger.js';
-import { generalPurposeValidation } from '../utility/authsUtils.js';
+import { generalPurposeGETValidation, generalPurposeValidation } from '../utility/authsUtils.js';
 import { createNewSession, stopCurrentSession } from '../services/sessionManagement.js';
 import { InvalidParameterError } from '../errors/services.js';
 
@@ -161,13 +161,18 @@ router.post('/control/skip', async (req, res) => {
 router.get('/control/volume', async (req, res) => {
     logger.info('A user is trying to get the current volume');
     try {
-        await generalPurposeValidation(req, res);
+        await generalPurposeGETValidation(req, res);
     } catch {
         // error handled in generalPurposeValidation
         return;
     }
 
-    const { token, username, email } = req.body;
+    const { token, username, email } = req.headers;
+    if (typeof token !== 'string' || typeof username !== 'string' || typeof email !== 'string') {
+        logger.warn('Invalid parameters', { token, username, email });
+        res.status(400).json({ error: 'Invalid parameters' });
+        return;
+    }
 
     try {
         const oAuthToken = await refreshAuthToken(token, username, email);

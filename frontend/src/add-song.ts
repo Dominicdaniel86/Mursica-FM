@@ -1,35 +1,54 @@
+import type { DefaultResponse } from './interfaces/login';
 import type { TrackResp } from './interfaces/search-song';
-import { listCookies } from './shared/cookie-management.js';
+import { deleteCookie, getCookie } from './shared/cookie-management.js';
 
 declare global {
     interface Window {
-        sendResponse: (input: string) => Promise<void>;
+        sendResponse: (input: HTMLDivElement) => Promise<void>;
         searchSong: (input: string) => Promise<void>;
         switchToAdmin: () => void;
+        leaveSession: () => Promise<void>;
     }
 }
 
 //* Global variables
 const searchSongElement = document.getElementById('search-song') as HTMLInputElement;
 let timeoutID: number;
+let isAdmin = false;
 
 /**
  * Send the ID of the favored song.
  * @param {string} ID The song ID
  */
 // TODO: Implement and test this function
-async function sendResponse(ID: string): Promise<void> {
-    if (ID === undefined || ID === null) {
-        console.error('ID is undefined or null');
+async function sendResponse(clickedDiv: HTMLDivElement): Promise<void> {
+    if (clickedDiv === null || clickedDiv === undefined) {
+        console.error('Clicked div is null or undefined');
         return;
     }
 
-    const url = `/api/tracks/select`;
-    const data = new URLSearchParams({
-        trackID: ID,
-    });
+    const id = clickedDiv.getAttribute('track-id');
+    const title = clickedDiv.getAttribute('track-title');
+    const artist = clickedDiv.getAttribute('track-artist');
+    const album = clickedDiv.getAttribute('track-album');
+    const coverUrl = clickedDiv.getAttribute('track-cover-url');
+    const duration = clickedDiv.getAttribute('track-duration');
 
-    await axios.post<TrackResp>(url, data);
+    const url = `/api/tracks/select`;
+    const body = {
+        token: isAdmin ? getCookie('mursica-fm-admin-token') : getCookie('mursica-fm-guest-token'),
+        username: isAdmin ? getCookie('mursica-fm-admin-username') : getCookie('mursica-fm-guest-username'),
+        email: isAdmin ? getCookie('mursica-fm-admin-email') : '',
+        sessionId: isAdmin ? getCookie('mursica-fm-admin-session-id') : getCookie('mursica-fm-guest-session-id'),
+        trackId: id,
+        trackTitle: title,
+        trackArtist: artist,
+        trackAlbum: album,
+        trackCoverURL: coverUrl,
+        trackDuration: duration,
+    };
+
+    await axios.post<TrackResp>(url, body);
 
     // Clear track input and result
     searchSongElement.value = '';
@@ -37,6 +56,9 @@ async function sendResponse(ID: string): Promise<void> {
     while (targetDiv.firstChild) {
         targetDiv.removeChild(targetDiv.lastChild as ChildNode);
     }
+
+    // eslint-disable-next-line no-alert
+    alert('Song added to the queue!');
 }
 
 /**
@@ -65,31 +87,87 @@ async function searchSong(input: string) {
 
     // Request to backend
     const url = `/api/tracks/search/?trackTitle=${input}`;
-    const response = await axios.get<TrackResp>(url);
-
-    // Create HTML elements for all the retrieved tracks
-    response.data.tracks.forEach((element) => {
-        const newDiv = document.createElement('div');
-        newDiv.className = 'song-result';
-        newDiv.setAttribute('track-id', element.id);
-        newDiv.onclick = () => async () => {
-            await sendResponse(newDiv.getAttribute('track-id') as string);
+    let config = {};
+    // TODO: Helper function for that
+    if (isAdmin) {
+        config = {
+            headers: {
+                'x-token': getCookie('mursica-fm-admin-token'),
+                'x-email': getCookie('mursica-fm-admin-email'),
+                'x-username': getCookie('mursica-fm-admin-username'),
+            },
         };
+    } else {
+        config = {
+            headers: {
+                'x-token': getCookie('mursica-fm-guest-token'),
+                'x-username': getCookie('mursica-fm-guest-username'),
+                'x-session-id': getCookie('mursica-fm-guest-session-id'),
+            },
+        };
+    }
 
-        const albumElement = document.createElement('img');
-        const titleElement = document.createElement('p');
-        const artistElement = document.createElement('p');
+    let response: TrackResp;
+    try {
+        response = (await axios.get<TrackResp>(url, config)).data;
+        // Create HTML elements for all the retrieved tracks
+        response.tracks.forEach((element) => {
+            const newDiv = document.createElement('div');
+            newDiv.className = 'song-result';
+            newDiv.setAttribute('track-id', element.id);
+            newDiv.setAttribute('track-title', element.title);
+            newDiv.setAttribute('track-artist', element.artist);
+            newDiv.setAttribute('track-album', element.album);
+            newDiv.setAttribute('track-cover-url', element.albumImage);
+            newDiv.setAttribute('track-duration', element.duration.toString());
+            newDiv.onclick = async () => {
+                await sendResponse(newDiv);
+            };
 
-        titleElement.textContent = element.title;
-        artistElement.textContent = `- ${element.artist}`;
-        albumElement.src = element.albumImage;
+            const albumElement = document.createElement('img');
+            const titleElement = document.createElement('p');
+            const artistElement = document.createElement('p');
 
-        newDiv.appendChild(albumElement);
-        newDiv.appendChild(titleElement);
-        newDiv.appendChild(artistElement);
+            titleElement.textContent = element.title;
+            artistElement.textContent = `- ${element.artist}`;
+            albumElement.src = element.albumImage;
 
-        targetDiv?.appendChild(newDiv);
-    });
+            newDiv.appendChild(albumElement);
+            newDiv.appendChild(titleElement);
+            newDiv.appendChild(artistElement);
+
+            targetDiv?.appendChild(newDiv);
+        });
+    } catch (error) {
+        console.error('Error searching for song:', error);
+    }
+}
+
+async function leaveSession() {
+    const guestToken = getCookie('mursica-fm-guest-token');
+    const username = getCookie('mursica-fm-guest-username');
+    const sessionId = getCookie('mursica-fm-guest-session-id');
+    const body = {
+        guestToken,
+        username,
+        sessionId,
+    };
+    try {
+        const result = await axios.post<DefaultResponse>('/api/guest/leave', body);
+        if (result.status !== 200) {
+            console.error(result.data.message);
+            return;
+        }
+    } catch (error: any) {
+        console.error('Error leaving session:', error);
+    } finally {
+        // Clear cookies
+        deleteCookie('mursica-fm-guest-token');
+        deleteCookie('mursica-fm-guest-username');
+        deleteCookie('mursica-fm-guest-session-id');
+        // Redirect to the index page
+        window.location.href = '/static/html/index.html';
+    }
 }
 
 // Routing to admin page
@@ -112,10 +190,26 @@ window.addEventListener('load', () => {
         }, 1000);
     });
 
-    // Testing: Print out current cookies
-    console.log(listCookies());
+    // TODO: Validate session and/ or admin login
+
+    // If guest: show logout icon
+    const guestToken = getCookie('mursica-fm-guest-token');
+    const adminToken = getCookie('mursica-fm-admin-token');
+    if (guestToken) {
+        const leaveIcon = document.getElementById('logout') as HTMLImageElement;
+        leaveIcon.style.display = 'block';
+    } else if (adminToken) {
+        // If admin: show admin icon
+        const adminIcon = document.getElementById('admin') as HTMLImageElement;
+        adminIcon.style.display = 'block';
+        isAdmin = true;
+    } else {
+        // TODO: Improve this and use the helper functions
+        window.location.href = '/static/html/index.html';
+    }
 });
 
 window.sendResponse = sendResponse;
 window.searchSong = searchSong;
 window.switchToAdmin = switchToAdmin;
+window.leaveSession = leaveSession;

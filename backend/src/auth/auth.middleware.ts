@@ -232,3 +232,45 @@ export async function validateGuestToken(guestname: string, sessionId: string, t
 
     return sessionDBEntry.id;
 }
+
+// TODO: Optimize this...
+export async function getAdminUsernameByGuestToken(guestToken: string): Promise<string | null> {
+    if (guestToken === null || guestToken === undefined || guestToken === '') {
+        throw new InvalidParameterError('Missing guest token');
+    }
+
+    try {
+        const guest = await prisma.guest.findUnique({
+            where: {
+                guestToken,
+            },
+        });
+        if (guest === undefined || guest === null) {
+            return null;
+        }
+
+        const sessionDBEntry = await prisma.currentSession.findUnique({
+            where: {
+                id: guest.sessionId,
+            },
+        });
+
+        if (sessionDBEntry === null || sessionDBEntry === undefined) {
+            return null;
+        }
+
+        const admin = await prisma.user.findUnique({
+            where: {
+                id: sessionDBEntry.adminId,
+            },
+        });
+
+        if (admin === null || admin === undefined) {
+            return null;
+        }
+        return admin.name;
+    } catch (error) {
+        logger.error(error, 'Error finding session or admin');
+        throw new DatabaseOperationError('Error finding session or admin');
+    }
+}
