@@ -1,7 +1,12 @@
 import express from 'express';
 import logger from '../logger/logger.js';
 import { refreshAuthToken, searchSong, validateClientToken } from '../api/index.js';
-import { generalPurposeGuestValidation, generalPurposeValidation } from '../utility/authsUtils.js';
+import {
+    generalPurposeGETValidation,
+    generalPurposeGuestGETValidation,
+    generalPurposeGuestValidation,
+    generalPurposeValidation,
+} from '../utility/authsUtils.js';
 import { addTrackToWishlist } from '../services/trackManagement.js';
 import { InvalidParameterError } from '../errors/services.js';
 import { getAdminUsernameByGuestToken } from '../auth/auth.middleware.js';
@@ -10,7 +15,10 @@ const router = express.Router();
 
 // TODO: Document this API in the wiki
 router.get('/search', async (req, res) => {
-    const { token, username, email } = req.body;
+    const token = (req.headers['x-token'] ?? req.headers['authorization']) as string;
+    const email = req.headers['x-email'] as string;
+    const username = req.headers['x-username'] as string;
+
     const trackTitle = req.query.trackTitle as string;
     logger.info('A user is searching for tracks', { token, username, email });
 
@@ -18,10 +26,10 @@ router.get('/search', async (req, res) => {
     try {
         if (token.length === 250) {
             // token is an admin token
-            await generalPurposeValidation(req, res);
+            await generalPurposeGETValidation(req, res);
         } else {
             // token is a guest token (or invalid)
-            await generalPurposeGuestValidation(req, res);
+            await generalPurposeGuestGETValidation(req, res);
         }
     } catch {
         // Error handled in generalPurposeValidation functions

@@ -16,7 +16,7 @@ class TimerManager {
     ): Promise<void> {
         // TODO: Make delay dynamic
         delay -= 1000; // 1 second delay
-        delay = 1000 * 10; // 10 seconds delay //! TEMPORARY - TESTING PURPOSES ONLY
+        // delay = 1000 * 10; // 10 seconds delay //! TEMPORARY - TESTING PURPOSES ONLY
         this.clearTimer(oAuthToken); // Clear any existing timer for the same ID
         if (
             spotifyTrackId === null ||
