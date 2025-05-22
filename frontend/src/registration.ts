@@ -1,3 +1,5 @@
+import { validateAdmin, validateGuest } from './shared/validations.js';
+
 /* eslint-disable no-alert */
 export {};
 
@@ -24,13 +26,18 @@ async function registration() {
 
     try {
         const url = '/api/auth/register';
-        await axios.post(url, {
+        const body = {
+            username: usernameInput,
             email: emailInput,
-            userName: usernameInput,
             password: passwordInput,
-        });
+        };
+        const response = await axios.post(url, body);
+        if (response.status !== 200) {
+            alert('Registration failed! Please try again later.');
+            return;
+        }
+        // TODO: Display loading spinner
         alert('Registration successful! Please verify your email address.');
-        // window.location.href = '/static/html/add-song.html';
     } catch (error: any) {
         if (error.response) {
             const status = error.response?.status;
@@ -38,10 +45,10 @@ async function registration() {
 
             if (status === 400) {
                 alert('Invalid input: ' + message);
-            } else if (status === 500) {
-                alert('Something went wrong: ' + message);
+            } else if (status === 409) {
+                alert('Username or email already taken: ' + message);
             } else {
-                alert('An unexpected error occurred: ' + message);
+                alert('Something went wrong. Please try again later');
             }
         }
     }
@@ -55,6 +62,10 @@ window.addEventListener('load', () => {
     usernameInputElement.value = '';
 
     // TODO: Enter key should also trigger the registration
+
+    // Routing validation
+    validateGuest('/static/html/add-song.html');
+    validateAdmin('/static/html/admin.html');
 });
 
 window.registration = registration;

@@ -21,11 +21,11 @@
 <body>
     <header>
         <nav>
-            <div id="logout">
-                <a href="/static/html/index.html"><img src="/static/icons/exit.png" height="60px"></a>
+            <div id="logout" style="display:none">
+                <a href="#"><img src="/static/icons/exit.png" height="60px" onclick="leaveSession()"></a>
             </div>
             <div id="admin">
-                <img src="/static/icons/admin.png" onclick="switchToAdmin()" height="60px">
+                <img src="/static/icons/admin.png" style="display:none" onclick="switchToAdmin()" height="60px">
             </div>
         </nav>
     </header>
@@ -46,7 +46,7 @@
             <div id="album-cover">
                 <!-- Album cover image injected here -->
             </div>
-            <p>Connect your Spotify account to play a song!</p>
+            <!-- <p>Connect your Spotify account to play a song!</p> -->
         </section>
     </main>
 

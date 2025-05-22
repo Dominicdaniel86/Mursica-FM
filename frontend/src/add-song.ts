@@ -1,11 +1,13 @@
+import type { DefaultResponse } from './interfaces/login';
 import type { TrackResp } from './interfaces/search-song';
-import { listCookies } from './shared/cookie-management.js';
+import { deleteCookie, getCookie } from './shared/cookie-management.js';
 
 declare global {
     interface Window {
         sendResponse: (input: string) => Promise<void>;
         searchSong: (input: string) => Promise<void>;
         switchToAdmin: () => void;
+        leaveSession: () => Promise<void>;
     }
 }
 
@@ -45,6 +47,7 @@ async function sendResponse(ID: string): Promise<void> {
  *
  * @param {string} input The song title
  */
+// TODO: Update this function to use the new backend API
 async function searchSong(input: string) {
     const targetDiv: HTMLDivElement = document.getElementById('song-results') as HTMLDivElement;
 
@@ -92,6 +95,33 @@ async function searchSong(input: string) {
     });
 }
 
+async function leaveSession() {
+    const guestToken = getCookie('mursica-fm-guest-token');
+    const username = getCookie('mursica-fm-guest-username');
+    const sessionId = getCookie('mursica-fm-guest-session-id');
+    const body = {
+        guestToken,
+        username,
+        sessionId,
+    };
+    try {
+        const result = await axios.post<DefaultResponse>('/api/guest/leave', body);
+        if (result.status !== 200) {
+            console.error(result.data.message);
+            return;
+        }
+    } catch (error: any) {
+        console.error('Error leaving session:', error);
+    } finally {
+        // Clear cookies
+        deleteCookie('mursica-fm-guest-token');
+        deleteCookie('mursica-fm-guest-username');
+        deleteCookie('mursica-fm-guest-session-id');
+        // Redirect to the index page
+        window.location.href = '/static/html/index.html';
+    }
+}
+
 // Routing to admin page
 // TODO: Implement authorization step
 function switchToAdmin(): void {
@@ -112,10 +142,17 @@ window.addEventListener('load', () => {
         }, 1000);
     });
 
-    // Testing: Print out current cookies
-    console.log(listCookies());
+    // TODO: If guest: validate session
+
+    // If guest: show logout icon
+    const guestToken = getCookie('mursica-fm-guest-token');
+    if (guestToken) {
+        const leaveIcon = document.getElementById('logout') as HTMLImageElement;
+        leaveIcon.style.display = 'block';
+    }
 });
 
 window.sendResponse = sendResponse;
 window.searchSong = searchSong;
 window.switchToAdmin = switchToAdmin;
+window.leaveSession = leaveSession;
