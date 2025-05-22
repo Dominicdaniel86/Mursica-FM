@@ -1,6 +1,6 @@
 {
   "name": "mursica-fm-frontend",
-  "version": "1.1.2-alpha.1",
+  "version": "1.0.0-beta.1",
   "description": "A compiler for a TypeScript-based frontend for a third-party Spotify session app.",
   "type": "module",
   "main": "dist/index.js",
@@ -27,6 +27,7 @@
   "author": "Dominic Daniel Kraemer",
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "axios": "^1.9.0",
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.2.6"
   },

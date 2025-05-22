@@ -5,6 +5,7 @@ import { DatabaseOperationError, NotFoundError } from '../../errors/index.js';
 /**
  * Removes the OAuth token from the database, leading to a clean database entry.
  */
+// TODO: Update the function to new user and token model
 export async function logout(): Promise<void> {
     try {
         const currentToken = await prisma.oAuthToken.findFirst();

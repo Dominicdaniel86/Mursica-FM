@@ -11,3 +11,10 @@ export class DatabaseOperationError extends Error {
         this.name = 'DatabaseOperationError';
     }
 }
+
+export class ValueAlreadyExistsError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'ValueAlreadyExistsError';
+    }
+}

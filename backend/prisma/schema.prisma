@@ -14,10 +14,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model CurrentSession {
+  id          String @id @default(uuid())
+  sessionId   String @unique
+  validUntil  DateTime
+  // relations
+  adminId      String   @unique
+  Admin        User     @relation(fields: [adminId], references: [id])
+  guests            Guest[]
+  // metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model ClientToken {
   id          String  @id @default(uuid())
   token       String  @unique
   validUntil  DateTime
+  // metadata
   createdAt   DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -27,23 +41,89 @@ model OAuthToken {
   token         String @unique
   validUntil    DateTime
   refreshToken  String @unique
+  // relations
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  // metadata
   createdAt     DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt     DateTime @updatedAt
 }
 
 model State {
-  id    String @id @default(uuid())
-  state String @unique
+  id        String @id @default(uuid())
+  state     String @unique
+  validUntil    DateTime
+  // relations
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  // metadata
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+model Jwt {
+  id          String @id @default(uuid())
+  token       String @unique
+  validUntil  DateTime
+  // relations
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  // metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model User {
+  id                String @id @default(uuid())
+  name              String @unique
+  email             String @unique
+  password          String // should be hashed
+  verificationCode  String? @unique
+  verified          Boolean @default(false)
+  latTrackPlayed    DateTime @default(now())
+  // relations
+  state            State?
+  oauthToken       OAuthToken?
+  jwt              Jwt?
+  currentSession   CurrentSession?
+  tracks           Track[]  // One-to-many relation to Track
+  // metadata
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+}
+
+// TODO: Enable guests with same names to exist in different sessions
+model Guest {
   id        String @id @default(uuid())
-  name      String
-  email     String @unique
-  password  String // should be hashed
+  name      String @unique
+  guestToken String @unique
+  latTrackPlayed    DateTime @default(now())
+  // relations
+  sessionId   String
+  session     CurrentSession @relation(fields: [sessionId], references: [id])
+  tracks      Track[]  // One-to-many relation to Track
+  // metadata
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
+}
+
+// TODO: Implement in the code, so that either user or guest is not null
+model Track {
+  id        String @id @default(uuid())
+  trackId   String
+  title     String
+  artist    String
+  album     String
+  coverUrl String
+  duration  Int
+  // relations
+  userId     String? // optional
+  user      User?   @relation(fields: [userId], references: [id])
+  guestId    String? // optional
+  guest     Guest?  @relation(fields: [guestId], references: [id])
+  // metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

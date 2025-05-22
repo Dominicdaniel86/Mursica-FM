@@ -16,7 +16,9 @@ export interface TrackSummary {
     id: string;
     title: string;
     artist: string;
+    album: string;
     albumImage: string;
+    duration: number;
 }
 
 //* Following interfaces are all sub-parts of the SpotifyTrackResponse interface

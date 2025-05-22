@@ -15,3 +15,14 @@ export function generateRandomString(length: number): string {
     }
     return text;
 }
+
+/**
+ * Generates a random session ID in the format #XXX-XXX, where X is a random alphanumeric character.
+ *
+ * @returns {string} A random session ID in the format #XXX-XXX, where X is a random alphanumeric character.
+ */
+export function generateRandomSessionId(): string {
+    const part1 = generateRandomString(3).toUpperCase();
+    const part2 = generateRandomString(3).toUpperCase();
+    return `#${part1}-${part2}`;
+}

@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-beta.1] - 2025-05-22
+
+## Changed
+
+- Updated the frontend to work with the new backend
+- Core features fixed to work quite stable: Official first beta version
+
+## [1.1.2-alpha.4] - 2025-05-20
+
+## Added
+
+- Very basic version of the algorithm
+
+## [1.1.2-alpha.3] - 2025-05-20
+
+## Added
+
+- New APIs for the Admin to open and close music sessions
+- New APIs for Guests to join or leave a music session
+
+## Changed
+
+- Updated the Admin control APIs to support the new authentication system
+
+## [1.1.2-alpha.2] - 2025-05-19
+
+## Added
+
+- Own authentication and user management systems.
+
+## Changed
+
+- Adjusted the Spotify authentication, to match the new own authentication system.
+- Implemented some features in the frontend. Some not, which might break some UI features.
+
 ## [1.1.2-alpha.1] - 2025-05-17
 
 ### Changed
