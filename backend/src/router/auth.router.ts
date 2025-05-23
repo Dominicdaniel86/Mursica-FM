@@ -53,13 +53,12 @@ router.post('/login', async (req, res) => {
     if (email !== undefined && email !== null) {
         email = email.toLowerCase();
     }
-    logger.info({ username, email, password, endpoint: '/login' }, 'A user is trying to log in');
+    logger.info({ username, email, endpoint: '/login' }, 'A user is trying to log in');
 
     try {
-        const token = await login(password, username, email);
-        const response = { token }; // TODO: Interface
+        const response = await login(password, username, email);
         logger.info({ username, email, endpoint: '/login' }, 'User logged in successfully');
-        res.status(200).json({ message: 'Login successful!', ...response });
+        res.status(200).json(response);
     } catch (error) {
         if (error instanceof InvalidParameterError) {
             logger.warn({ username, email, endpoint: '/login' }, error.message);
@@ -106,16 +105,17 @@ router.post('/logout', async (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-    const { username, password, email: rawEmail } = req.body as AuthenticationReq;
+    const { password, username: rawUsername, email: rawEmail } = req.body as AuthenticationReq;
+    const username = rawUsername ?? '';
     let email = rawEmail ?? '';
     if (email !== undefined && email !== null) {
         email = email.toLowerCase();
     }
-    logger.info({ username, email, password, endpoint: '/register' }, 'A user is trying to register');
+    logger.info({ username, email, endpoint: '/register' }, 'A user is trying to register');
 
     try {
         await register(username, email, password);
-        logger.info({ username, email, password, endpoint: '/register' }, 'User registered successfully');
+        logger.info({ username, email, endpoint: '/register' }, 'User registered successfully');
         const response: BaseRes = {
             message: 'Registration successful!',
             code: 200,
@@ -137,7 +137,8 @@ router.post('/register', async (req, res) => {
 
 // TODO: Implement functionality to override the email address
 router.post('/resend-verification', async (req, res) => {
-    const { username, password, email: rawEmail } = req.body as AuthenticationReq;
+    const { password, username: rawUsername, email: rawEmail } = req.body as AuthenticationReq;
+    const username = rawUsername ?? '';
     let email = rawEmail ?? '';
     if (email !== undefined && email !== null) {
         email = email.toLowerCase();
@@ -148,7 +149,7 @@ router.post('/resend-verification', async (req, res) => {
     );
 
     try {
-        await resendValidationToken(username);
+        await resendValidationToken(password, username, email);
         logger.info({ username, email, endpoint: '/resend-verification' }, 'Verification email resent successfully');
         const response: BaseRes = {
             message: 'Verification email resent successfully!',
@@ -157,13 +158,13 @@ router.post('/resend-verification', async (req, res) => {
         res.status(200).json(response);
     } catch (error) {
         if (error instanceof InvalidParameterError) {
-            logger.warn({ username, email, password }, error.message);
+            logger.warn({ username, email }, error.message);
             res.status(400).json({ error: error.message });
         } else if (error instanceof NotFoundError) {
-            logger.warn({ username, email, password }, error.message);
+            logger.warn({ username, email }, error.message);
             res.status(404).json({ error: error.message });
         } else if (error instanceof AlreadyVerifiedError) {
-            logger.warn({ username, email, password }, error.message);
+            logger.warn({ username, email }, error.message);
             res.status(409).json({ error: error.message });
         } else {
             logger.error({ username, email, endpoint: '/resend-verification' }, 'Failed to resend verification email');

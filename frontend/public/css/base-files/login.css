@@ -33,6 +33,14 @@ button {
     margin-top: 2em;
 }
 
+#popup-request-resend {
+    display: none;
+}
+
+#popup-resend-email {
+    display: none;
+}
+
 #footer {
     position: absolute;
     bottom: 0;

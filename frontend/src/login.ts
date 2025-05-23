@@ -1,12 +1,39 @@
 /* eslint-disable no-alert */
-import type { LoginResponse } from './interfaces/login';
-import { setCookie } from './shared/cookie-management.js';
+import type { BaseRes } from './interfaces/base';
+import type { AuthenticationReq } from './interfaces/req/auth';
+import type { AuthenticationRes } from './interfaces/res/auth';
+import { CookieList, setCookie } from './shared/cookie-management.js';
+import { closeLoading, closePopup, openLoading, openPopup } from './shared/popups.js';
 import { validateAdmin, validateGuest } from './shared/validations.js';
 
 declare global {
     interface Window {
         login: () => Promise<void>;
+        resendEmailInit: () => Promise<void>;
+        resendEmail: () => Promise<void>;
     }
+}
+
+// Global variables
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function closeAllPopups(): void {
+    const popupUpdateElement = document.getElementById('popup-update') as HTMLDivElement;
+    popupUpdateElement.style.display = 'none';
+    const resendEmailElement = document.getElementById('popup-request-resend') as HTMLDivElement;
+    resendEmailElement.style.display = 'none';
+    const emailInputSection = document.getElementById('popup-resend-email') as HTMLDivElement;
+    emailInputSection.style.display = 'none';
+    closePopup();
+}
+
+function emptyInput(): void {
+    const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
+    const passwordInputElement = document.getElementById('password-input') as HTMLInputElement;
+    const emailInputElement = document.getElementById('email-input') as HTMLInputElement;
+    usernameInputElement.value = '';
+    passwordInputElement.value = '';
+    emailInputElement.value = '';
 }
 
 async function login(): Promise<void> {
@@ -17,73 +44,114 @@ async function login(): Promise<void> {
     const passwordInput = passwordInputElement.value;
 
     if (usernameInput.length === 0 || passwordInput.length === 0) {
-        // TODO: Implement better solution than alerting
-        alert('Please fill out all fields');
+        openPopup('Login failed: Please fill in all fields.');
         return;
     }
 
-    // TODO: Implement feature to check 100% if input is email or username
-    const isEmail = usernameInput.includes('@');
+    // Check if the input is an email address
+    let isEmail = false;
+    if (emailRegex.test(usernameInput)) {
+        isEmail = true;
+    }
 
     try {
         const url = '/api/auth/login';
-        let body = {};
+        let body: AuthenticationReq;
         if (isEmail) {
             body = { email: usernameInput, password: passwordInput };
         } else {
             body = { username: usernameInput, password: passwordInput };
         }
-        const response = await axios.post<LoginResponse>(url, body);
+        const response = await axios.post<AuthenticationRes>(url, body);
         if (response.status !== 200) {
-            alert('Login failed: ' + response.data.message);
+            // ? Should normall never happen
+            openPopup('Login failed: ' + response.data.message);
             return;
         }
         const token = response.data.token;
-        const user = response.data.user.name;
-        const email = response.data.user.email;
-        setCookie('mursica-fm-admin-token', token, 7); // TODO: Invalidate the token in the backend after 7 days
-        if (isEmail) {
-            setCookie('mursica-fm-admin-email', usernameInput, 7);
-        } else {
-            setCookie('mursica-fm-admin-username', usernameInput, 7);
-        }
+        const user = response.data.user;
+        setCookie(CookieList.ADMIN_TOKEN, token, 7); // TODO: Invalidate the token in the backend after 7 days
+        setCookie(CookieList.ADMIN_EMAIL, user.email, 7);
+        setCookie(CookieList.ADMIN_USERNAME, user.username, 7);
+
         window.location.href = '/static/html/admin.html';
     } catch (error: any) {
         if (error.response) {
+            closeAllPopups();
             const status = error.response?.status;
             const message = error.response?.data?.error;
-
             if (status === 400) {
-                alert('Invalid input: ' + message);
-            }
-            if (status === 403 && message === 'Email not verified') {
-                if (confirm('Your email is not verified. Would you like to resend the verification email?')) {
-                    try {
-                        await axios.post('/api/auth/resend-verification', { username: usernameInput }); // TODO: Allow email as well & let user choose different email
-                        alert('Verification email resent. Please check your inbox.');
-                    } catch (resendError: any) {
-                        alert(
-                            'Failed to resend verification email: ' +
-                                (resendError.response?.data?.error ?? resendError.message)
-                        );
-                    }
+                openPopup('Invalid input: ' + message);
+            } else if (status === 403 && message === 'Email not verified') {
+                openPopup('Your email is not verified. Please check your inbox for a verification link.');
+                const resendEmailElement = document.getElementById('popup-request-resend');
+                if (resendEmailElement) {
+                    resendEmailElement.style.display = 'unset';
                 }
-            } else if (status === 403) {
-                alert('Invalid username or password');
+            } else if (status === 403 || status === 404) {
+                openPopup('Invalid username or password');
             } else {
                 console.error('Login error:', error);
-                alert('Login failed');
+                openPopup('Login failed due to an unknown error. Please try again later.');
             }
         }
     }
 }
 
-window.addEventListener('load', () => {
-    // Reset username
-    const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
-    usernameInputElement.value = '';
+async function resendEmailInit() {
+    closeAllPopups();
 
-    // TODO: Enter key should also trigger login
+    openPopup('Enter your email address to resend the verification email.');
+    const emailInputSection = document.getElementById('popup-resend-email');
+    if (emailInputSection) {
+        emailInputSection.style.display = 'unset';
+    }
+    const emailInputElement = document.getElementById('email-input') as HTMLInputElement;
+    const usernameInputElement = document.getElementById('username-input') as HTMLInputElement;
+    if (usernameInputElement && emailInputElement) {
+        if (emailRegex.test(usernameInputElement.value)) {
+            emailInputElement.value = usernameInputElement.value;
+        }
+    }
+}
+
+async function resendEmail(): Promise<void> {
+    closeAllPopups();
+
+    openLoading();
+
+    try {
+        const body: AuthenticationReq = {
+            email: (document.getElementById('email-input') as HTMLInputElement).value,
+            username: (document.getElementById('username-input') as HTMLInputElement).value,
+            password: (document.getElementById('password-input') as HTMLInputElement).value,
+        };
+        await axios.post<BaseRes>('/api/auth/resend-verification', body);
+        openPopup('Email verification link sent. Please check your inbox.');
+    } catch (error: any) {
+        if (error.response) {
+            const message = error.response?.data?.error;
+            console.error('Resend email error:', error.response);
+            openPopup('Failed to resend verification email: ' + message);
+        } else {
+            console.error('Resend email error:', error);
+            openPopup('Failed to resend verification email due to an unknown error. Please try again later.');
+        }
+    }
+
+    closeLoading();
+}
+
+window.addEventListener('load', () => {
+    // Reset input fields
+    emptyInput();
+
+    // Pressing the enter key will trigger the login
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            void login();
+        }
+    });
 
     // Routing validation
     validateGuest('/static/html/add-song.html');
@@ -91,3 +159,5 @@ window.addEventListener('load', () => {
 });
 
 window.login = login;
+window.resendEmailInit = resendEmailInit;
+window.resendEmail = resendEmail;

@@ -16,6 +16,7 @@ import { checkRegistrationInput, comparePassword, hashPassword, validateJWTToken
 import { generateJWTToken } from '../utility/jwtUtils.js';
 import type { User } from '@prisma/client';
 import logger from '../logger/logger.js';
+import type { AuthenticationRes } from '../shared/interfaces/res/auth.js';
 
 dotenv.config();
 
@@ -24,14 +25,14 @@ dotenv.config();
  * @param password - The password of the user.
  * @param email - The email address of the user (optional).
  * @param username - The username of the user (optional).
- * @returns A JWT token if the login is successful.
+ * @returns A promise that resolves to an object containing the JWT token and user information.
  *
  * @throws {InvalidParameterError} If any of the parameters are invalid.
  * @throws {NotFoundError} If the user is not found.
  * @throws {NotVerifiedError} If the user's email is not verified.
  * @throws {InternalServerError} If there is an error during login.
  */
-export async function login(password: string, username?: string, email?: string): Promise<string> {
+export async function login(password: string, username?: string, email?: string): Promise<AuthenticationRes> {
     // Check if the parameters are valid
     if (password === undefined || password === null || password === '') {
         throw new InvalidParameterError('Password is required');
@@ -48,7 +49,7 @@ export async function login(password: string, username?: string, email?: string)
 
     // Check if the user exists
     try {
-        if (email !== undefined && email !== null) {
+        if (email !== undefined && email !== null && email !== '') {
             userDBEntry = await prisma.user.findUnique({
                 where: {
                     email,
@@ -103,7 +104,17 @@ export async function login(password: string, username?: string, email?: string)
             },
         });
         logger.debug({ email, username }, 'JWT token created successfully in the database');
-        return jwtToken;
+        const result: AuthenticationRes = {
+            token: jwtToken,
+            message: 'Login successful!',
+            code: 200,
+            user: {
+                username: userDBEntry.name,
+                email: userDBEntry.email,
+                verified: userDBEntry.verified,
+            },
+        };
+        return result;
     } catch (error) {
         logger.error(
             { error, file: '/auth/auth.controller.ts', function: 'login()' },
@@ -295,10 +306,17 @@ export async function confirmEmail(token: string): Promise<void> {
  * @throws {InternalServerError} If there is an error sending the email.
  */
 // TODO: Implement also to use the email
-export async function resendValidationToken(username: string): Promise<void> {
+export async function resendValidationToken(password: string, username?: string, email?: string): Promise<void> {
     // Check if the parameters are valid
-    if (username === undefined || username === null || username === '') {
+    if (password === undefined || password === null || password === '') {
         throw new InvalidParameterError('Username is required');
+    }
+    if (
+        (email === undefined && username === undefined) ||
+        (email === null && username === null) ||
+        (email === '' && username === '')
+    ) {
+        throw new InvalidParameterError('Email or username is required');
     }
 
     let userDBEntry: User | null;
@@ -315,9 +333,17 @@ export async function resendValidationToken(username: string): Promise<void> {
         throw new InternalServerError('Reading userDBEntry during resendValidationToken failed');
     }
 
+    // If user was not found by username, try to find by email
+    userDBEntry ??= await prisma.user.findUnique({
+        where: {
+            email,
+        },
+    });
+
     if (userDBEntry === null || userDBEntry === undefined) {
-        throw new NotFoundError('Invalid credentials');
+        throw new NotFoundError('User not found');
     }
+
     if (userDBEntry.verified) {
         throw new AlreadyVerifiedError('Email already verified');
     }

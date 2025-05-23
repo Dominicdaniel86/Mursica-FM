@@ -1,6 +1,7 @@
 export {};
 
 export function setCookie(name: string, value: string, days: number): void {
+    console.debug('Setting cookie:', name, value, days);
     const date = new Date();
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     const expires = `expires=${date.toUTCString()}`;
@@ -35,4 +36,10 @@ export function listCookies(): Record<string, string> {
     }
 
     return cookies;
+}
+
+export enum CookieList {
+    ADMIN_TOKEN = 'mursica-fm-admin-token',
+    ADMIN_EMAIL = 'mursica-fm-admin-email',
+    ADMIN_USERNAME = 'mursica-fm-admin-username',
 }
