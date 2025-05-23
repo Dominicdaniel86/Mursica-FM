@@ -217,6 +217,7 @@ export async function register(username: string, email: string, password: string
  * @throws {InvalidParameterError} If the token is invalid.
  * @throws {NotFoundError} If the token is not found.
  * @throws {AlreadyVerifiedError} If the email is already verified.
+ * @throws {ExpiredTokenError} If the token is expired.
  * @throws {DatabaseOperationError} If there is an error confirming the email.
  */
 export async function confirmEmail(token: string): Promise<void> {
@@ -249,6 +250,15 @@ export async function confirmEmail(token: string): Promise<void> {
         throw new AlreadyVerifiedError('Email already verified');
     }
 
+    if (userDBEntry.verificationCodeExpiresAt === null || userDBEntry.verificationCodeExpiresAt < new Date()) {
+        throw new NotFoundError('Invalid token');
+    }
+
+    // Check if the token is expired
+    if (userDBEntry.verificationCodeExpiresAt < new Date()) {
+        throw new ExpiredTokenError('Token expired');
+    }
+
     // Update the user's email confirmation status
     try {
         const user = await prisma.user.update({
@@ -258,6 +268,7 @@ export async function confirmEmail(token: string): Promise<void> {
             data: {
                 verified: true,
                 verificationCode: null,
+                verificationCodeExpiresAt: null,
             },
         });
         logger.info(
@@ -320,6 +331,7 @@ export async function resendValidationToken(username: string): Promise<void> {
             },
             data: {
                 verificationCode,
+                verificationCodeExpiresAt: new Date(Date.now() + 60 * 60 * 1000 * 2), // 2 hours from now
             },
         });
 

@@ -12,7 +12,7 @@ import {
     ExpiredTokenError,
 } from '../errors/index.js';
 import type { BaseRes } from '../shared/interfaces/base.js';
-import type { RegisterReq } from '../shared/interfaces/req/auth.js';
+import type { AuthenticationReq } from '../shared/interfaces/req/auth.js';
 
 const router = express.Router();
 
@@ -23,23 +23,33 @@ router.get('/confirm-email', async (req, res) => {
         await confirmEmail(token);
         res.redirect('/static/html/email-validation/validation-success.html');
     } catch (error) {
-        if (
-            error instanceof InvalidParameterError ||
-            error instanceof NotFoundError ||
-            error instanceof AlreadyVerifiedError
-        ) {
+        if (error instanceof AlreadyVerifiedError) {
             logger.warn({ token, endpoint: '/confirm-email' }, error.message);
-            res.redirect('/static/html/email-validation/validation-failure.html');
+            res.redirect(
+                `/static/html/email-validation/validation-failure.html?error=${encodeURIComponent('Your%20email%20is%20already%20verified.%20You%20can%20log%20in%20now.')}`
+            );
+        } else if (error instanceof InvalidParameterError || error instanceof NotFoundError) {
+            logger.warn({ token, endpoint: '/confirm-email' }, error.message);
+            res.redirect(
+                `/static/html/email-validation/validation-failure.html?error=${encodeURIComponent('Invalid%20token.%20You%20can%20request%20a%20new%20one%20by%20trying%20to%20log%20in.')}`
+            );
+        } else if (error instanceof ExpiredTokenError) {
+            logger.warn({ token, endpoint: '/confirm-email' }, error.message);
+            res.redirect(
+                `/static/html/email-validation/validation-failure.html?error=${encodeURIComponent('The%20token%20has%20expired.%20Please%20request%20a%20new%20one%20by%20trying%20to%20log%20in.')}`
+            );
         } else {
             logger.error({ error, endpoint: '/confirm-email' }, 'Failed to confirm email');
-            res.redirect('/static/html/email-validation/validation-failure.html');
+            res.redirect(
+                `/static/html/email-validation/validation-failure.html?error=${encodeURIComponent('Internal%20server%20error.%20Please%20try%20again%20later.')}`
+            );
         }
     }
 });
 
 router.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    let email = req.body.email ?? '';
+    const { username, password, email: rawEmail } = req.body as AuthenticationReq;
+    let email = rawEmail ?? '';
     if (email !== undefined && email !== null) {
         email = email.toLowerCase();
     }
@@ -96,7 +106,7 @@ router.post('/logout', async (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-    const { username, password, email: rawEmail } = req.body as RegisterReq;
+    const { username, password, email: rawEmail } = req.body as AuthenticationReq;
     let email = rawEmail ?? '';
     if (email !== undefined && email !== null) {
         email = email.toLowerCase();
@@ -105,7 +115,7 @@ router.post('/register', async (req, res) => {
 
     try {
         await register(username, email, password);
-        logger.info({ username, email, endpoint: '/register' }, 'User registered successfully');
+        logger.info({ username, email, password, endpoint: '/register' }, 'User registered successfully');
         const response: BaseRes = {
             message: 'Registration successful!',
             code: 200,
@@ -127,25 +137,36 @@ router.post('/register', async (req, res) => {
 
 // TODO: Implement functionality to override the email address
 router.post('/resend-verification', async (req, res) => {
-    const { username } = req.body;
-    logger.info('A user is trying to resend the verification email', { username });
+    const { username, password, email: rawEmail } = req.body as AuthenticationReq;
+    let email = rawEmail ?? '';
+    if (email !== undefined && email !== null) {
+        email = email.toLowerCase();
+    }
+    logger.info(
+        { username, email, endpoint: '/resend-verification' },
+        'A user is trying to resend the verification email'
+    );
 
     try {
         await resendValidationToken(username);
-        logger.info('Verification email resent successfully', { username });
-        res.status(200).send('Verification email resent successfully!');
+        logger.info({ username, email, endpoint: '/resend-verification' }, 'Verification email resent successfully');
+        const response: BaseRes = {
+            message: 'Verification email resent successfully!',
+            code: 200,
+        };
+        res.status(200).json(response);
     } catch (error) {
         if (error instanceof InvalidParameterError) {
-            logger.warn(error.message, { username });
+            logger.warn({ username, email, password }, error.message);
             res.status(400).json({ error: error.message });
         } else if (error instanceof NotFoundError) {
-            logger.warn(error.message, { username });
+            logger.warn({ username, email, password }, error.message);
             res.status(404).json({ error: error.message });
         } else if (error instanceof AlreadyVerifiedError) {
-            logger.warn(error.message, { username });
+            logger.warn({ username, email, password }, error.message);
             res.status(409).json({ error: error.message });
         } else {
-            logger.error(error, 'Failed to resend verification email', { username });
+            logger.error({ username, email, endpoint: '/resend-verification' }, 'Failed to resend verification email');
             res.status(500).json({ error: 'Internal server error' });
         }
     }
