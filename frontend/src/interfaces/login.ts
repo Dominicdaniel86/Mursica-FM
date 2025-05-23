@@ -1,8 +1,3 @@
-export interface LoginResponse {
-    message: string;
-    token: string;
-}
-
 export interface GuestJoinResponse {
     message: string;
     guestToken: string;

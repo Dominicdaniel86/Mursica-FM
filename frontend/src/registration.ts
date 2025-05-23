@@ -1,6 +1,6 @@
 import { validateAdmin, validateGuest } from './shared/validations.js';
 import { closeLoading, openLoading, openPopup } from './shared/popups.js';
-import type { RegisterReq } from './interfaces/req/auth.js';
+import type { AuthenticationReq } from './interfaces/req/auth.js';
 import type { BaseRes } from './interfaces/base.js';
 
 export {};
@@ -46,7 +46,7 @@ async function registration() {
 
     try {
         const url = '/api/auth/register';
-        const body: RegisterReq = {
+        const body: AuthenticationReq = {
             username: usernameInput,
             email: emailInput,
             password: passwordInput,

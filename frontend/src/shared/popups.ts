@@ -10,15 +10,15 @@ declare global {
 }
 
 export function openPopup(text: string): void {
-    const registrationUpdateElement = document.getElementById('registration-update') as HTMLDivElement;
-    registrationUpdateElement.style.display = 'flex';
-    const updateReason = document.getElementById('registration-update-text') as HTMLDivElement;
+    const popupUpdateElement = document.getElementById('popup-update') as HTMLDivElement;
+    popupUpdateElement.style.display = 'flex';
+    const updateReason = document.getElementById('popup-update-text') as HTMLDivElement;
     updateReason.innerText = text;
 }
 
 export function closePopup(): void {
-    const registrationUpdateElement = document.getElementById('registration-update') as HTMLDivElement;
-    registrationUpdateElement.style.display = 'none';
+    const popupUpdateElement = document.getElementById('popup-update') as HTMLDivElement;
+    popupUpdateElement.style.display = 'none';
 }
 
 export function openLoading(): void {
