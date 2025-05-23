@@ -74,23 +74,24 @@ model Jwt {
 }
 
 model User {
-  id                String @id @default(uuid())
-  name              String @unique
-  email             String @unique
-  password          String // should be hashed
-  verificationCode  String? @unique
-  verified          Boolean @default(false)
-  latTrackPlayed    DateTime @default(now())
+  id                         String @id @default(uuid())
+  name                       String @unique
+  email                      String @unique
+  password                   String // should be hashed
+  verificationCode           String? @unique
+  verificationCodeExpiresAt  DateTime?
+  verified                   Boolean @default(false)
+  latTrackPlayed             DateTime @default(now())
   // relations
-  state            State?
-  oauthToken       OAuthToken?
-  jwt              Jwt?
-  currentSession   CurrentSession?
-  tracks           Track[]  // One-to-many relation to Track
+  state                      State?
+  oauthToken                 OAuthToken?
+  jwt                        Jwt?
+  currentSession             CurrentSession?
+  tracks                     Track[]  // One-to-many relation to Track
   // metadata
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  deletedAt         DateTime?
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  deletedAt                  DateTime?
 }
 
 // TODO: Enable guests with same names to exist in different sessions

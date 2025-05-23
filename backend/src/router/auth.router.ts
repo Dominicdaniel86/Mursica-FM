@@ -11,12 +11,14 @@ import {
     AuthenticationError,
     ExpiredTokenError,
 } from '../errors/index.js';
+import type { BaseRes } from '../shared/interfaces/base.js';
+import type { RegisterReq } from '../shared/interfaces/req/auth.js';
 
 const router = express.Router();
 
 router.get('/confirm-email', async (req, res) => {
     const { token } = req.query as { token: string };
-    logger.info('A user is trying to confirm their email address', { token });
+    logger.info({ token, endpoint: '/confirm-email' }, 'A user is trying to confirm their email address');
     try {
         await confirmEmail(token);
         res.redirect('/static/html/email-validation/validation-success.html');
@@ -26,91 +28,98 @@ router.get('/confirm-email', async (req, res) => {
             error instanceof NotFoundError ||
             error instanceof AlreadyVerifiedError
         ) {
-            logger.warn(error.message);
+            logger.warn({ token, endpoint: '/confirm-email' }, error.message);
             res.redirect('/static/html/email-validation/validation-failure.html');
         } else {
-            logger.error(error, 'Failed to confirm email');
+            logger.error({ error, endpoint: '/confirm-email' }, 'Failed to confirm email');
             res.redirect('/static/html/email-validation/validation-failure.html');
         }
     }
 });
 
 router.post('/login', async (req, res) => {
-    const { username, email, password } = req.body;
-    logger.info('A user is trying to log in', { username, email, password }); // TODO: Redact password
+    const { username, password } = req.body;
+    let email = req.body.email ?? '';
+    if (email !== undefined && email !== null) {
+        email = email.toLowerCase();
+    }
+    logger.info({ username, email, password, endpoint: '/login' }, 'A user is trying to log in');
+
     try {
-        const token = await login(password, email, username);
-        const response = {
-            token,
-            user: {
-                name: username,
-                email, // TODO: If user only provides one information, the other one should be read from DB
-            }, // TODO: Implement shared interface for the response
-        };
-        logger.info('User logged in successfully', { username, email });
+        const token = await login(password, username, email);
+        const response = { token }; // TODO: Interface
+        logger.info({ username, email, endpoint: '/login' }, 'User logged in successfully');
         res.status(200).json({ message: 'Login successful!', ...response });
     } catch (error) {
         if (error instanceof InvalidParameterError) {
-            logger.warn(error.message, { username, email });
+            logger.warn({ username, email, endpoint: '/login' }, error.message);
             res.status(400).json({ error: error.message });
         } else if (error instanceof NotVerifiedError || error instanceof InvalidPasswordError) {
-            logger.warn(error.message, { username, email });
+            logger.warn({ username, email, endpoint: '/login' }, error.message);
             res.status(403).json({ error: error.message });
         } else if (error instanceof NotFoundError) {
-            logger.warn(error.message, { username, email });
+            logger.warn({ username, email, endpoint: '/login' }, error.message);
             res.status(404).json({ error: error.message });
         } else {
-            logger.error(error, 'Failed to log in', { username, email });
+            logger.error({ username, email, endpoint: '/login' }, 'Failed to log in', error);
             res.status(500).json({ error: 'Internal server error' });
         }
     }
 });
 
 router.post('/logout', async (req, res) => {
-    const { username, email, token } = req.body;
-    logger.info('A user is trying to log out', { username, email, token });
+    const { username, email, token } = req.body; // TODO: Use interface / use Bearer
+    logger.info({ username, email, token, endpoint: '/logout' }, 'A user is trying to log out');
     try {
         await logout(token, username, email);
-        logger.info('User logged out successfully', { username, email });
+        logger.info({ username, email, endpoint: '/logout' }, 'User logged out successfully');
         res.status(200).send('Logout successful!');
     } catch (error) {
         if (error instanceof InvalidParameterError) {
-            logger.warn(error.message, { username, email });
+            logger.warn({ username, email, endpoint: '/logout' }, error.message);
             res.status(400).json({ error: error.message });
         } else if (
             error instanceof NotVerifiedError ||
             error instanceof AuthenticationError ||
             error instanceof ExpiredTokenError
         ) {
-            logger.warn(error.message, { username, email });
+            logger.warn({ username, email, endpoint: '/logout' }, error.message);
             res.status(403).json({ error: error.message });
         } else if (error instanceof NotFoundError) {
-            logger.warn(error.message, { username, email });
+            logger.warn({ username, email, endpoint: '/logout' }, error.message);
             res.status(404).json({ error: error.message });
         } else {
-            logger.error(error, 'Failed to log out', { username, email });
+            logger.error({ username, email, endpoint: '/logout' }, 'Failed to log out', error);
             res.status(500).json({ error: 'Internal server error' });
         }
     }
 });
 
 router.post('/register', async (req, res) => {
-    const { username, email, password } = req.body;
-    logger.info('A user is trying to register', { username, email, password });
+    const { username, password, email: rawEmail } = req.body as RegisterReq;
+    let email = rawEmail ?? '';
+    if (email !== undefined && email !== null) {
+        email = email.toLowerCase();
+    }
+    logger.info({ username, email, password, endpoint: '/register' }, 'A user is trying to register');
 
     try {
         await register(username, email, password);
-        logger.info('User registered successfully', { username, email });
-        res.status(200).send('Registration successful!');
+        logger.info({ username, email, endpoint: '/register' }, 'User registered successfully');
+        const response: BaseRes = {
+            message: 'Registration successful!',
+            code: 200,
+        };
+        res.status(200).json(response);
     } catch (error) {
         if (error instanceof InvalidParameterError) {
-            logger.warn(error.message, { username, email });
+            logger.warn({ username, email, endpoint: '/register' }, error.message);
             res.status(400).json({ error: error.message });
         } else if (error instanceof ExistingUserError) {
-            logger.warn(error.message, { username, email });
+            logger.warn({ username, email, endpoint: '/register' }, error.message);
             res.status(409).json({ error: error.message });
         } else {
-            logger.error(error, 'Failed to register user: Internal server error', { username, email });
+            logger.error({ username, email, endpoint: '/register' }, 'Failed to register user: Internal server error');
             res.status(500).json({ error: 'Internal server error' });
         }
     }

@@ -23,7 +23,7 @@ dotenv.config();
  * Logs in a user.
  * @param password - The password of the user.
  * @param email - The email address of the user (optional).
- * @param user - The username of the user (optional).
+ * @param username - The username of the user (optional).
  * @returns A JWT token if the login is successful.
  *
  * @throws {InvalidParameterError} If any of the parameters are invalid.
@@ -31,15 +31,15 @@ dotenv.config();
  * @throws {NotVerifiedError} If the user's email is not verified.
  * @throws {InternalServerError} If there is an error during login.
  */
-export async function login(password: string, email?: string, user?: string): Promise<string> {
+export async function login(password: string, username?: string, email?: string): Promise<string> {
     // Check if the parameters are valid
     if (password === undefined || password === null || password === '') {
         throw new InvalidParameterError('Password is required');
     }
     if (
-        (email === undefined && user === undefined) ||
-        (email === null && user === null) ||
-        (email === '' && user === '')
+        (email === undefined && username === undefined) ||
+        (email === null && username === null) ||
+        (email === '' && username === '')
     ) {
         throw new InvalidParameterError('Email or username is required');
     }
@@ -57,12 +57,15 @@ export async function login(password: string, email?: string, user?: string): Pr
         } else {
             userDBEntry = await prisma.user.findUnique({
                 where: {
-                    name: user,
+                    name: username,
                 },
             });
         }
     } catch (error) {
-        logger.error(error, 'Reading userDBEntry during login failed!');
+        logger.error(
+            { error, file: '/auth/auth.controller.ts', function: 'login()' },
+            'Reading userDBEntry during login failed!'
+        );
         throw new InternalServerError('Reading userDBEntry during login failed!');
     }
 
@@ -81,17 +84,17 @@ export async function login(password: string, email?: string, user?: string): Pr
         throw new NotVerifiedError('Email not verified');
     }
 
-    // Delete all old JWT tokens
-    await prisma.jwt.deleteMany({
-        where: {
-            userId: userDBEntry.id,
-        },
-    });
-
-    const jwtToken = generateJWTToken();
-
     // Create a new JWT token
     try {
+        // Delete all old JWT tokens
+        await prisma.jwt.deleteMany({
+            where: {
+                userId: userDBEntry.id,
+            },
+        });
+
+        const jwtToken = generateJWTToken();
+
         await prisma.jwt.create({
             data: {
                 token: jwtToken,
@@ -99,9 +102,13 @@ export async function login(password: string, email?: string, user?: string): Pr
                 userId: userDBEntry.id,
             },
         });
+        logger.debug({ email, username }, 'JWT token created successfully in the database');
         return jwtToken;
     } catch (error) {
-        console.error(error, 'Error while creating JWT token');
+        logger.error(
+            { error, file: '/auth/auth.controller.ts', function: 'login()' },
+            'Error while creating JWT token'
+        );
         throw new InternalServerError('Error while creating JWT token');
     }
 }
@@ -119,55 +126,66 @@ export async function login(password: string, email?: string, user?: string): Pr
 export async function register(username: string, email: string, password: string): Promise<void> {
     // Check if the parameters are valid
     // Throws InvalidParameterError if any of the parameters are invalid
-    checkRegistrationInput(username, email, password);
+    await checkRegistrationInput(username, email, password);
 
     try {
         // Check if the email is already taken
-        const existingUserEmail = await prisma.user.findUnique({
+        const existingUser = await prisma.user.findFirst({
             where: {
-                email,
+                OR: [{ email }, { name: username }],
             },
         });
-        if (existingUserEmail) {
-            throw new ExistingUserError('Email is already in use');
-        }
 
-        // Check if the username is already taken
-        const existingUserName = await prisma.user.findFirst({
-            where: {
-                name: username,
-            },
-        });
-        if (existingUserName) {
-            throw new ExistingUserError('Username is already in use');
+        if (existingUser) {
+            if (existingUser.email === email) {
+                throw new ExistingUserError('Email is already in use');
+            }
+            if (existingUser.name === username) {
+                throw new ExistingUserError('Username is already in use');
+            }
         }
     } catch (error) {
         if (error instanceof ExistingUserError) {
             throw error;
         } else {
-            logger.error(error, 'Error checking existing user');
+            logger.error(
+                { error, file: '/auth/auth.controller.ts', function: 'register()' },
+                'Error checking existing user'
+            );
             throw new InternalServerError('Error checking existing user');
         }
     }
 
-    // Get verification code
-    const verificationCode = generateRandomString(32);
-
     try {
         const hashedPassword = await hashPassword(password);
+
+        // Get verification code
+        let verificationCode = generateRandomString(32);
+        let isUnique = false;
+
+        // Check if the verification code is unique
+        while (!isUnique) {
+            verificationCode = generateRandomString(32);
+            const existing = await prisma.user.findUnique({ where: { verificationCode } });
+            if (!existing) {
+                isUnique = true;
+            }
+        }
+
         await prisma.user.create({
             data: {
                 name: username,
                 email,
                 password: hashedPassword,
                 verificationCode,
+                verificationCodeExpiresAt: new Date(Date.now() + 60 * 60 * 1000 * 2), // 2 hours from now
             },
         });
 
         let text = '';
 
         if (process.env.ENVIRONMENT === 'production') {
-            text = `Please confirm your email by clicking on the following link: https://mursica.fm/api/auth/confirm-email?token=${verificationCode}`;
+            text = `Please confirm your email by clicking on the following link: https://${process.env.DOMAIN}/api/auth/confirm-email?token=${verificationCode}`;
         } else {
             text = `Please confirm your email by clicking on the following link: http://localhost:80/api/auth/confirm-email?token=${verificationCode}`;
         }
@@ -181,12 +199,14 @@ export async function register(username: string, email: string, password: string
         };
 
         await transporter.sendMail(mailOptions);
+        logger.debug(
+            { email, file: '/auth/auth.controller.ts', function: 'register()' },
+            'Verification email sent successfully'
+        );
     } catch (error) {
-        logger.error(error, 'Error creating user');
+        logger.error({ error, file: '/auth/auth.controller.ts', function: 'register()' }, 'Error creating user');
         throw new InternalServerError('Error creating user');
     }
-
-    // TODO: One time an hour it should check if the user has confirmed their email. If not, delete the user from the database.
 }
 
 /**
@@ -197,7 +217,7 @@ export async function register(username: string, email: string, password: string
  * @throws {InvalidParameterError} If the token is invalid.
  * @throws {NotFoundError} If the token is not found.
  * @throws {AlreadyVerifiedError} If the email is already verified.
- * @throws {InternalServerError} If there is an error confirming the email.
+ * @throws {DatabaseOperationError} If there is an error confirming the email.
  */
 export async function confirmEmail(token: string): Promise<void> {
     if (token === undefined || token === null || token === '') {
@@ -214,8 +234,11 @@ export async function confirmEmail(token: string): Promise<void> {
             },
         });
     } catch (error) {
-        logger.error(error, 'Reading userDBEntry during confirmEmail failed!');
-        throw new InternalServerError('Reading userDBEntry during confirmEmail failed');
+        logger.error(
+            { error, token, file: '/auth/auth.controller.ts', function: 'confirmEmail()' },
+            'Reading userDBEntry failed!'
+        );
+        throw new DatabaseOperationError('Reading userDBEntry during confirmEmail failed');
     }
 
     if (userDBEntry === null || userDBEntry === undefined) {
@@ -228,7 +251,7 @@ export async function confirmEmail(token: string): Promise<void> {
 
     // Update the user's email confirmation status
     try {
-        await prisma.user.update({
+        const user = await prisma.user.update({
             where: {
                 id: userDBEntry.id,
             },
@@ -237,9 +260,16 @@ export async function confirmEmail(token: string): Promise<void> {
                 verificationCode: null,
             },
         });
+        logger.info(
+            { user, file: '/auth/auth.controller.ts', function: 'confirmEmail()' },
+            'User email confirmed successfully'
+        );
     } catch (error) {
-        logger.error(error, 'Error updating userDBEntry during confirmEmail failed!');
-        throw new InternalServerError('Error updating userDBEntry during confirmEmail failed');
+        logger.error(
+            { error, token, file: '/auth/auth.controller.ts', function: 'confirmEmail()' },
+            'Error updating userDBEntry during confirmEmail failed!'
+        );
+        throw new DatabaseOperationError('Error updating userDBEntry during confirmEmail failed');
     }
 }
 
@@ -328,7 +358,10 @@ export async function logout(token: string, username?: string, email?: string): 
         if (!(error instanceof ExpiredTokenError)) {
             throw error;
         } else {
-            logger.warn('Token is expired, still deleting it', { token });
+            logger.warn(
+                { token, file: '/auth/auth.controller.ts', function: 'logout()' },
+                'Token is expired, still deleting it'
+            );
         }
     }
 
@@ -340,7 +373,10 @@ export async function logout(token: string, username?: string, email?: string): 
             },
         });
     } catch (error) {
-        logger.error(error, 'Error deleting JWT token');
+        logger.error(
+            { error, token, file: '/auth/auth.controller.ts', function: 'logout()' },
+            'Error deleting JWT token'
+        );
         throw new DatabaseOperationError('Error deleting JWT token');
     }
 }

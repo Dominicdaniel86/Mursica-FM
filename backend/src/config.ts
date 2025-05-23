@@ -1,5 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import nodemailer from 'nodemailer';
+import * as fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // replace 'localhost' in DATABASE_URL
 process.env.DATABASE_URL = process.env.DATABASE_URL?.replace('localhost', 'database');
@@ -22,3 +25,11 @@ export const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASSWORD,
     },
 });
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Most common passwords
+// TODO: Better initialization
+const data = await fs.readFile(path.join(__dirname, '..', '/documents', '10k-most-common.txt'), 'utf-8');
+export const commonPasswords = new Set(data.split('\n').map((pw) => pw.trim().toLowerCase()));

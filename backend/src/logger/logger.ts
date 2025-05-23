@@ -25,6 +25,8 @@ export async function initializeLoggingFile(): Promise<void> {
     }
 }
 
+// TODO: Use pino features for better logging: API endpoint/ function & file name
+
 /**
  * Pino logger. It writes into the app.log file. It uses the default log levels:
  *
@@ -71,7 +73,7 @@ const logger = pino({
                   },
               ],
     },
-    redact: ['access_token', 'accessToken'],
+    redact: ['access_token', 'accessToken', 'password', 'token'],
 });
 
 export default logger;

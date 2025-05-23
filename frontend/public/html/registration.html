@@ -17,6 +17,7 @@
     <!-- CSS Files -->
     <link rel="stylesheet" href="/static/css/base.css">
     <link rel="stylesheet" href="/static/css/base-files/registration.css">
+    <link rel="stylesheet" href="/static/css/popups.css">
 </head>
 <body>
     <header>
@@ -31,6 +32,19 @@
         <input type="text" placeholder="Username" id="username-input">
         <input type="password" placeholder="Password" id="password-input">
         <button onclick="registration()">Register</button>
+
+        <section id="registration-update" class="popup">
+            <div class="popup-content">
+                <span id="registration-update-text">
+                    <!-- The reason gets generated in here -->
+                </span><br>
+                <button id="registration-update-close" onclick="closePopup()">Close</button>
+            </div>
+        </section>
+        <div id="loader">
+            <div class="spinner"></div>
+        </div>
+        
     </main>
 
     <footer id="footer">
@@ -44,6 +58,7 @@
 
     <!-- JavaScript files -->
     <script src="/static/javascript/registration.js" type="module"></script>
+    <script src="/static/javascript/shared/popups.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </body>
 </html>

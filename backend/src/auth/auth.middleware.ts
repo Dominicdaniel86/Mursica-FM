@@ -8,7 +8,7 @@ import {
     NotVerifiedError,
 } from '../errors/index.js';
 import type { CurrentSession, Guest, Jwt, User } from '@prisma/client';
-import { prisma } from '../config.js';
+import { commonPasswords, prisma } from '../config.js';
 import logger from '../logger/logger.js';
 
 /**
@@ -19,14 +19,14 @@ import logger from '../logger/logger.js';
  *
  * @throws {InvalidParameterError} If any of the parameters are invalid.
  */
-export function checkRegistrationInput(username: string, email: string, password: string): void {
-    if (username === undefined || username === '') {
+export async function checkRegistrationInput(username: string, email: string, password: string): Promise<void> {
+    if (username === undefined || username === null || username === '') {
         throw new InvalidParameterError('Username is required');
     }
-    if (email === undefined || email === '') {
+    if (email === undefined || email === null || email === '') {
         throw new InvalidParameterError('Email is required');
     }
-    if (password === undefined || password === '') {
+    if (password === undefined || password === null || password === '') {
         throw new InvalidParameterError('Password is required');
     }
 
@@ -52,7 +52,16 @@ export function checkRegistrationInput(username: string, email: string, password
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
         throw new InvalidParameterError('Password must contain at least 1 special character');
     }
-    // TODO: Check if the password is in the top 1000 passwords
+
+    // Check if the password is in the top 1000 passwords list
+    if (commonPasswords.has(password.toLowerCase())) {
+        throw new InvalidParameterError('Password is too common');
+    }
+
+    logger.debug(
+        { username, email, password, file: '/auth/auth.middleware.ts', function: 'checkRegistrationInput()' },
+        'Registration input is valid'
+    );
 }
 
 /**
@@ -149,6 +158,7 @@ export async function hashPassword(password: string): Promise<string> {
 
     const saltRounds = 10; // Higher number = more secure but slower
     const salt = await bcrypt.genSalt(saltRounds);
+    logger.debug({ file: '/auth/auth.middleware.ts', function: 'hashPassword()' }, 'Hashing password');
     return await bcrypt.hash(password, salt);
 }
 
@@ -163,7 +173,7 @@ export async function comparePassword(password: string, hashedPassword: string):
     if (password === undefined || password === '') {
         throw new InvalidParameterError('Password is required');
     }
-
+    logger.debug({ file: '/auth/auth.middleware.ts', function: 'comparePassword()' }, 'Comparing password');
     return await bcrypt.compare(password, hashedPassword);
 }
 
