@@ -4,25 +4,34 @@ import * as fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// replace 'localhost' in DATABASE_URL
-process.env.DATABASE_URL = process.env.DATABASE_URL?.replace('localhost', 'database');
+const plainPort = process.env.PORT;
+const plainDatabaseUrl = process.env.DATABASE_URL ?? '';
+process.env.DATABASE_URL = plainDatabaseUrl.replace('localhost', 'database');
 
 // Env variables
-const plainPort = process.env.PORT;
-export const PORT = plainPort !== undefined ? parseInt(plainPort, 10) || 3000 : 3000;
-export const CLIENT_ID = process.env.CLIENT_ID ?? '';
-export const CLIENT_SECRET = process.env.CLIENT_SECRET ?? '';
-export const IS_PRODUCTION = process.env.ENVIRONMENT === 'production';
+export const ENV_VARIABLES = {
+    PORT: plainPort !== undefined ? parseInt(plainPort, 10) || 3000 : 3000,
+    CLIENT_ID: process.env.CLIENT_ID ?? '',
+    CLIENT_SECRET: process.env.CLIENT_SECRET ?? '',
+    DATABASE_URL: process.env.DATABASE_URL ?? '',
+    IS_PRODUCTION: process.env.ENVIRONMENT === 'production',
+    EMAIL: process.env.EMAIL ?? '',
+    EMAIL_SENDER_NAME: process.env.EMAIL_SENDER_NAME ?? '',
+    EMAIL_PASSWORD: process.env.EMAIL_PASSWORD ?? '',
+    EMAIL_SERVICE: process.env.EMAIL_SERVICE ?? 'gmail',
+    LOCAL_HOST: process.env.LOCAL_HOST ?? 'localhost',
+    DOMAIN: process.env.DOMAIN ?? '',
+};
 
 // Prisma client for database interaction
 export const prisma = new PrismaClient();
 
 // Email transporter
 export const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: ENV_VARIABLES.EMAIL_SERVICE,
     auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASSWORD,
+        user: ENV_VARIABLES.EMAIL,
+        pass: ENV_VARIABLES.EMAIL_PASSWORD,
     },
 });
 

@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import { pino } from 'pino';
-import { IS_PRODUCTION } from '../config.js';
+import { ENV_VARIABLES } from '../config.js';
 
 const logFile = './logs/app.log';
 
@@ -45,12 +45,12 @@ export async function initializeLoggingFile(): Promise<void> {
  * Redacted fields: ['access_token', 'accessToken']
  */
 const logger = pino({
-    level: IS_PRODUCTION ? 'info' : 'debug', // default setting
-    timestamp: IS_PRODUCTION
+    level: ENV_VARIABLES.IS_PRODUCTION ? 'info' : 'debug', // default setting
+    timestamp: ENV_VARIABLES.IS_PRODUCTION
         ? () => `,"time":"${new Date().toISOString()}"`
         : () => `,"time":"${new Date().toLocaleString()}"`,
     transport: {
-        targets: IS_PRODUCTION
+        targets: ENV_VARIABLES.IS_PRODUCTION
             ? [
                   // production
                   {

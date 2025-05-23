@@ -1,7 +1,7 @@
 import express from 'express';
 import { validateClientToken } from './api/index.js';
 import logger, { initializeLoggingFile } from './logger/logger.js';
-import { PORT } from './config.js';
+import { ENV_VARIABLES } from './config.js';
 import adminRouter from './router/admin.router.js';
 import authRouter from './router/auth.router.js';
 import authSpotifyRouter from './router/auth.spotify.router.js';
@@ -17,6 +17,8 @@ const app = express();
 app.use(express.json()); // Parses incoming requests with JSON payloads
 app.use(express.urlencoded({ extended: true })); // Parses incoming requests with URL-encoded payloads
 app.use(cookieParser()); // Parses incoming requests with cookies
+
+// TODO: Check if required env variables are set
 
 // Initialize log file
 // TODO: Improve this error handling
@@ -55,6 +57,6 @@ app.use('/api/tracks/', tracksRouter);
 app.use('/api/guest', guestRouter);
 
 // Let the server listen on the specified port
-app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`);
+app.listen(ENV_VARIABLES.PORT, () => {
+    logger.info(`Server is running on port ${ENV_VARIABLES.PORT}`);
 });

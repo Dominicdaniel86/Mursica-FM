@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { SpotifyClientTokenResponse } from '../../interfaces/index.js';
 import logger from '../../logger/logger.js';
-import { CLIENT_ID, CLIENT_SECRET, prisma } from '../../config.js';
+import { ENV_VARIABLES, prisma } from '../../config.js';
 import type { ClientToken } from '@prisma/client';
 import { ClientCredentialFlow, DatabaseOperationError } from '../../errors/index.js';
 
@@ -16,7 +16,12 @@ import { ClientCredentialFlow, DatabaseOperationError } from '../../errors/index
  *   - The duration (in seconds) for which the token remains valid.
  */
 async function requestClientCredentialToken(): Promise<[string, number]> {
-    if (CLIENT_ID === undefined || CLIENT_ID === null || CLIENT_SECRET === undefined || CLIENT_SECRET === null) {
+    if (
+        ENV_VARIABLES.CLIENT_ID === undefined ||
+        ENV_VARIABLES.CLIENT_ID === null ||
+        ENV_VARIABLES.CLIENT_SECRET === undefined ||
+        ENV_VARIABLES.CLIENT_SECRET === null
+    ) {
         logger.warn('Client ID or Client Secret not set.');
         throw new ClientCredentialFlow('Client-Credentials-Flow failed: Client ID or Client Secret not set');
     }
@@ -27,7 +32,7 @@ async function requestClientCredentialToken(): Promise<[string, number]> {
     });
     const config = {
         headers: {
-            Authorization: `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')}`,
+            Authorization: `Basic ${Buffer.from(`${ENV_VARIABLES.CLIENT_ID}:${ENV_VARIABLES.CLIENT_SECRET}`).toString('base64')}`,
         },
     };
 

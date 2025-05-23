@@ -1,4 +1,4 @@
-import { prisma, transporter } from '../config.js';
+import { ENV_VARIABLES, prisma, transporter } from '../config.js';
 import {
     InvalidParameterError,
     ExistingUserError,
@@ -195,15 +195,15 @@ export async function register(username: string, email: string, password: string
 
         let text = '';
 
-        if (process.env.ENVIRONMENT === 'production') {
-            text = `Please confirm your email by clicking on the following link: https://${process.env.DOMAIN}/api/auth/confirm-email?token=${verificationCode}`;
+        if (ENV_VARIABLES.IS_PRODUCTION) {
+            text = `Please confirm your email by clicking on the following link: https://${ENV_VARIABLES.DOMAIN}/api/auth/confirm-email?token=${verificationCode}`;
         } else {
-            text = `Please confirm your email by clicking on the following link: http://localhost:80/api/auth/confirm-email?token=${verificationCode}`;
+            text = `Please confirm your email by clicking on the following link: http://${ENV_VARIABLES.LOCAL_HOST}/api/auth/confirm-email?token=${verificationCode}`;
         }
 
         // Return success message
         const mailOptions = {
-            from: `"Mursica.FM" <${process.env.EMAIL}>`,
+            from: `"${ENV_VARIABLES.EMAIL_SENDER_NAME}" <${ENV_VARIABLES.EMAIL}>`,
             to: email,
             subject: 'Please confirm your email',
             text,
@@ -361,12 +361,20 @@ export async function resendValidationToken(password: string, username?: string,
             },
         });
 
+        let text = '';
+
+        if (ENV_VARIABLES.IS_PRODUCTION) {
+            text = `Please confirm your email by clicking on the following link: https://${ENV_VARIABLES.DOMAIN}/api/auth/confirm-email?token=${verificationCode}`;
+        } else {
+            text = `Please confirm your email by clicking on the following link: http://${ENV_VARIABLES.LOCAL_HOST}/api/auth/confirm-email?token=${verificationCode}`;
+        }
+
         // Send verification email
         const mailOptions = {
-            from: `"Mursica.FM" <${process.env.EMAIL}>`,
+            from: `"${ENV_VARIABLES.EMAIL_SENDER_NAME}" <${ENV_VARIABLES.EMAIL}>`,
             to: userDBEntry.email,
             subject: 'Please confirm your email',
-            text: `Please confirm your email by clicking on the following link: http://localhost:80/api/auth/confirm-email?token=${verificationCode}`,
+            text,
         };
 
         await transporter.sendMail(mailOptions);

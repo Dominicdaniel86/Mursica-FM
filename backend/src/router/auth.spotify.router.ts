@@ -10,6 +10,7 @@ import {
     NotVerifiedError,
     AuthenticationError,
 } from '../errors/index.js';
+import { ENV_VARIABLES } from '../config.js';
 
 const router = express.Router();
 
@@ -47,7 +48,7 @@ router.get('/login', async (req, res) => {
         await validateJWTToken(token, username, email);
 
         const url = 'https://accounts.spotify.com/authorize?';
-        const spotifyQueryString = await generateOAuthQuerystring(username, email);
+        const spotifyQueryString = (await generateOAuthQuerystring(username, email)) + '&show_dialog=true';
         res.redirect(url + spotifyQueryString);
         logger.info('Redirected user to the Spotify login page.');
     } catch (error) {
@@ -91,10 +92,10 @@ router.get('/callback', async (req, res) => {
 
     try {
         await oAuthAuthorization(code, state);
-        if (process.env.NODE_ENV !== 'production') {
-            res.redirect('http://localhost/static/html/admin.html');
+        if (ENV_VARIABLES.IS_PRODUCTION) {
+            res.redirect(`https://${ENV_VARIABLES.DOMAIN}/static/html/admin.html`);
         } else {
-            res.redirect('https://mursica.fm/static/html/admin.html');
+            res.redirect(`http://${ENV_VARIABLES.LOCAL_HOST}/static/html/admin.html`);
         }
         logger.info('Redirected user back to admin.html');
     } catch (error) {

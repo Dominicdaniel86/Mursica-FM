@@ -3,7 +3,7 @@ import * as querystring from 'querystring';
 import type { SpotifyAuthTokenResponse } from '../../interfaces/index.js';
 import logger from '../../logger/logger.js';
 import { generateRandomString } from '../../utility/fileUtils.js';
-import { CLIENT_ID, CLIENT_SECRET, IS_PRODUCTION, prisma } from '../../config.js';
+import { ENV_VARIABLES, prisma } from '../../config.js';
 import { AuthenticationError } from '../../errors/authentication.js';
 import { DatabaseOperationError, NotFoundError } from '../../errors/database.js';
 import type { OAuthToken, State, User } from '@prisma/client';
@@ -24,12 +24,16 @@ export async function generateOAuthQuerystring(user?: string, email?: string): P
     const scope = 'user-modify-playback-state user-read-playback-state';
     let redirectURI: string;
 
-    if (IS_PRODUCTION) {
+    if (ENV_VARIABLES.IS_PRODUCTION) {
         // TODO: Use an env variable for the redirect URI
-        redirectURI = 'https://mursica.fm/api/auth/spotify/callback';
-    } else {
+        redirectURI = `https://${ENV_VARIABLES.DOMAIN}/api/auth/spotify/callback`;
+    } else if (ENV_VARIABLES.LOCAL_HOST === 'localhost') {
         redirectURI = 'http://127.0.0.1/api/auth/spotify/callback';
+    } else {
+        redirectURI = `http://${ENV_VARIABLES.LOCAL_HOST}/api/auth/spotify/callback`;
     }
+
+    logger.debug({ redirectURI }, 'Generated redirect URI:');
 
     const validUntil = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
@@ -82,7 +86,7 @@ export async function generateOAuthQuerystring(user?: string, email?: string): P
 
     return querystring.stringify({
         response_type: 'code',
-        client_id: CLIENT_ID,
+        client_id: ENV_VARIABLES.CLIENT_ID,
         scope,
         redirect_uri: redirectURI,
         state,
@@ -103,15 +107,22 @@ export async function generateOAuthQuerystring(user?: string, email?: string): P
  */
 export async function oAuthAuthorization(code: string, state: string): Promise<void> {
     const url = 'https://accounts.spotify.com/api/token';
+    let redirect_uri: string;
+    if (ENV_VARIABLES.IS_PRODUCTION) {
+        redirect_uri = `https://${ENV_VARIABLES.DOMAIN}/api/auth/spotify/callback`;
+    } else {
+        redirect_uri = `http://${ENV_VARIABLES.LOCAL_HOST}/api/auth/spotify/callback`;
+    }
     const data = {
         code,
-        redirect_uri: 'http://127.0.0.1/api/auth/spotify/callback',
+        redirect_uri,
         grant_type: 'authorization_code',
     };
     const config = {
         headers: {
             'content-type': 'application/x-www-form-urlencoded',
-            Authorization: 'Basic ' + Buffer.from(CLIENT_ID + ':' + CLIENT_SECRET).toString('base64'),
+            Authorization:
+                'Basic ' + Buffer.from(ENV_VARIABLES.CLIENT_ID + ':' + ENV_VARIABLES.CLIENT_SECRET).toString('base64'),
         },
     };
 
@@ -261,7 +272,9 @@ export async function refreshAuthToken(token: string, username?: string, email?:
         const config = {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                Authorization: 'Basic ' + Buffer.from(CLIENT_ID + ':' + CLIENT_SECRET).toString('base64'),
+                Authorization:
+                    'Basic ' +
+                    Buffer.from(ENV_VARIABLES.CLIENT_ID + ':' + ENV_VARIABLES.CLIENT_SECRET).toString('base64'),
             },
         };
 
