@@ -67,31 +67,22 @@ export async function checkRegistrationInput(username: string, email: string, pa
 /**
  * Validates a JWT token.
  * @param token - The JWT token to validate.
- * @param username - The username of the user (optional).
- * @param email - The email address of the user (optional).
  *
- * @throws {InvalidParameterError} If the token, username, or email is invalid.
+ * @throws {InvalidParameterError} If the token is missing or empty.
  * @throws {DatabaseOperationError} If there is an error finding the token or user in the database.
  * @throws {NotFoundError} If the token is invalid or not found.
  * @throws {ExpiredTokenError} If the token is expired.
- * @throws {AuthenticationError} If the user is invalid or not verified.
  * @throws {NotVerifiedError} If the user is not verified.
+ *
+ * ! Deprecated: @throws {AuthenticationError} If the token is invalid or expired.
  */
-// TODO: Let router use cookies instead of body values
-export async function validateJWTToken(token: string, username?: string, email?: string): Promise<void> {
+export async function validateJWTToken(token: string): Promise<void> {
     // Validate parameters
-    if (token === undefined || token === '') {
+    if (token === undefined || token === null || token.trim() === '') {
         throw new InvalidParameterError('Token is required');
     }
-    if (
-        (username === undefined && email === undefined) ||
-        (username === null && email === null) ||
-        (username === '' && email === '')
-    ) {
-        throw new InvalidParameterError('Username or email is required');
-    }
 
-    logger.debug('Validating JWT token:' + token, { token });
+    logger.debug({ token, file: '/auth/auth.middleware.ts', function: 'validateJWTToken()' }, 'Validating JWT token');
 
     // Read the token from the database
     let tokenResult: Jwt | null;
@@ -102,7 +93,7 @@ export async function validateJWTToken(token: string, username?: string, email?:
             },
         });
     } catch (error) {
-        logger.error(error, 'Error finding JWT token');
+        logger.error({ error, token }, 'Error finding JWT token');
         throw new DatabaseOperationError('Error finding JWT token');
     }
 
@@ -123,26 +114,22 @@ export async function validateJWTToken(token: string, username?: string, email?:
             },
         });
     } catch (error) {
-        logger.error(error, 'Error finding user');
-        throw new DatabaseOperationError('Error finding user');
+        logger.error({ error, token }, 'Error finding matching user');
+        throw new DatabaseOperationError('Error finding matching user');
     }
 
     // Check if the user is valid
     if (userResult === null || userResult === undefined) {
-        throw new AuthenticationError('User is invalid');
+        throw new NotFoundError('Token is invalid');
     }
     if (userResult.verified === false) {
         throw new NotVerifiedError('User is not verified');
     }
-    if (username !== undefined) {
-        if (userResult.name !== username) {
-            throw new AuthenticationError('Username does not match');
-        }
-    } else {
-        if (userResult.email !== email) {
-            throw new AuthenticationError('Email does not match');
-        }
-    }
+
+    logger.debug(
+        { token, userId: userResult.id, file: '/auth/auth.middleware.ts', function: 'validateJWTToken()' },
+        'JWT token is valid'
+    );
 }
 
 /**

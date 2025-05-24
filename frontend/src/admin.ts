@@ -1,6 +1,7 @@
 // TODO: Fix this ESLint problem
 
-import { deleteCookie, getCookie, setCookie } from './shared/cookie-management.js';
+import { CookieList, deleteCookie, getCookie, setCookie } from './shared/cookie-management.js';
+import { openLoading } from './shared/popups.js';
 import { validateNotAdmin } from './shared/validations.js';
 
 /* eslint-disable @typescript-eslint/no-misused-promises */
@@ -75,20 +76,24 @@ export async function spotifyLogout(): Promise<void> {
 
 export async function logout(): Promise<void> {
     const url = '/api/auth/logout';
-    const body = {
-        email: getCookie('mursica-fm-admin-email'),
-        username: getCookie('mursica-fm-admin-username'),
-        token: getCookie('mursica-fm-admin-token'),
+    const config: object = {
+        headers: {
+            Authorization: `Bearer ${getCookie(CookieList.ADMIN_TOKEN)}`,
+        },
     };
+
     try {
-        await axios.post(url, body);
+        await axios.post(url, null, config);
     } catch (error) {
         console.error('Error logging out:', error);
     } finally {
-        deleteCookie('mursica-fm-admin-username');
-        deleteCookie('mursica-fm-admin-email');
-        deleteCookie('mursica-fm-admin-token');
-        window.location.replace('');
+        openLoading();
+        setTimeout(() => {
+            window.location.replace('/static/html/index.html');
+        }, 1000);
+        deleteCookie(CookieList.ADMIN_USERNAME);
+        deleteCookie(CookieList.ADMIN_EMAIL);
+        deleteCookie(CookieList.ADMIN_TOKEN);
     }
 }
 

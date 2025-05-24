@@ -77,28 +77,35 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/logout', async (req, res) => {
-    const { username, email, token } = req.body; // TODO: Use interface / use Bearer
-    logger.info({ username, email, token, endpoint: '/logout' }, 'A user is trying to log out');
+    logger.info({ endpoint: '/logout' }, 'A user is trying to log out');
+    const authHeader = req.headers['authorization'];
+    const token = authHeader?.split(' ')[1] ?? ''; // Get token part of Bearer token
+    if (token === undefined || token === null || token.trim() === '') {
+        logger.warn({ endpoint: '/logout' }, 'No token provided for logout');
+        res.status(400).json({ error: 'No token provided' });
+        return;
+    }
+
     try {
-        await logout(token, username, email);
-        logger.info({ username, email, endpoint: '/logout' }, 'User logged out successfully');
+        await logout(token);
+        logger.info({ endpoint: '/logout' }, 'User logged out successfully');
         res.status(200).send('Logout successful!');
     } catch (error) {
         if (error instanceof InvalidParameterError) {
-            logger.warn({ username, email, endpoint: '/logout' }, error.message);
+            logger.warn({ endpoint: '/logout' }, error.message);
             res.status(400).json({ error: error.message });
         } else if (
             error instanceof NotVerifiedError ||
             error instanceof AuthenticationError ||
             error instanceof ExpiredTokenError
         ) {
-            logger.warn({ username, email, endpoint: '/logout' }, error.message);
+            logger.warn({ endpoint: '/logout' }, error.message);
             res.status(403).json({ error: error.message });
         } else if (error instanceof NotFoundError) {
-            logger.warn({ username, email, endpoint: '/logout' }, error.message);
+            logger.warn({ endpoint: '/logout' }, error.message);
             res.status(404).json({ error: error.message });
         } else {
-            logger.error({ username, email, endpoint: '/logout' }, 'Failed to log out', error);
+            logger.error({ endpoint: '/logout' }, 'Failed to log out', error);
             res.status(500).json({ error: 'Internal server error' });
         }
     }

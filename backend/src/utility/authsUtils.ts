@@ -8,7 +8,7 @@ import { AuthenticationError, ExpiredTokenError, NotVerifiedError } from '../err
 export async function generalPurposeValidation(req: Request, res: Response): Promise<void> {
     const { token, username, email } = req.body;
     try {
-        await validateJWTToken(token, username, email);
+        await validateJWTToken(token); // ! Check if this still works
     } catch (error) {
         // Handle validation error
         if (error instanceof InvalidParameterError) {
@@ -38,7 +38,7 @@ export async function generalPurposeGETValidation(req: Request, res: Response): 
     const username = req.headers['x-username'] as string;
 
     try {
-        await validateJWTToken(token, username, email);
+        await validateJWTToken(token); // ! Check if this still works
     } catch (error) {
         // Handle validation error
         if (error instanceof InvalidParameterError) {

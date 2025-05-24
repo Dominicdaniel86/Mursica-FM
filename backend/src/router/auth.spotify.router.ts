@@ -45,7 +45,8 @@ router.get('/login', async (req, res) => {
 
     try {
         logger.info('A user is trying to connect their Spotify account.');
-        await validateJWTToken(token, username, email);
+        // await validateJWTToken(token, username, email);
+        await validateJWTToken(token); // ! Check if this still works
 
         const url = 'https://accounts.spotify.com/authorize?';
         const spotifyQueryString = (await generateOAuthQuerystring(username, email)) + '&show_dialog=true';

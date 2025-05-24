@@ -387,8 +387,6 @@ export async function resendValidationToken(password: string, username?: string,
 /**
  * Logs out a user by invalidating their JWT token.
  * @param token - The JWT token to invalidate.
- * @param username - The username of the user (optional).
- * @param email - The email address of the user (optional).
  *
  * @throws {InvalidParameterError} If the token, username, or email is invalid.
  * @throws {DatabaseOperationError} If there is an error finding the token or user in the database.
@@ -397,9 +395,9 @@ export async function resendValidationToken(password: string, username?: string,
  * @throws {AuthenticationError} If the user is invalid or not verified.
  * @throws {NotVerifiedError} If the user is not verified.
  */
-export async function logout(token: string, username?: string, email?: string): Promise<void> {
+export async function logout(token: string): Promise<void> {
     try {
-        await validateJWTToken(token, username, email);
+        await validateJWTToken(token);
     } catch (error) {
         if (!(error instanceof ExpiredTokenError)) {
             throw error;
