@@ -1,9 +1,10 @@
 // TODO: Fix this ESLint problem
 
 import type { SessionStateRes } from './interfaces/res/auth.js';
+import type { StartSessionRes } from './interfaces/res/sessions.js';
 import { StateEnum } from './interfaces/state.js';
 import { CookieList, deleteCookie, getCookie, setCookie } from './shared/cookie-management.js';
-import { openLoading } from './shared/popups.js';
+import { openLoading, openPopup } from './shared/popups.js';
 import { validateNotAdmin } from './shared/validations.js';
 
 /* eslint-disable @typescript-eslint/no-misused-promises */
@@ -124,21 +125,19 @@ async function switchVolumeVisibility() {
 
 async function startSession() {
     const url = '/api/admin/session/start';
-    const body = {
-        email: getCookie('mursica-fm-admin-email'),
-        username: getCookie('mursica-fm-admin-username'),
-        token: getCookie('mursica-fm-admin-token'),
+    const config: object = {
+        headers: {
+            Authorization: `Bearer ${getCookie(CookieList.ADMIN_TOKEN)}`,
+        },
     };
     try {
-        const response = await axios.post<any>(url, body);
-        // TODO: Use interface
-        const sessionId = response.data.token;
-        setCookie('mursica-fm-admin-session-id', sessionId, 7);
-        setCookie('mursica-fm-admin-spotify-status', 'session', 7);
+        const response = await axios.post<StartSessionRes>(url, null, config);
+
+        const sessionId = response.data.sessionId;
+        setCookie(CookieList.SESSION_ID, sessionId, 7);
         window.location.replace('');
     } catch (error) {
-        // eslint-disable-next-line no-alert
-        alert('Error starting session: ' + error);
+        openPopup('An error occurred while starting the session. Please try again later.');
         console.error('Error starting session:', error);
     }
 }

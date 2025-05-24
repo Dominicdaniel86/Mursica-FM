@@ -82,6 +82,14 @@
                 <img src="/static/icons/play.svg" id="control-play" onclick="playSong()" style="display: none;">
                 <img src="/static/icons/skip.svg" id="control-skip" onclick="skipSong()" style="display: none;">
             </section>
+            <section id="popup-update" class="popup">
+            <div class="popup-content">
+                <span id="popup-update-text">
+                    <!-- The reason gets generated in here -->
+                </span><br><br>
+                <button id="popup-update-close" onclick="closePopup()">Close</button>
+            </div>
+        </section>
         </footer>
 
         <div id="loader">

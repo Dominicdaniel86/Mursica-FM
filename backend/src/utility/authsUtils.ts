@@ -5,6 +5,42 @@ import { InvalidParameterError } from '../errors/services.js';
 import { NotFoundError } from '../errors/database.js';
 import { AuthenticationError, ExpiredTokenError, NotVerifiedError } from '../errors/authentication.js';
 
+export async function newGeneralPurposeValidation(req: Request, res: Response): Promise<string> {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader?.split(' ')[1] ?? ''; // Get token part of Bearer token
+    if (token === undefined || token === null || token.trim() === '') {
+        logger.warn({ endpoint: '/logout' }, 'No token provided for logout');
+        res.status(400).json({ error: 'No token provided' });
+        throw new InvalidParameterError('No token provided');
+    }
+
+    try {
+        await validateJWTToken(token);
+    } catch (error) {
+        // Handle validation error
+        if (error instanceof InvalidParameterError) {
+            logger.warn(error.message);
+            res.status(400).json({ error: error.message });
+        } else if (error instanceof ExpiredTokenError) {
+            logger.warn(error.message);
+            res.status(401).json({ error: error.message });
+        } else if (error instanceof NotVerifiedError) {
+            logger.warn(error.message);
+            res.status(403).json({ error: error.message });
+        } else if (error instanceof NotFoundError) {
+            logger.warn(error.message);
+            res.status(404).json({ error: error.message });
+        } else {
+            logger.error(error, 'Failed to validate token');
+            res.status(500).json({ error: 'Internal server error' });
+        }
+        throw error; // Rethrow the error to be handled by the calling function
+    }
+
+    return token; // Return the token if validation is successful
+}
+
+// ! Deprecated. Use new function.
 export async function generalPurposeValidation(req: Request, res: Response): Promise<void> {
     const { token, username, email } = req.body;
     try {

@@ -1,4 +1,4 @@
-import type { CurrentSession, Guest, User } from '@prisma/client';
+import type { CurrentSession, Guest, Jwt, User } from '@prisma/client';
 import { prisma } from '../config.js';
 import { InvalidParameterError } from '../errors/services.js';
 import { generateRandomSessionId, generateRandomString } from '../utility/fileUtils.js';
@@ -11,42 +11,34 @@ import logger from '../logger/logger.js';
  * @param username - The username of the user (optional if email is provided).
  * @param email - The email of the user (optional if username is provided).
  *
- * @throws {InvalidParameterError} If neither username nor email is provided, or both are empty/null/undefined.
+ * @throws {InvalidParameterError} If the token is empty, null, or undefined.
  * @throws {NotFoundError} If the user does not exist.
  * @throws {ValueAlreadyExistsError} If the user already has an active session.
  * @throws {DatabaseOperationError} If a database operation fails.
  */
-export async function createNewSession(username: string, email: string): Promise<string> {
+export async function createNewSession(token: string): Promise<string> {
     // Validate input
-    if (
-        (username === undefined && email === undefined) ||
-        (username === null && email === null) ||
-        (username === '' && email === '')
-    ) {
-        throw new InvalidParameterError('Username or email is required');
+    if (!token) {
+        throw new InvalidParameterError('Token is required');
     }
 
     // Check if the user exists
-    let userDBEntry: User | null;
+    let tokenDBEntry: Jwt | null;
+
     try {
-        if (username !== undefined) {
-            userDBEntry = await prisma.user.findUnique({
-                where: {
-                    name: username,
-                },
-            });
-        } else {
-            userDBEntry = await prisma.user.findUnique({
-                where: {
-                    email,
-                },
-            });
-        }
+        tokenDBEntry = await prisma.jwt.findUnique({
+            where: {
+                token,
+            },
+            include: {
+                user: true,
+            },
+        });
     } catch (error) {
         logger.error(error, 'Could not load the user that wants to create a new session');
         throw new DatabaseOperationError('Could not load the user that wants to create a new session');
     }
-    if (userDBEntry === null) {
+    if (tokenDBEntry?.userId === null || tokenDBEntry?.userId === undefined) {
         throw new NotFoundError('User not found');
     }
 
@@ -55,7 +47,7 @@ export async function createNewSession(username: string, email: string): Promise
     try {
         existingSession = await prisma.currentSession.findUnique({
             where: {
-                adminId: userDBEntry?.id,
+                adminId: tokenDBEntry.userId,
             },
         });
     } catch (error) {
@@ -75,7 +67,7 @@ export async function createNewSession(username: string, email: string): Promise
     try {
         await prisma.currentSession.create({
             data: {
-                adminId: userDBEntry.id,
+                adminId: tokenDBEntry.userId,
                 validUntil,
                 sessionId,
             },
@@ -84,6 +76,8 @@ export async function createNewSession(username: string, email: string): Promise
         logger.error(error, 'Failed to create new session');
         throw new DatabaseOperationError('Failed to create new session');
     }
+
+    logger.debug({ sessionId, adminId: tokenDBEntry.userId }, 'New session created');
 
     return sessionId;
 }

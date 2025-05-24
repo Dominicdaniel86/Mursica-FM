@@ -9,42 +9,52 @@ import {
 } from '../api/index.js';
 import { NotFoundError, ValueAlreadyExistsError } from '../errors/database.js';
 import logger from '../logger/logger.js';
-import { generalPurposeGETValidation, generalPurposeValidation } from '../utility/authsUtils.js';
+import {
+    generalPurposeGETValidation,
+    generalPurposeValidation,
+    newGeneralPurposeValidation,
+} from '../utility/authsUtils.js';
 import { createNewSession, stopCurrentSession } from '../services/sessionManagement.js';
 import { InvalidParameterError } from '../errors/services.js';
 import { CookieList } from '../shared/cookies.js';
 import { getSessionState } from '../auth/auth.middleware.js';
 import type { SessionStateRes } from '../shared/interfaces/res/auth.js';
+import type { StartSessionRes } from '../shared/interfaces/res/sessions.js';
 
 const router = express.Router();
 
 router.post('/session/start', async (req, res) => {
     logger.info('A user is trying to start a session');
+    let token: string;
     try {
-        await generalPurposeValidation(req, res);
+        token = await newGeneralPurposeValidation(req, res);
     } catch {
-        // error handled in generalPurposeValidation
+        // error handled in newGeneralPurposeValidation
         return;
     }
 
-    const { username, email } = req.body;
-
     try {
-        const token = await createNewSession(username, email);
-        logger.info('Session started', { username, email });
-        res.status(200).json({ message: 'Session started', token });
+        const sessionId = await createNewSession(token);
+        const response: StartSessionRes = {
+            message: 'Session started successfully',
+            code: 200,
+            sessionId,
+        };
+
+        logger.info('Session started');
+        res.status(200).json(response);
     } catch (error) {
         if (error instanceof InvalidParameterError) {
-            logger.warn(error.message, { username, email });
+            logger.warn(error.message);
             res.status(400).json({ error: error.message });
         } else if (error instanceof NotFoundError) {
-            logger.warn(error.message, { username, email });
+            logger.warn(error.message);
             res.status(404).json({ error: error.message });
         } else if (error instanceof ValueAlreadyExistsError) {
-            logger.warn(error.message, { username, email });
+            logger.warn(error.message);
             res.status(409).json({ error: error.message });
         } else {
-            logger.error(error, 'Failed to create a new session', { username, email });
+            logger.error(error, 'Failed to create a new session');
             res.status(500).json({ error: 'Internal Server error' });
         }
     }
@@ -89,12 +99,13 @@ router.get('/session/status', async (req, res) => {
     }
 
     try {
-        const sessionStatus = await getSessionState(token); // TODO: Interface
+        const sessionStatus = await getSessionState(token);
         const response: SessionStateRes = {
             message: 'Session status retrieved successfully',
             code: '200',
             session_state: sessionStatus,
         };
+        logger.debug({ sessionStatus }, 'Session status retrieved');
         res.status(200).json(response);
     } catch (error) {
         logger.error(error, 'Failed to get session status');
