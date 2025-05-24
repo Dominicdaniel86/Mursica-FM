@@ -10,6 +10,7 @@ import {
 import type { CurrentSession, Guest, Jwt, User } from '@prisma/client';
 import { commonPasswords, prisma } from '../config.js';
 import logger from '../logger/logger.js';
+import { StateEnum } from '../shared/state.js';
 
 /**
  * Checks the registration input for validity.
@@ -162,6 +163,67 @@ export async function comparePassword(password: string, hashedPassword: string):
     }
     logger.debug({ file: '/auth/auth.middleware.ts', function: 'comparePassword()' }, 'Comparing password');
     return await bcrypt.compare(password, hashedPassword);
+}
+
+/**
+ * Retrieves the session state based on the provided token.
+ *
+ * @param token - The JWT token to check the session state for.
+ * @returns {Promise<StateEnum>} The state of the session.
+ *
+ * @throws {InvalidParameterError} If the token is missing or empty.
+ * @throws {NotFoundError} If the user associated with the token is not found.
+ * @throws {DatabaseOperationError} If there is an error querying the database for the session state.
+ */
+export async function getSessionState(token: string): Promise<StateEnum> {
+    // TODO: Implementation
+    if (token === undefined || token === null || token.trim() === '') {
+        throw new InvalidParameterError('Token is required');
+    }
+
+    try {
+        // Step 1: Get the matching user from the database
+        const tokenDBEntry = await prisma.jwt.findUnique({
+            where: {
+                token,
+            },
+            include: {
+                user: true, // Include the user associated with the token
+            },
+        });
+
+        const userDBEntry = tokenDBEntry?.user;
+        if (userDBEntry === undefined || userDBEntry === null) {
+            throw new NotFoundError('User not found for the provided token');
+        }
+
+        // Step 2: Check if a valid OAuth token exists for the user
+        const oauthTokenDBEntry = await prisma.oAuthToken.findUnique({
+            where: {
+                userId: userDBEntry.id,
+            },
+        });
+
+        if (oauthTokenDBEntry === undefined || oauthTokenDBEntry === null || oauthTokenDBEntry.token.trim() === '') {
+            return StateEnum.SPOTIFY_DISCONNECTED; // * State 1
+        }
+
+        // Step 3: Check if a session is active for the user
+        const sessionDBEntry = await prisma.currentSession.findUnique({
+            where: {
+                adminId: userDBEntry.id,
+            },
+        });
+
+        if (sessionDBEntry === undefined || sessionDBEntry === null || sessionDBEntry.sessionId.trim() === '') {
+            return StateEnum.SPOTIFY_CONNECTED; // * State 2
+        } else {
+            return StateEnum.SESSION_ACTIVE; // * State 3
+        }
+    } catch (error) {
+        logger.error(error, 'Error getting session state');
+        throw new DatabaseOperationError('Error getting session state');
+    }
 }
 
 /**

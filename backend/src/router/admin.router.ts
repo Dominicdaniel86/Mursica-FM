@@ -12,6 +12,9 @@ import logger from '../logger/logger.js';
 import { generalPurposeGETValidation, generalPurposeValidation } from '../utility/authsUtils.js';
 import { createNewSession, stopCurrentSession } from '../services/sessionManagement.js';
 import { InvalidParameterError } from '../errors/services.js';
+import { CookieList } from '../shared/cookies.js';
+import { getSessionState } from '../auth/auth.middleware.js';
+import type { SessionStateRes } from '../shared/interfaces/res/auth.js';
 
 const router = express.Router();
 
@@ -73,6 +76,29 @@ router.post('/session/stop', async (req, res) => {
             logger.error(error, 'Failed to stop a session', { username, email });
             res.status(500).json({ error: 'Internal Server error' });
         }
+    }
+});
+
+router.get('/session/status', async (req, res) => {
+    logger.info('A user is trying to get the session status');
+    const token = req.cookies[CookieList.ADMIN_TOKEN];
+    if (token === undefined || token === null || token.trim() === '') {
+        logger.warn({ endpoint: '/spotify/logout' }, 'No token provided for logout');
+        res.status(400).json({ error: 'No token provided' });
+        return;
+    }
+
+    try {
+        const sessionStatus = await getSessionState(token); // TODO: Interface
+        const response: SessionStateRes = {
+            message: 'Session status retrieved successfully',
+            code: '200',
+            session_state: sessionStatus,
+        };
+        res.status(200).json(response);
+    } catch (error) {
+        logger.error(error, 'Failed to get session status');
+        res.status(500).json({ error: 'Internal Server error' });
     }
 });
 

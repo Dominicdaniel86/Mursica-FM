@@ -1,5 +1,7 @@
 // TODO: Fix this ESLint problem
 
+import type { SessionStateRes } from './interfaces/res/auth.js';
+import { StateEnum } from './interfaces/state.js';
 import { CookieList, deleteCookie, getCookie, setCookie } from './shared/cookie-management.js';
 import { openLoading } from './shared/popups.js';
 import { validateNotAdmin } from './shared/validations.js';
@@ -160,10 +162,47 @@ async function stopSession() {
     }
 }
 
-// TODO: Currently, spotify account management is done with cookies -> Use HTTP requests
+async function selectMatchingState() {
+    const url = '/api/admin/session/status';
+    const config: object = {
+        headers: {
+            Authorization: `Bearer ${getCookie(CookieList.ADMIN_TOKEN)}`,
+        },
+    };
+    try {
+        const response = await axios.get<SessionStateRes>(url, config);
+        const sessionStatus: StateEnum = response.data.session_state;
+
+        if (sessionStatus === StateEnum.SPOTIFY_DISCONNECTED) {
+            const accDisconnectedSection = document.getElementById('spotify-account-disconnected') as HTMLDivElement;
+            accDisconnectedSection.style.display = 'block';
+        } else if (sessionStatus === StateEnum.SPOTIFY_CONNECTED) {
+            const accConnectedSection = document.getElementById('spotify-account-connected') as HTMLDivElement;
+            accConnectedSection.style.display = 'block';
+        } else if (sessionStatus === StateEnum.SESSION_ACTIVE) {
+            const accSessionSection = document.getElementById('spotify-session-open') as HTMLDivElement;
+            accSessionSection.style.display = 'block';
+            const logoutElement = document.getElementById('logout') as HTMLElement;
+            logoutElement.style.display = 'block';
+            const sessionId = getCookie('mursica-fm-admin-session-id') ?? '#XXX-XXX';
+            const sessionIdElement = document.getElementById('session-id') as HTMLSpanElement;
+            sessionIdElement.innerText = sessionId;
+        } else {
+            // Fallback to disconnected state
+            console.warn('Unknown session status:', sessionStatus);
+            const accDisconnectedSection = document.getElementById('spotify-account-disconnected') as HTMLDivElement;
+            accDisconnectedSection.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error retrieving session status:', error);
+        // Fallback to disconnected state
+        const accDisconnectedSection = document.getElementById('spotify-account-disconnected') as HTMLDivElement;
+        accDisconnectedSection.style.display = 'block';
+    }
+}
+
 window.addEventListener('load', async () => {
     // TODO: Implement this function
-
     // load current volume
     // const url = '/api/admin/control/volume';
     // const config: object = {
@@ -184,37 +223,17 @@ window.addEventListener('load', async () => {
     // }
 
     // Routing validation
-    // TODO: Also really validate the admin with backend API
+    // ? TODO: Also really validate the admin with backend API
     validateNotAdmin('/static/html/index.html');
 
     let accName = getCookie('mursica-fm-admin-username');
     if (accName === null || accName === undefined || accName === '') {
-        accName = 'Connected with email';
+        accName = 'Connected with email'; // ! Deprecated, only as fallback
     }
     const accNameElement = document.getElementById('account-name') as HTMLSpanElement;
     accNameElement.innerText = accName;
 
-    const spotifyStatus = getCookie('mursica-fm-admin-spotify-status');
-    if (
-        spotifyStatus === null ||
-        spotifyStatus === undefined ||
-        spotifyStatus === '' ||
-        spotifyStatus === 'disconnected'
-    ) {
-        const accDisconnectedSection = document.getElementById('spotify-account-disconnected') as HTMLDivElement;
-        accDisconnectedSection.style.display = 'block';
-    } else if (spotifyStatus === 'connected') {
-        const accConnectedSection = document.getElementById('spotify-account-connected') as HTMLDivElement;
-        accConnectedSection.style.display = 'block';
-    } else if (spotifyStatus === 'session') {
-        const accSessionSection = document.getElementById('spotify-session-open') as HTMLDivElement;
-        accSessionSection.style.display = 'block';
-        const logoutElement = document.getElementById('logout') as HTMLElement;
-        logoutElement.style.display = 'block';
-        const sessionId = getCookie('mursica-fm-admin-session-id') ?? '#XXX-XXX';
-        const sessionIdElement = document.getElementById('session-id') as HTMLSpanElement;
-        sessionIdElement.innerText = sessionId;
-    }
+    await selectMatchingState();
 });
 
 window.spotifyLogin = spotifyLogin;

@@ -8,48 +8,28 @@ import {
     InvalidParameterError,
     ExpiredTokenError,
     NotVerifiedError,
-    AuthenticationError,
+    SpotifyStateError,
 } from '../errors/index.js';
 import { ENV_VARIABLES } from '../config.js';
+import { CookieList } from '../shared/cookies.js';
 
 const router = express.Router();
 
-// 200: OK
-// 500: Internal Server Error
-// ! Deprecated: This endpoint is not used anymore
-// router.get('/auth-check', async (req, res) => {
-//     try {
-//         const token = await prisma.oAuthToken.findFirst();
-//         if (token) {
-//             logger.info('Authentication check: Admin is logged in');
-//             res.status(200).json({
-//                 isAuthenticated: true,
-//                 expiresAt: token.validUntil,
-//             });
-//         } else {
-//             logger.info('Authentication check: Admin is not logged in');
-//             res.status(200).json({
-//                 isAuthenticated: false,
-//             });
-//         }
-//     } catch (error) {
-//         logger.error(error, 'Could not check if an admin is logged in.');
-//         res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
-
 router.get('/login', async (req, res) => {
-    const token = req.cookies['mursica-fm-admin-token'];
-    const username = req.cookies['mursica-fm-admin-username'];
-    const email = req.cookies['mursica-fm-admin-email'];
+    logger.info({ endpoint: '/spotify/login' }, 'A user is trying to connect their Spotify account');
+    const token = req.cookies[CookieList.ADMIN_TOKEN];
+    if (token === undefined || token === null || token.trim() === '') {
+        logger.warn({ endpoint: '/spotify/logout' }, 'No token provided for logout');
+        res.status(400).json({ error: 'No token provided' });
+        return;
+    }
 
     try {
         logger.info('A user is trying to connect their Spotify account.');
-        // await validateJWTToken(token, username, email);
-        await validateJWTToken(token); // ! Check if this still works
+        await validateJWTToken(token);
 
         const url = 'https://accounts.spotify.com/authorize?';
-        const spotifyQueryString = (await generateOAuthQuerystring(username, email)) + '&show_dialog=true';
+        const spotifyQueryString = (await generateOAuthQuerystring(token)) + '&show_dialog=true';
         res.redirect(url + spotifyQueryString);
         logger.info('Redirected user to the Spotify login page.');
     } catch (error) {
@@ -57,36 +37,36 @@ router.get('/login', async (req, res) => {
             logger.warn('Invalid parameters received');
             res.status(400).json({ error: 'Invalid parameters' });
             return;
-        } else if (
-            error instanceof ExpiredTokenError ||
-            error instanceof NotVerifiedError ||
-            error instanceof AuthenticationError
-        ) {
-            logger.warn('User is not verified or token is expired', error);
+        } else if (error instanceof ExpiredTokenError) {
+            logger.warn({ error, endpoint: '/spotify/login' }, 'Token is expired');
             res.status(403).json({ error: error.message });
+        } else if (error instanceof NotVerifiedError) {
+            logger.warn({ error, endpoint: '/spotify/login' }, 'User is not verified');
+            res.status(403).json({ error: 'User is not verified' });
         } else if (error instanceof NotFoundError) {
-            logger.warn('User not found in the database', error);
+            logger.warn({ error, endpoint: '/spotify/login' }, 'User not found in the database');
             res.status(404).json({ error: 'User not found in the database' });
         } else {
-            logger.error(error, 'Failed to validate JWT token');
+            logger.error({ error, endpoint: '/spotify/login' }, 'Failed to validate JWT token');
             res.status(500).json({ error: 'Internal server error' });
         }
     }
 });
 
 router.get('/callback', async (req, res) => {
-    logger.info('User login callback');
+    logger.info({ endpoint: '/spotify/callback' }, 'User login callback');
     const code = req.query.code as string;
     const state = req.query.state as string;
 
     try {
         await validateState(state);
     } catch (error) {
-        if (error instanceof AuthenticationError) {
-            logger.warn('Invalid state received');
+        logger.debug('Error catched here: 1! Testing purpose.');
+        if (error instanceof SpotifyStateError) {
+            logger.warn({ error, endpoint: '/spotify/callback' }, 'Invalid state received');
             return res.redirect('/#' + querystring.stringify({ error: 'invalid_state' }));
         } else {
-            logger.error('Failed to validate state', error);
+            logger.error({ error, endpoint: '/spotify/callback' }, 'Failed to validate state');
             return res.redirect('/#' + querystring.stringify({ error: 'state_validation_failed' }));
         }
     }
@@ -98,9 +78,10 @@ router.get('/callback', async (req, res) => {
         } else {
             res.redirect(`http://${ENV_VARIABLES.LOCAL_HOST}/static/html/admin.html`);
         }
-        logger.info('Redirected user back to admin.html');
+        logger.info({ endpoint: '/spotify/callback' }, 'Redirected user back to admin.html');
     } catch (error) {
-        logger.error(error, 'OAuth authorization failed during callback');
+        logger.debug('Error catched here: 2! Testing purpose.'); // User stopped
+        logger.error({ error, endpoint: '/spotify/callback' }, 'OAuth authorization failed during callback');
         return res.redirect('/#' + querystring.stringify({ error: 'oauth_authorization_failed' }));
     }
 });

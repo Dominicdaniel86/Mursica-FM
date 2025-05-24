@@ -12,6 +12,13 @@ export class AuthenticationError extends Error {
     }
 }
 
+export class SpotifyStateError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'SpotifyStateError';
+    }
+}
+
 export class ExistingUserError extends Error {
     constructor(message: string) {
         super(message);
