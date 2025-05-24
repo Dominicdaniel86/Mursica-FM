@@ -4,12 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1-beta.1] - 2025-05-24
+
+### Changed
+
+- Improved code quality, including the use of multiple enum values
+- Standardized reading of environment variables
+
+## [1.1.0-beta.1] - 2025-05-23
+
+### Added
+
+- Additional UI elements, such as popups, during the registration process
+
+### Changed
+
+- Enhanced stability and logging throughout the registration process
+- Refactored and standardized various parts of the codebase
+
 ## [1.0.0-beta.1] - 2025-05-22
 
-## Changed
+### Changed
 
-- Updated the frontend to work with the new backend
-- Core features fixed to work quite stable: Official first beta version
+- Updated the frontend to integrate with the new backend
+- Stabilized core features for the initial official beta release
 
 ## [1.1.2-alpha.4] - 2025-05-20
 
