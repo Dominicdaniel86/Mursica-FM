@@ -3,7 +3,7 @@
 import type { SessionStateRes } from './interfaces/res/auth.js';
 import type { StartSessionRes } from './interfaces/res/sessions.js';
 import { StateEnum } from './interfaces/state.js';
-import { CookieList, deleteCookie, getCookie, setCookie } from './shared/cookie-management.js';
+import { CookieList, deleteCookie, getCookie, setCookie, SpotifyAuthState } from './shared/cookie-management.js';
 import { openLoading, openPopup } from './shared/popups.js';
 import { validateNotAdmin } from './shared/validations.js';
 
@@ -64,7 +64,6 @@ async function changeVolume() {
 async function spotifyLogin(): Promise<void> {
     const url = '/api/auth/spotify/login';
     try {
-        setCookie('mursica-fm-admin-spotify-status', 'connected', 1);
         window.location.replace(url);
     } catch (error) {
         console.error(error);
@@ -73,7 +72,6 @@ async function spotifyLogin(): Promise<void> {
 
 // TODO: Implement this function
 export async function spotifyLogout(): Promise<void> {
-    deleteCookie('mursica-fm-admin-spotify-status');
     window.location.replace('');
 }
 
@@ -200,6 +198,30 @@ async function selectMatchingState() {
     }
 }
 
+async function validateSpotifyFeedback() {
+    const spotifyStatus = getCookie(CookieList.SPOTIFY_AUTH_STATE);
+    console.debug('Spotify status:', spotifyStatus);
+
+    if (spotifyStatus === null || spotifyStatus === undefined || spotifyStatus === '') {
+        return;
+    }
+
+    if (spotifyStatus === SpotifyAuthState.STATE_EXPIRED) {
+        openPopup('Spotify login expired. Please re-login to your Spotify account.');
+    } else if (spotifyStatus === SpotifyAuthState.INVALID_STATE) {
+        openPopup('Spotify login state is invalid. Please re-login to your Spotify account.');
+    } else if (spotifyStatus === SpotifyAuthState.STATE_VALIDATION_FAILED) {
+        openPopup('Spotify login state validation failed. Please try again.');
+    } else if (spotifyStatus === SpotifyAuthState.OAUTH_AUTHORIZATION_STOPPED) {
+        openPopup('Spotify OAuth authorization was stopped. Could not complete the authorization.');
+    } else if (spotifyStatus === SpotifyAuthState.OAUTH_AUTHORIZATION_FAILED) {
+        openPopup('Spotify OAuth authorization failed. Please try again.');
+    } else if (spotifyStatus === SpotifyAuthState.OAUTH_AUTHORIZATION_SUCCESS) {
+        openPopup('Spotify OAuth authorization was successful. You can now use the admin panel.');
+    }
+    deleteCookie(CookieList.SPOTIFY_AUTH_STATE);
+}
+
 window.addEventListener('load', async () => {
     // TODO: Implement this function
     // load current volume
@@ -233,6 +255,7 @@ window.addEventListener('load', async () => {
     accNameElement.innerText = accName;
 
     await selectMatchingState();
+    await validateSpotifyFeedback();
 });
 
 window.spotifyLogin = spotifyLogin;

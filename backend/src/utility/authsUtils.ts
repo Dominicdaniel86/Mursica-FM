@@ -4,6 +4,8 @@ import { validateGuestToken, validateJWTToken } from '../auth/auth.middleware.js
 import { InvalidParameterError } from '../errors/services.js';
 import { NotFoundError } from '../errors/database.js';
 import { AuthenticationError, ExpiredTokenError, NotVerifiedError } from '../errors/authentication.js';
+import { CookieList } from '../shared/cookies.js';
+import { ENV_VARIABLES } from '../config.js';
 
 export async function newGeneralPurposeValidation(req: Request, res: Response): Promise<string> {
     const authHeader = req.headers['authorization'];
@@ -144,4 +146,13 @@ export async function generalPurposeGuestGETValidation(req: Request, res: Respon
         }
         throw error; // Rethrow the error to be handled by the calling function
     }
+}
+
+export async function setSpotifyStateCookie(value: string, res: Response): Promise<void> {
+    res.cookie(CookieList.SPOTIFY_AUTH_STATE, value, {
+        maxAge: 1000 * 60 * 60, // 1 hour
+        httpOnly: false, // TODO: Validate this
+        secure: ENV_VARIABLES.IS_PRODUCTION, // Use secure cookies in production
+        sameSite: 'strict', // Prevent CSRF attacks
+    });
 }

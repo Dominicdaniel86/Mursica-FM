@@ -24,7 +24,7 @@ import type { StartSessionRes } from '../shared/interfaces/res/sessions.js';
 const router = express.Router();
 
 router.post('/session/start', async (req, res) => {
-    logger.info('A user is trying to start a session');
+    logger.info({ endpoint: '/session/start' }, 'A user is trying to start a session');
     let token: string;
     try {
         token = await newGeneralPurposeValidation(req, res);
@@ -45,16 +45,16 @@ router.post('/session/start', async (req, res) => {
         res.status(200).json(response);
     } catch (error) {
         if (error instanceof InvalidParameterError) {
-            logger.warn(error.message);
+            logger.warn({ endpoint: '/session/start' }, error.message);
             res.status(400).json({ error: error.message });
         } else if (error instanceof NotFoundError) {
-            logger.warn(error.message);
+            logger.warn({ endpoint: '/session/start' }, error.message);
             res.status(404).json({ error: error.message });
         } else if (error instanceof ValueAlreadyExistsError) {
-            logger.warn(error.message);
+            logger.warn({ endpoint: '/session/start' }, error.message);
             res.status(409).json({ error: error.message });
         } else {
-            logger.error(error, 'Failed to create a new session');
+            logger.error({ endpoint: '/session/start', error }, 'Failed to create a new session');
             res.status(500).json({ error: 'Internal Server error' });
         }
     }

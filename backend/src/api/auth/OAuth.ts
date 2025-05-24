@@ -4,7 +4,7 @@ import type { SpotifyAuthTokenResponse } from '../../interfaces/index.js';
 import logger from '../../logger/logger.js';
 import { generateRandomString } from '../../utility/fileUtils.js';
 import { ENV_VARIABLES, prisma } from '../../config.js';
-import { AuthenticationError, SpotifyStateError } from '../../errors/authentication.js';
+import { AuthenticationError, SpotifyStateError, SpotifyStateExpiredError } from '../../errors/authentication.js';
 import { DatabaseOperationError, NotFoundError } from '../../errors/database.js';
 import type { OAuthToken, State } from '@prisma/client';
 import { InvalidParameterError } from '../../errors/services.js';
@@ -114,6 +114,7 @@ export async function generateOAuthQuerystring(token: string): Promise<string> {
  * @param {string} state - The state parameter received from Spotify during the authentication flow.
  *
  * @throws {SpotifyStateError} If the state is invalid or expired.
+ * @throws {AuthenticationError} If the OAuth authorization fails, e.g., due to an invalid code or network error.
  * @throws {NotFoundError} If the user associated with the state is not found in the database.
  * @throws {DatabaseOperationError} If there is an error updating the user's OAuth token in the database.
  */
@@ -139,12 +140,23 @@ export async function oAuthAuthorization(code: string, state: string): Promise<v
         },
     };
 
+    let accessToken: string;
+    let expiresIn: number;
+    let refreshToken: string;
+
     try {
         const response = await axios.post<SpotifyAuthTokenResponse>(url, data, config);
-        const accessToken = response.data.access_token;
-        const expiresIn = response.data.expires_in;
-        const refreshToken = response.data.refresh_token;
+        accessToken = response.data.access_token;
+        expiresIn = response.data.expires_in;
+        refreshToken = response.data.refresh_token;
+    } catch (error) {
+        // Usually: User stopped the authentication process // TODO: Handle this better
+        // TODO: Only log the error if it is not a user error
+        logger.debug({ error, file: 'OAuth.ts', function: 'oAuthAuthorization()' }, 'OAuth authorization failed');
+        throw new AuthenticationError('OAuth authorization failed: ' + (error as Error).message);
+    }
 
+    try {
         const validUntilDate: Date = new Date(Date.now() + expiresIn * 1000);
 
         const stateDBEntry = await prisma.state.findUnique({
@@ -152,7 +164,10 @@ export async function oAuthAuthorization(code: string, state: string): Promise<v
         });
 
         if (stateDBEntry === null || stateDBEntry === undefined) {
-            logger.warn('OAuth authentication failed: Received invalid state');
+            logger.warn(
+                { state, file: 'OAuth.ts', function: 'oAuthAuthorization()' },
+                'OAuth authentication failed: Received invalid state'
+            );
             throw new SpotifyStateError('OAuth authentication failed: Received invalid state');
         }
 
@@ -164,7 +179,10 @@ export async function oAuthAuthorization(code: string, state: string): Promise<v
         });
 
         if (user === null || user === undefined) {
-            logger.error('OAuth authentication failed: User not found');
+            logger.error(
+                { file: 'OAuth.ts', function: 'oAuthAuthorization()' },
+                'OAuth authentication failed: User not found'
+            );
             throw new NotFoundError('OAuth authentication failed: User not found');
         }
 
@@ -184,9 +202,12 @@ export async function oAuthAuthorization(code: string, state: string): Promise<v
             });
         }
 
-        logger.info({ accessToken, validUntil: validUntilDate }, 'OAuth user authentication successfully completed.');
+        logger.info(
+            { accessToken, validUntil: validUntilDate, file: 'OAuth.ts', function: 'oAuthAuthorization()' },
+            'OAuth user authentication successfully completed.'
+        );
     } catch (error) {
-        logger.error(error);
+        logger.error({ file: 'OAuth.ts', function: 'oAuthAuthorization()', error });
         throw new DatabaseOperationError('OAuth user authentication failed');
     }
 }
@@ -200,6 +221,7 @@ export async function oAuthAuthorization(code: string, state: string): Promise<v
  * @param {string} state - The state parameter received from Spotify during the OAuth callback.
  *
  * @throws {SpotifyStateError} If the state is invalid or expired.
+ * @throws {SpotifyStateExpiredError} If the state has expired.
  * @throws {DatabaseOperationError} If there is an error reading the state from the database.
  */
 export async function validateState(state: string): Promise<void> {
@@ -220,7 +242,7 @@ export async function validateState(state: string): Promise<void> {
     }
     if (currentState.validUntil < new Date()) {
         logger.error({ endpoint: '/spotify/callback' }, 'OAuth authentication failed: State expired');
-        throw new SpotifyStateError('OAuth authentication failed: State expired');
+        throw new SpotifyStateExpiredError('OAuth authentication failed: State expired');
     }
 }
 

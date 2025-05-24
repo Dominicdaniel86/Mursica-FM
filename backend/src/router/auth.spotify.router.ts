@@ -9,9 +9,12 @@ import {
     ExpiredTokenError,
     NotVerifiedError,
     SpotifyStateError,
+    AuthenticationError,
+    SpotifyStateExpiredError,
 } from '../errors/index.js';
 import { ENV_VARIABLES } from '../config.js';
-import { CookieList } from '../shared/cookies.js';
+import { CookieList, SpotifyAuthState } from '../shared/cookies.js';
+import { setSpotifyStateCookie } from '../utility/authsUtils.js';
 
 const router = express.Router();
 
@@ -53,6 +56,13 @@ router.get('/login', async (req, res) => {
     }
 });
 
+/**
+ * state_expired: The state is expired, the user needs to re-login
+ * invalid_state: The state received from Spotify is invalid
+ * state_validation_failed: The state validation failed, the user needs to re-login
+ * oauth_authorization_stopped: The user stopped the OAuth authorization process
+ * oauth_authorization_failed: The OAuth authorization failed, the user needs to re-login
+ */
 router.get('/callback', async (req, res) => {
     logger.info({ endpoint: '/spotify/callback' }, 'User login callback');
     const code = req.query.code as string;
@@ -61,18 +71,24 @@ router.get('/callback', async (req, res) => {
     try {
         await validateState(state);
     } catch (error) {
-        logger.debug('Error catched here: 1! Testing purpose.');
-        if (error instanceof SpotifyStateError) {
+        if (error instanceof SpotifyStateExpiredError) {
+            logger.warn({ error, endpoint: '/spotify/callback' }, 'State is expired');
+            await setSpotifyStateCookie(SpotifyAuthState.STATE_EXPIRED, res);
+            return res.redirect('/?' + querystring.stringify({ error: 'state_expired' }));
+        } else if (error instanceof SpotifyStateError) {
+            await setSpotifyStateCookie(SpotifyAuthState.INVALID_STATE, res);
             logger.warn({ error, endpoint: '/spotify/callback' }, 'Invalid state received');
-            return res.redirect('/#' + querystring.stringify({ error: 'invalid_state' }));
+            return res.redirect('/?' + querystring.stringify({ error: 'invalid_state' }));
         } else {
+            await setSpotifyStateCookie(SpotifyAuthState.STATE_VALIDATION_FAILED, res);
             logger.error({ error, endpoint: '/spotify/callback' }, 'Failed to validate state');
-            return res.redirect('/#' + querystring.stringify({ error: 'state_validation_failed' }));
+            return res.redirect('/?' + querystring.stringify({ error: 'state_validation_failed' }));
         }
     }
 
     try {
         await oAuthAuthorization(code, state);
+        await setSpotifyStateCookie(SpotifyAuthState.OAUTH_AUTHORIZATION_SUCCESS, res);
         if (ENV_VARIABLES.IS_PRODUCTION) {
             res.redirect(`https://${ENV_VARIABLES.DOMAIN}/static/html/admin.html`);
         } else {
@@ -80,9 +96,17 @@ router.get('/callback', async (req, res) => {
         }
         logger.info({ endpoint: '/spotify/callback' }, 'Redirected user back to admin.html');
     } catch (error) {
-        logger.debug('Error catched here: 2! Testing purpose.'); // User stopped
+        if (error instanceof AuthenticationError) {
+            logger.warn(
+                { error, endpoint: '/spotify/callback' },
+                'OAuth authorization failed: User stopped the authorization'
+            );
+            await setSpotifyStateCookie(SpotifyAuthState.OAUTH_AUTHORIZATION_STOPPED, res);
+            return res.redirect('/?' + querystring.stringify({ error: 'oauth_authorization_stopped' }));
+        }
+        await setSpotifyStateCookie(SpotifyAuthState.OAUTH_AUTHORIZATION_FAILED, res);
         logger.error({ error, endpoint: '/spotify/callback' }, 'OAuth authorization failed during callback');
-        return res.redirect('/#' + querystring.stringify({ error: 'oauth_authorization_failed' }));
+        return res.redirect('/?' + querystring.stringify({ error: 'oauth_authorization_failed' }));
     }
 });
 
